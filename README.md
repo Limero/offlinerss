@@ -18,6 +18,7 @@ It generates databases for supported RSS readers that can be used offline. Any c
 
 * [FeedReader](https://jangernert.github.io/FeedReader) GPL-3.0
 * [Newsboat](https://newsboat.org) MIT
+* [QuiteRSS](https://quiterss.org) GPL-3.0
 
 ## Get started
 
@@ -38,6 +39,12 @@ ln -sf ~/.cache/offlinerss/feedreader/feedreader-7.db ~/.local/share/feedreader/
 ```
 ln -sf ~/.cache/offlinerss/newsboat/cache.db ~/.local/share/newsboat/cache.db
 ln -sf ~/.cache/offlinerss/newsboat/urls ~/.config/newsboat/urls
+```
+
+### QuiteRSS
+
+```
+ln -sf ~/.cache/offlinerss/quiterss/feeds.db ~/.local/share/QuiteRss/QuiteRss/feeds.db
 ```
 
 ## Limitations

@@ -6,6 +6,7 @@ import (
 
 	"github.com/limero/offlinerss/clients/feedreader"
 	"github.com/limero/offlinerss/clients/newsboat"
+	"github.com/limero/offlinerss/clients/quiterss"
 	"github.com/limero/offlinerss/models"
 )
 
@@ -19,14 +20,20 @@ func GetSyncToActions(clientConfigs []models.ClientConfig) ([]models.SyncToActio
 			continue
 		}
 		switch clientConfig.Type {
+		case "feedreader":
+			actions, err := feedreader.GetChanges(clientConfig)
+			if err != nil {
+				return nil, err
+			}
+			syncToActions = append(syncToActions, actions...)
 		case "newsboat":
 			actions, err := newsboat.GetChanges(clientConfig)
 			if err != nil {
 				return nil, err
 			}
 			syncToActions = append(syncToActions, actions...)
-		case "feedreader":
-			actions, err := feedreader.GetChanges(clientConfig)
+		case "quiterss":
+			actions, err := quiterss.GetChanges(clientConfig)
 			if err != nil {
 				return nil, err
 			}
@@ -52,12 +59,16 @@ func GenerateDatabases(clientConfigs []models.ClientConfig, folders []*models.Fo
 			continue
 		}
 		switch clientConfig.Type {
+		case "feedreader":
+			if err := feedreader.GenerateCache(folders, clientConfig); err != nil {
+				return err
+			}
 		case "newsboat":
 			if err := newsboat.GenerateCache(folders, clientConfig); err != nil {
 				return err
 			}
-		case "feedreader":
-			if err := feedreader.GenerateCache(folders, clientConfig); err != nil {
+		case "quiterss":
+			if err := quiterss.GenerateCache(folders, clientConfig); err != nil {
 				return err
 			}
 		default:

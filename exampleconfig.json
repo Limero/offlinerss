@@ -6,6 +6,13 @@
     },
     "clients": [
         {
+            "type": "feedreader",
+            "enabled": true,
+            "paths": {
+              "cache": "~/.cache/offlinerss/feedreader/feedreader-7.db"
+            }
+        },
+        {
             "type": "newsboat",
             "enabled": true,
             "paths": {
@@ -14,10 +21,10 @@
             }
         },
         {
-            "type": "feedreader",
+            "type": "quiterss",
             "enabled": true,
             "paths": {
-              "cache": "~/.cache/offlinerss/feedreader/feedreader-7.db"
+              "cache": "~/.cache/offlinerss/quiterss/feeds.db"
             }
         }
     ]
