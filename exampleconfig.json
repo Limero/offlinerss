@@ -1,0 +1,24 @@
+{
+    "server": {
+        "type": "newsblur",
+        "username": "",
+        "password": ""
+    },
+    "clients": [
+        {
+            "type": "newsboat",
+            "enabled": true,
+            "paths": {
+              "cache": "~/.cache/offlinerss/newsboat/cache.db",
+              "urls": "~/.cache/offlinerss/newsboat/urls"
+            }
+        },
+        {
+            "type": "feedreader",
+            "enabled": true,
+            "paths": {
+              "cache": "~/.cache/offlinerss/feedreader/feedreader-7.db"
+            }
+        }
+    ]
+}

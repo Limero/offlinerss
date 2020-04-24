@@ -1,0 +1,51 @@
+# OfflineRSS
+
+OfflineRSS is a tool written in Go for syncing [RSS](https://en.wikipedia.org/wiki/RSS) between a hosted [feed aggregator](https://en.wikipedia.org/wiki/News_aggregator) and local RSS readers.
+
+It generates databases for supported RSS readers that can be used offline. Any changes done to these databases will be synced back to the aggregator next time the program is run whilst also updating the local databases with everything new.
+
+## Why?
+
+* Allows you to use any supported reader with any supported feed aggregator
+* Allows you to use your favorite reader offline. Great if you don't always have an internet connection.
+* Makes all user interaction feel instant because they are synced later.
+
+## Supported servers (feed aggregators)
+
+* [NewsBlur](https://newsblur.com) MIT
+
+## Supported clients (readers)
+
+* [FeedReader](https://jangernert.github.io/FeedReader) GPL-3.0
+* [Newsboat](https://newsboat.org) MIT
+
+## Get started
+
+Copy the `exampleconfig.json` file in this repository to `~/.config/offlinerss/config.json` and edit it to match your preferences. You can then run OfflineRSS and it will create a local database for your chosen client(s).
+
+By default, the paths for the generated databases will be in `~/.cache/offlinerss`. You can either change these or symlink them to the correct locations, see instructions below.
+
+**WARNING! This will remove any existing databases at these locations!**
+
+### FeedReader
+
+```
+ln -sf ~/.cache/offlinerss/feedreader/feedreader-7.db ~/.local/share/feedreader/data/feedreader-7.db
+```
+
+### Newsboat
+
+```
+ln -sf ~/.cache/offlinerss/newsboat/cache.db ~/.local/share/newsboat/cache.db
+ln -sf ~/.cache/offlinerss/newsboat/urls ~/.config/newsboat/urls
+```
+
+## Limitations
+
+* Only one server can be used at a time. However, all clients can be enabled simultaneously.
+* No support for delta updates. Databases are built from scratch each sync.
+* Clients can't be synced with each other, without syncing with the server first.
+
+## License
+
+Licensed under the MIT license. (See LICENSE)
