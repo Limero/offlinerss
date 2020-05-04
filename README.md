@@ -24,27 +24,27 @@ It generates databases for supported RSS readers that can be used offline. Any c
 
 Copy the `exampleconfig.json` file in this repository to `~/.config/offlinerss/config.json` and edit it to match your preferences. You can then run OfflineRSS and it will create a local database for your chosen client(s).
 
-By default, the paths for the generated databases will be in `~/.cache/offlinerss`. You can either change these or symlink them to the correct locations, see instructions below.
+By default, the paths for the generated databases will be in `~/.local/share/offlinerss`. You can either change these or symlink them to the correct locations, see instructions below.
 
 **WARNING! This will remove any existing databases at these locations!**
 
 ### FeedReader
 
 ```
-ln -sf ~/.cache/offlinerss/feedreader/feedreader-7.db ~/.local/share/feedreader/data/feedreader-7.db
+ln -sf ~/.local/share/offlinerss/feedreader/feedreader-7.db ~/.local/share/feedreader/data/feedreader-7.db
 ```
 
 ### Newsboat
 
 ```
-ln -sf ~/.cache/offlinerss/newsboat/cache.db ~/.local/share/newsboat/cache.db
-ln -sf ~/.cache/offlinerss/newsboat/urls ~/.config/newsboat/urls
+ln -sf ~/.local/share/offlinerss/newsboat/cache.db ~/.local/share/newsboat/cache.db
+ln -sf ~/.local/share/offlinerss/newsboat/urls ~/.config/newsboat/urls
 ```
 
 ### QuiteRSS
 
 ```
-ln -sf ~/.cache/offlinerss/quiterss/feeds.db ~/.local/share/QuiteRss/QuiteRss/feeds.db
+ln -sf ~/.local/share/offlinerss/quiterss/feeds.db ~/.local/share/QuiteRss/QuiteRss/feeds.db
 ```
 
 ## Limitations
