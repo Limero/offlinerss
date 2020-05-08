@@ -145,6 +145,7 @@ func GetFoldersWithStories(client *http.Client) ([]*models.Folder, error) {
 								Url:       story.StoryPermalink,
 								Unread:    story.ReadStatus != 1,
 								Date:      story.StoryDate,
+								Starred:   story.Starred,
 							})
 						}
 						continue STORIES
@@ -162,7 +163,7 @@ func GetFoldersWithStories(client *http.Client) ([]*models.Folder, error) {
 	return folders, nil
 }
 
-func MarkStoriesAsRead(client *http.Client, hashes []string) error {
+func MarkStoriesAsRead(client *http.Client, hashes ...string) error {
 	if len(hashes) == 0 {
 		return nil
 	}
@@ -174,15 +175,39 @@ func MarkStoriesAsRead(client *http.Client, hashes []string) error {
 	return err
 }
 
-func MarkStoriesAsUnread(client *http.Client, hashes []string) error {
-	if len(hashes) == 0 {
-		return nil
-	}
-
+func MarkStoriesAsUnread(client *http.Client, hashes ...string) error {
 	// NewsBlur doesn't support batching unread events. So we have to handle them individually
 	for _, hash := range hashes {
 		fmt.Printf("Calling external NewsBlur API: MarkStoryHashAsUnread. Hash: %s\n", hash)
 		_, err := newsblur.ApiMarkStoryHashAsUnread(client, &newsblur.MarkStoryHashAsUnreadInput{
+			StoryHash: hash,
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func MarkStoriesAsStarred(client *http.Client, hashes ...string) error {
+	// NewsBlur doesn't support batching starred events. So we have to handle them individually
+	for _, hash := range hashes {
+		fmt.Printf("Calling external NewsBlur API: MarkStoryHashAsStarred. Hash: %s\n", hash)
+		_, err := newsblur.ApiMarkStoryHashAsStarred(client, &newsblur.MarkStoryHashAsStarredInput{
+			StoryHash: hash,
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func MarkStoriesAsUnstarred(client *http.Client, hashes ...string) error {
+	// NewsBlur doesn't support batching unstarred events. So we have to handle them individually
+	for _, hash := range hashes {
+		fmt.Printf("Calling external NewsBlur API: MarkStoryHashAsUnstarred. Hash: %s\n", hash)
+		_, err := newsblur.ApiMarkStoryHashAsUnstarred(client, &newsblur.MarkStoryHashAsUnstarredInput{
 			StoryHash: hash,
 		})
 		if err != nil {
@@ -202,7 +227,19 @@ func SyncToServer(client *http.Client, syncToActions []models.SyncToAction) erro
 		case models.ActionStoryUnread:
 			// Batching of unread events is not supported by NewsBlur, so just handle individually directly
 			fmt.Printf("Item with hash %s has been marked as unread\n", syncToAction.Id)
-			if err := MarkStoriesAsUnread(client, []string{syncToAction.Id}); err != nil {
+			if err := MarkStoriesAsUnread(client, syncToAction.Id); err != nil {
+				return err
+			}
+		case models.ActionStoryStarred:
+			// Batching of starred events is not supported by NewsBlur, so just handle individually directly
+			fmt.Printf("Item with hash %s has been marked as starred\n", syncToAction.Id)
+			if err := MarkStoriesAsStarred(client, syncToAction.Id); err != nil {
+				return err
+			}
+		case models.ActionStoryUnstarred:
+			// Batching of unstarred events is not supported by NewsBlur, so just handle individually directly
+			fmt.Printf("Item with hash %s has been marked as unstarred\n", syncToAction.Id)
+			if err := MarkStoriesAsUnstarred(client, syncToAction.Id); err != nil {
 				return err
 			}
 		default:
@@ -210,7 +247,7 @@ func SyncToServer(client *http.Client, syncToActions []models.SyncToAction) erro
 		}
 	}
 
-	if err := MarkStoriesAsRead(client, readHashes); err != nil {
+	if err := MarkStoriesAsRead(client, readHashes...); err != nil {
 		return err
 	}
 	fmt.Printf("%d items has been marked as read\n", len(readHashes))

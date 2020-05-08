@@ -68,11 +68,27 @@ func GetChanges(clientConfig models.ClientConfig) ([]models.SyncToAction, error)
 					Id:     hash,
 					Action: models.ActionStoryUnread,
 				})
-			} else {
-				// should never be reached
+			}
+		}
+		if strings.Contains(row, " flags=") {
+			fmt.Printf("Change to flags: %s\n", row)
+			if !strings.Contains(row, "guid=") {
 				if err != nil {
-					return nil, errors.New("unread contains junk: " + row)
+					return nil, errors.New("guid not found: " + row)
 				}
+			}
+			hash := strings.Split(strings.Split(row, "guid='")[1], "'")[0]
+
+			if strings.Contains(row, " flags='s'") {
+				syncToActions = append(syncToActions, models.SyncToAction{
+					Id:     hash,
+					Action: models.ActionStoryStarred,
+				})
+			} else if strings.Contains(row, " flags=''") {
+				syncToActions = append(syncToActions, models.SyncToAction{
+					Id:     hash,
+					Action: models.ActionStoryUnstarred,
+				})
 			}
 		}
 	}
@@ -147,9 +163,14 @@ func GenerateCache(folders []*models.Folder, clientConfig models.ClientConfig) e
 
 			fmt.Printf("Iterating over %d stories in feed %s\n", len(feed.Stories), feed.Title)
 			for _, story := range feed.Stories {
+				var flags string
+				if story.Starred {
+					flags = "s"
+				}
+
 				fmt.Printf("\tAdd story to database: %s\n", story.Title)
 				if err := conn.Exec(
-					"INSERT INTO rss_item (guid, title, author, url, feedurl, pubDate, content, unread) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+					"INSERT INTO rss_item (guid, title, author, url, feedurl, pubDate, content, unread, flags) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
 					story.Hash, // our format is different, newsboat takes the <id> in <entry> if exists
 					story.Title,
 					story.Authors,
@@ -158,6 +179,7 @@ func GenerateCache(folders []*models.Folder, clientConfig models.ClientConfig) e
 					story.Timestamp,
 					story.Content,
 					story.Unread,
+					flags,
 				); err != nil {
 					return err
 				}

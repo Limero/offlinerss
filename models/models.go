@@ -1,8 +1,10 @@
 package models
 
 const (
-	ActionStoryRead   = 1
-	ActionStoryUnread = 2
+	ActionStoryRead      = 1
+	ActionStoryUnread    = 2
+	ActionStoryStarred   = 3
+	ActionStoryUnstarred = 4
 )
 
 type SyncToAction struct {
@@ -33,4 +35,5 @@ type Story struct {
 	Url       string
 	Unread    bool
 	Date      string
+	Starred   bool
 }
