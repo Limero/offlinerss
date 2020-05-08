@@ -1,10 +1,8 @@
 package newsboat
 
 import (
-	"errors"
 	"fmt"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/bvinc/go-sqlite-lite/sqlite3"
@@ -13,86 +11,17 @@ import (
 )
 
 func GetChanges(clientConfig models.ClientConfig) ([]models.SyncToAction, error) {
-	masterCachePath, err := helpers.GetMasterCachePath(clientConfig.Type)
-	if err != nil {
-		return nil, err
-	}
-
-	if _, err := os.Stat(masterCachePath); os.IsNotExist(err) {
-		fmt.Printf("Master cache does not exist at %s, nothing to sync to server\n", masterCachePath)
-		return nil, nil
-	}
-	if _, err := os.Stat(clientConfig.Paths.Cache); os.IsNotExist(err) {
-		fmt.Printf("Cache does not exist at %s, nothing to sync to server\n", clientConfig.Paths.Cache)
-		return nil, nil
-	}
-
-	fmt.Printf("Open master cache %s\n", masterCachePath)
-	conn, err := sqlite3.Open(masterCachePath)
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close()
-	conn.BusyTimeout(5 * time.Second)
-
-	// A one query workaround to get guid to also show up in sqldiff
-	err = conn.Exec("UPDATE rss_item SET guid=''")
-	if err != nil {
-		return nil, err
-	}
-
-	diffs, err := helpers.SqlDiff(masterCachePath, clientConfig.Paths.Cache)
-	if err != nil {
-		return nil, err
-	}
-
-	fmt.Printf("Iterating over %d database differences\n", len(diffs))
-	var syncToActions []models.SyncToAction
-	for _, row := range diffs {
-		if strings.Contains(row, " unread=") {
-			fmt.Printf("Change to unread: %s\n", row)
-			if !strings.Contains(row, "guid=") {
-				if err != nil {
-					return nil, errors.New("guid not found: " + row)
-				}
-			}
-			hash := strings.Split(strings.Split(row, "guid='")[1], "'")[0]
-
-			if strings.Contains(row, " unread=0") {
-				syncToActions = append(syncToActions, models.SyncToAction{
-					Id:     hash,
-					Action: models.ActionStoryRead,
-				})
-			} else if strings.Contains(row, " unread=1") {
-				syncToActions = append(syncToActions, models.SyncToAction{
-					Id:     hash,
-					Action: models.ActionStoryUnread,
-				})
-			}
-		}
-		if strings.Contains(row, " flags=") {
-			fmt.Printf("Change to flags: %s\n", row)
-			if !strings.Contains(row, "guid=") {
-				if err != nil {
-					return nil, errors.New("guid not found: " + row)
-				}
-			}
-			hash := strings.Split(strings.Split(row, "guid='")[1], "'")[0]
-
-			if strings.Contains(row, " flags='s'") {
-				syncToActions = append(syncToActions, models.SyncToAction{
-					Id:     hash,
-					Action: models.ActionStoryStarred,
-				})
-			} else if strings.Contains(row, " flags=''") {
-				syncToActions = append(syncToActions, models.SyncToAction{
-					Id:     hash,
-					Action: models.ActionStoryUnstarred,
-				})
-			}
-		}
-	}
-	return syncToActions, nil
+	return helpers.GetChangesFromSqlite(
+		clientConfig,
+		"rss_item",
+		"guid",
+		"unread",
+		"1",
+		"0",
+		"flags",
+		"'s'",
+		"''",
+	)
 }
 
 func GenerateCache(folders []*models.Folder, clientConfig models.ClientConfig) error {
@@ -161,9 +90,8 @@ func GenerateCache(folders []*models.Folder, clientConfig models.ClientConfig) e
 				return err
 			}
 
-			fmt.Printf("Iterating over %d stories in feed %s\n", len(feed.Stories), feed.Title)
+			fmt.Printf("Adding %d stories in feed %s\n", len(feed.Stories), feed.Title)
 			for _, story := range feed.Stories {
-				fmt.Printf("\tAdd story to database: %s\n", story.Title)
 				if err := conn.Exec(
 					"INSERT INTO rss_item (guid, title, author, url, feedurl, pubDate, content, unread, flags) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
 					story.Hash, // our format is different, newsboat takes the <id> in <entry> if exists
