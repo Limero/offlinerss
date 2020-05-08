@@ -67,11 +67,6 @@ func GetChanges(clientConfig models.ClientConfig) ([]models.SyncToAction, error)
 					Id:     hash,
 					Action: models.ActionStoryUnread,
 				})
-			} else {
-				// should never be reached
-				if err != nil {
-					return nil, errors.New("read contains junk: " + row)
-				}
 			}
 		}
 	}
