@@ -154,8 +154,6 @@ func GenerateCache(folders []*models.Folder, clientConfig models.ClientConfig) e
 		return err
 	}
 
-	var unread int
-
 	fmt.Printf("Iterating over %d folders\n", len(folders))
 	for i, folder := range folders {
 		fmt.Printf("Add folder to database: %s\n", folder.Title)
@@ -189,12 +187,6 @@ func GenerateCache(folders []*models.Folder, clientConfig models.ClientConfig) e
 
 			fmt.Printf("Iterating over %d stories in feed %s\n", len(feed.Stories), feed.Title)
 			for _, story := range feed.Stories {
-				if story.Unread {
-					unread = 9
-				} else {
-					unread = 8
-				}
-
 				fmt.Printf("\tAdd story to database: %s\n", story.Title)
 				if err := conn.Exec(
 					"INSERT INTO articles (articleID, feedID, title, url, html, preview, unread, marked, date, guidHash, lastModified, contentFetched) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -204,7 +196,7 @@ func GenerateCache(folders []*models.Folder, clientConfig models.ClientConfig) e
 					story.Url,
 					story.Content,
 					story.Content,
-					unread,
+					helpers.CondString(story.Unread, "9", "8"),
 					10, // ???
 					story.Timestamp,
 					story.Hash,

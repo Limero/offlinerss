@@ -163,11 +163,6 @@ func GenerateCache(folders []*models.Folder, clientConfig models.ClientConfig) e
 
 			fmt.Printf("Iterating over %d stories in feed %s\n", len(feed.Stories), feed.Title)
 			for _, story := range feed.Stories {
-				var flags string
-				if story.Starred {
-					flags = "s"
-				}
-
 				fmt.Printf("\tAdd story to database: %s\n", story.Title)
 				if err := conn.Exec(
 					"INSERT INTO rss_item (guid, title, author, url, feedurl, pubDate, content, unread, flags) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -179,7 +174,7 @@ func GenerateCache(folders []*models.Folder, clientConfig models.ClientConfig) e
 					story.Timestamp,
 					story.Content,
 					story.Unread,
-					flags,
+					helpers.CondString(story.Starred, "s", ""),
 				); err != nil {
 					return err
 				}

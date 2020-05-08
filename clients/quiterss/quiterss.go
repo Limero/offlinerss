@@ -198,19 +198,18 @@ func GenerateCache(folders []*models.Folder, clientConfig models.ClientConfig) e
 		return err
 	}
 
-	var unread int
-	lastFeedId := 0 // This is required because folder/feed share same table and use ids
+	latestFeedId := 0 // This is required because folder/feed share same table and use ids
 
 	fmt.Printf("Iterating over %d folders\n", len(folders))
 	for _, folder := range folders {
 		fmt.Printf("Add folder to database: %s\n", folder.Title)
 		category := 0 // Category variable separate to lastFeedId to support feeds without a folder
 		if folder.Title != "" {
-			lastFeedId++
-			category = lastFeedId
+			latestFeedId++
+			category = latestFeedId
 			if err := conn.Exec(
 				"INSERT INTO feeds (id, text) VALUES (?, ?)",
-				lastFeedId,
+				latestFeedId,
 				folder.Title,
 			); err != nil {
 				return err
@@ -220,10 +219,10 @@ func GenerateCache(folders []*models.Folder, clientConfig models.ClientConfig) e
 		fmt.Printf("Iterating over %d feeds in '%s' folder\n", len(folder.Feeds), folder.Title)
 		for _, feed := range folder.Feeds {
 			fmt.Printf("Add feed to database: %s\n", feed.Title)
-			lastFeedId++
+			latestFeedId++
 			if err := conn.Exec(
 				"INSERT INTO feeds (id, text, title, xmlUrl, htmlUrl, unread, parentId) VALUES (?, ?, ?, ?, ?, ?, ?)",
-				lastFeedId,
+				latestFeedId,
 				feed.Title,
 				feed.Title,
 				feed.Url,
@@ -236,21 +235,15 @@ func GenerateCache(folders []*models.Folder, clientConfig models.ClientConfig) e
 
 			fmt.Printf("Iterating over %d stories in feed %s\n", len(feed.Stories), feed.Title)
 			for _, story := range feed.Stories {
-				if story.Unread {
-					unread = 0
-				} else {
-					unread = 2
-				}
-
 				fmt.Printf("\tAdd story to database: %s\n", story.Title)
 				if err := conn.Exec(
 					"INSERT INTO news (feedId, guid, description, title, published, read, link_href) VALUES (?, ?, ?, ?, ?, ?, ?)",
-					lastFeedId,
+					latestFeedId,
 					story.Hash,
 					story.Content,
 					story.Title,
 					story.Timestamp,
-					unread,
+					helpers.CondString(story.Unread, "0", "2"),
 					story.Url,
 				); err != nil {
 					return err
