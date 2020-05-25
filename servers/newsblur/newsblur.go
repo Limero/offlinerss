@@ -69,18 +69,12 @@ func GetFolders(client *http.Client) ([]*models.Folder, error) {
 					addFeedToFolder(readerFeedsOutput, feedId, &newFolder)
 				}
 
-				if len(newFolder.Feeds) > 0 {
-					// Only add folder with feeds
-					newFolders = append(newFolders, &newFolder)
-				}
+				newFolders = models.AddFolderToFolders(newFolders, &newFolder)
 			}
 		}
 	}
 
-	if len(noFolder.Feeds) > 0 {
-		newFolders = append(newFolders, &noFolder)
-	}
-	return newFolders, nil
+	return models.AddFolderToFolders(newFolders, &noFolder), nil
 }
 
 func addFeedToFolder(readerFeedsOutput *newsblur.ReaderFeedsOutput, feedId interface{}, newFolder *models.Folder) {
