@@ -69,7 +69,10 @@ func GetFolders(client *http.Client) ([]*models.Folder, error) {
 					addFeedToFolder(readerFeedsOutput, feedId, &newFolder)
 				}
 
-				newFolders = models.AddFolderToFolders(newFolders, &newFolder)
+				// Add folder if it's not empty
+				if len(newFolder.Feeds) > 0 {
+					newFolders = models.AddFolderToFolders(newFolders, &newFolder)
+				}
 			}
 		}
 	}

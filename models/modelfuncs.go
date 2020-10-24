@@ -5,11 +5,6 @@ func AddFolderToFolders(folders []*Folder, newFolder *Folder) (newFolders []*Fol
 		Add a folder to a struct of folders in alphabetized order
 	*/
 
-	if len(newFolder.Feeds) == 0 {
-		// Skip empty folders
-		return folders
-	}
-
 	newFolderAdded := false
 
 	for _, folder := range folders {

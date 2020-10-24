@@ -12,6 +12,7 @@ It generates databases for supported RSS readers that can be used offline. Any c
 
 ## Supported servers (feed aggregators)
 
+* [Miniflux](https://miniflux.app) Apache-2.0
 * [NewsBlur](https://newsblur.com) MIT
 
 ## Supported clients (readers)

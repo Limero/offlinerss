@@ -13,6 +13,7 @@ type SyncToAction struct {
 }
 
 type Folder struct {
+	Id    int
 	Title string
 	Feeds []*Feed
 }
@@ -27,13 +28,13 @@ type Feed struct {
 }
 
 type Story struct {
-	Timestamp string
+	Timestamp string // Example: 1600000000
 	Hash      string
 	Title     string
 	Authors   string
 	Content   string
 	Url       string
 	Unread    bool
-	Date      string
+	Date      string // Example: 2006-01-02 15:04:05
 	Starred   bool
 }
