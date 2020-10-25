@@ -22,7 +22,7 @@ func GetFoldersWithStories(client *miniflux.Client) ([]*models.Folder, error) {
 	var folders []*models.Folder
 
 	entries, err := client.Entries(&miniflux.Filter{
-		Status: "unread",
+		Status: miniflux.EntryStatusUnread,
 	})
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func GetFoldersWithStories(client *miniflux.Client) ([]*models.Folder, error) {
 
 	for _, entry := range entries.Entries {
 		unread := true
-		if entry.Status == "read" {
+		if entry.Status == miniflux.EntryStatusRead {
 			unread = false
 		}
 
@@ -95,6 +95,28 @@ func GetFoldersWithStories(client *miniflux.Client) ([]*models.Folder, error) {
 	return folders, nil
 }
 
+func handleStarred(client *miniflux.Client, syncToAction models.SyncToAction) error {
+	// Because Miniflux only support toggling starred instead of setting it directly,
+	// we have to check its current status
+
+	actionId, err := strconv.ParseInt(syncToAction.Id, 10, 64)
+	if err != nil {
+		return err
+	}
+
+	entry, err := client.Entry(actionId)
+	if err != nil {
+		return err
+	}
+
+	if (entry.Starred && syncToAction.Action == models.ActionStoryUnstarred) ||
+		(!entry.Starred && syncToAction.Action == models.ActionStoryStarred) {
+		return client.ToggleBookmark(actionId)
+	}
+
+	return nil
+}
+
 func SyncToServer(client *miniflux.Client, syncToActions []models.SyncToAction) error {
 	var readIds []int64
 	var unreadIds []int64
@@ -113,21 +135,27 @@ func SyncToServer(client *miniflux.Client, syncToActions []models.SyncToAction) 
 			// Batch unread events so only one request has to be done
 			unreadIds = append(unreadIds, actionId)
 		case models.ActionStoryStarred:
+			if err := handleStarred(client, syncToAction); err != nil {
+				return err
+			}
 		case models.ActionStoryUnstarred:
+			if err := handleStarred(client, syncToAction); err != nil {
+				return err
+			}
 		default:
 			return fmt.Errorf("Unsupported Miniflux syncToAction: %d", syncToAction.Action)
 		}
 	}
 
 	if len(readIds) > 0 {
-		if err := client.UpdateEntries(readIds, "read"); err != nil {
+		if err := client.UpdateEntries(readIds, miniflux.EntryStatusRead); err != nil {
 			return err
 		}
 		fmt.Printf("%d items has been marked as read\n", len(readIds))
 	}
 
 	if len(unreadIds) > 0 {
-		if err := client.UpdateEntries(unreadIds, "unread"); err != nil {
+		if err := client.UpdateEntries(unreadIds, miniflux.EntryStatusUnread); err != nil {
 			return err
 		}
 		fmt.Printf("%d items has been marked as unread\n", len(unreadIds))
