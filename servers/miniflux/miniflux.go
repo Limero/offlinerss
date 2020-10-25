@@ -36,7 +36,7 @@ func GetFoldersWithStories(client *miniflux.Client) ([]*models.Folder, error) {
 
 		story := &models.Story{
 			Timestamp: strconv.FormatInt(entry.Date.Unix(), 10),
-			Hash:      entry.Hash,
+			Hash:      strconv.FormatInt(entry.ID, 10), // Miniflux has "hash" but IDs are used for marking entries
 			Title:     entry.Title,
 			Authors:   entry.Author,
 			Content:   entry.Content,
@@ -96,6 +96,42 @@ func GetFoldersWithStories(client *miniflux.Client) ([]*models.Folder, error) {
 }
 
 func SyncToServer(client *miniflux.Client, syncToActions []models.SyncToAction) error {
-	fmt.Println("----- Sync back to Miniflux is not yet supported.")
+	var readIds []int64
+	var unreadIds []int64
+
+	for _, syncToAction := range syncToActions {
+		actionId, err := strconv.ParseInt(syncToAction.Id, 10, 64)
+		if err != nil {
+			return err
+		}
+
+		switch syncToAction.Action {
+		case models.ActionStoryRead:
+			// Batch read events so only one request has to be done
+			readIds = append(readIds, actionId)
+		case models.ActionStoryUnread:
+			// Batch unread events so only one request has to be done
+			unreadIds = append(unreadIds, actionId)
+		case models.ActionStoryStarred:
+		case models.ActionStoryUnstarred:
+		default:
+			return fmt.Errorf("Unsupported Miniflux syncToAction: %d", syncToAction.Action)
+		}
+	}
+
+	if len(readIds) > 0 {
+		if err := client.UpdateEntries(readIds, "read"); err != nil {
+			return err
+		}
+		fmt.Printf("%d items has been marked as read\n", len(readIds))
+	}
+
+	if len(unreadIds) > 0 {
+		if err := client.UpdateEntries(unreadIds, "unread"); err != nil {
+			return err
+		}
+		fmt.Printf("%d items has been marked as unread\n", len(unreadIds))
+	}
+
 	return nil
 }
