@@ -5,18 +5,23 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	"github.com/limero/offlinerss/models"
 	"github.com/mitchellh/go-homedir"
 )
 
 func getConfig() (*models.Config, error) {
-	configDir, err := os.UserConfigDir()
-	if err != nil {
-		return nil, err
+	configDir := os.Getenv("XDG_CONFIG_HOME")
+	if configDir == "" {
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			return nil, err
+		}
+		configDir = filepath.Join(homeDir, ".config")
 	}
 
-	data, err := ioutil.ReadFile(configDir + "/offlinerss/config.json")
+	data, err := ioutil.ReadFile(filepath.Join(configDir, "offlinerss/config.json"))
 	if err != nil {
 		return nil, err
 	}
