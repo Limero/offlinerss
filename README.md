@@ -26,7 +26,7 @@ It generates databases for supported RSS readers that can be used offline. Any c
 Install OfflineRSS (it will install to `~/go/bin/offlinerss` unless changed)
 
 ```
-go get -u github.com/limero/offlinerss
+go install github.com/limero/offlinerss@latest
 ```
 
 Copy the `exampleconfig.json` file in this repository to `~/.config/offlinerss/config.json` and edit it to match your preferences. You can then run OfflineRSS and it will create a local database for your chosen client(s).
