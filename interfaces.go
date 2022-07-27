@@ -1,6 +1,8 @@
 package main
 
-import "github.com/limero/offlinerss/models"
+import (
+	"github.com/limero/offlinerss/models"
+)
 
 type Client interface {
 	GetChanges() ([]models.SyncToAction, error)
@@ -8,3 +10,10 @@ type Client interface {
 }
 
 type Clients []Client
+
+type Server interface {
+	Name() string
+	Login() error
+	GetFoldersWithStories() ([]*models.Folder, error)
+	SyncToServer(syncToActions []models.SyncToAction) error
+}

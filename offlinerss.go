@@ -9,6 +9,7 @@ import (
 
 	"github.com/limero/offlinerss/client"
 	"github.com/limero/offlinerss/models"
+	"github.com/limero/offlinerss/server"
 	"github.com/mitchellh/go-homedir"
 )
 
@@ -71,7 +72,15 @@ func run() error {
 		return err
 	}
 
-	folders, err := DoSync(config.Server, syncToActions)
+	var s Server
+	switch config.Server.Type {
+	case "miniflux":
+		s = server.NewMiniflux(config.Server)
+	case "newsblur":
+		s = server.NewNewsblur(config.Server)
+	}
+
+	folders, err := SyncServer(s, syncToActions)
 	if err != nil {
 		return err
 	}
