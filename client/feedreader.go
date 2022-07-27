@@ -1,4 +1,4 @@
-package feedreader
+package client
 
 import (
 	"fmt"
@@ -10,9 +10,19 @@ import (
 	"github.com/limero/offlinerss/models"
 )
 
-func GetChanges(clientConfig models.ClientConfig) ([]models.SyncToAction, error) {
+type Feedreader struct {
+	config models.ClientConfig
+}
+
+func NewFeedreader(config models.ClientConfig) *Feedreader {
+	return &Feedreader{
+		config: config,
+	}
+}
+
+func (c Feedreader) GetChanges() ([]models.SyncToAction, error) {
 	return helpers.GetChangesFromSqlite(
-		clientConfig,
+		c.config,
 		"articles",
 		"guidHash",
 		"unread",
@@ -24,7 +34,7 @@ func GetChanges(clientConfig models.ClientConfig) ([]models.SyncToAction, error)
 	)
 }
 
-func GenerateCache(folders []*models.Folder, clientConfig models.ClientConfig) error {
+func (c Feedreader) GenerateCache(folders []*models.Folder) error {
 	tmpCachePath := fmt.Sprintf("%s/cache-%d.db", os.TempDir(), time.Now().UnixNano())
 	defer os.Remove(tmpCachePath)
 
@@ -159,11 +169,11 @@ func GenerateCache(folders []*models.Folder, clientConfig models.ClientConfig) e
 		}
 	}
 
-	masterCachePath, err := helpers.GetMasterCachePath(clientConfig.Type)
+	masterCachePath, err := helpers.GetMasterCachePath(c.config.Type)
 	if err != nil {
 		return err
 	}
-	if err := helpers.CopyFile(tmpCachePath, masterCachePath, clientConfig.Paths.Cache); err != nil {
+	if err := helpers.CopyFile(tmpCachePath, masterCachePath, c.config.Paths.Cache); err != nil {
 		return err
 	}
 

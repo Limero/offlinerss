@@ -1,4 +1,4 @@
-package newsboat
+package client
 
 import (
 	"fmt"
@@ -10,9 +10,19 @@ import (
 	"github.com/limero/offlinerss/models"
 )
 
-func GetChanges(clientConfig models.ClientConfig) ([]models.SyncToAction, error) {
+type Newsboat struct {
+	config models.ClientConfig
+}
+
+func NewNewsboat(config models.ClientConfig) *Newsboat {
+	return &Newsboat{
+		config: config,
+	}
+}
+
+func (c Newsboat) GetChanges() ([]models.SyncToAction, error) {
 	return helpers.GetChangesFromSqlite(
-		clientConfig,
+		c.config,
 		"rss_item",
 		"guid",
 		"unread",
@@ -24,7 +34,7 @@ func GetChanges(clientConfig models.ClientConfig) ([]models.SyncToAction, error)
 	)
 }
 
-func GenerateCache(folders []*models.Folder, clientConfig models.ClientConfig) error {
+func (c Newsboat) GenerateCache(folders []*models.Folder) error {
 	tmpCachePath := fmt.Sprintf("%s/cache-%d.db", os.TempDir(), time.Now().UnixNano())
 	defer os.Remove(tmpCachePath)
 
@@ -110,15 +120,15 @@ func GenerateCache(folders []*models.Folder, clientConfig models.ClientConfig) e
 		}
 	}
 
-	masterCachePath, err := helpers.GetMasterCachePath(clientConfig.Type)
+	masterCachePath, err := helpers.GetMasterCachePath(c.config.Type)
 	if err != nil {
 		return err
 	}
-	if err := helpers.CopyFile(tmpCachePath, masterCachePath, clientConfig.Paths.Cache); err != nil {
+	if err := helpers.CopyFile(tmpCachePath, masterCachePath, c.config.Paths.Cache); err != nil {
 		return err
 	}
 
-	if err := helpers.WriteFile(newsboatUrls, clientConfig.Paths.Urls); err != nil {
+	if err := helpers.WriteFile(newsboatUrls, c.config.Paths.Urls); err != nil {
 		return err
 	}
 

@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/limero/offlinerss/client"
 	"github.com/limero/offlinerss/models"
 	"github.com/mitchellh/go-homedir"
 )
@@ -53,7 +54,19 @@ func run() error {
 		return err
 	}
 
-	syncToActions, err := GetSyncToActions(config.Clients)
+	var clients Clients
+	for _, clientConfig := range config.Clients {
+		switch clientConfig.Type {
+		case "feedreader":
+			clients = append(clients, client.NewFeedreader(clientConfig))
+		case "newsboat":
+			clients = append(clients, client.NewNewsboat(clientConfig))
+		case "quiterss":
+			clients = append(clients, client.NewQuiteRSS(clientConfig))
+		}
+	}
+
+	syncToActions, err := clients.GetSyncToActions()
 	if err != nil {
 		return err
 	}
@@ -63,7 +76,7 @@ func run() error {
 		return err
 	}
 
-	if err := GenerateDatabases(config.Clients, folders); err != nil {
+	if err := clients.GenerateDatabases(folders); err != nil {
 		return err
 	}
 
