@@ -12,9 +12,8 @@ type ServerConfig struct {
 }
 
 type ClientConfig struct {
-	Type    string `json:"type"`
-	Enabled bool   `json:"enabled"`
-	Paths   Paths  `json:"paths"`
+	Type  string `json:"type"`
+	Paths Paths  `json:"paths"`
 }
 
 type Config struct {

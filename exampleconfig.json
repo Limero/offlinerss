@@ -7,14 +7,12 @@
     "clients": [
         {
             "type": "feedreader",
-            "enabled": true,
             "paths": {
               "cache": "~/.local/share/offlinerss/feedreader/feedreader-7.db"
             }
         },
         {
             "type": "newsboat",
-            "enabled": true,
             "paths": {
               "cache": "~/.local/share/offlinerss/newsboat/cache.db",
               "urls": "~/.local/share/offlinerss/newsboat/urls"
@@ -22,7 +20,6 @@
         },
         {
             "type": "quiterss",
-            "enabled": true,
             "paths": {
               "cache": "~/.local/share/offlinerss/quiterss/feeds.db"
             }
