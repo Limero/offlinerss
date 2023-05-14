@@ -91,7 +91,7 @@ func (c Newsboat) AddToCache(folders []*models.Folder) error {
 
 	masterCachePath := helpers.GetMasterCachePath(c.config.Type)
 
-	if err := helpers.CopyFile(masterCachePath, tmpCachePath, c.config.Paths.Cache); err != nil {
+	if err := helpers.CopyFile(masterCachePath, tmpCachePath); err != nil {
 		return err
 	}
 
