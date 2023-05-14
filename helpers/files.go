@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -11,7 +10,7 @@ func CopyFile(source string, destinations ...string) error {
 	/*
 		This will copy a file from source to all destinations
 	*/
-	data, err := ioutil.ReadFile(source)
+	data, err := os.ReadFile(source)
 	if err != nil {
 		return err
 	}
@@ -22,7 +21,7 @@ func CopyFile(source string, destinations ...string) error {
 		}
 
 		// Make a copy of the file
-		if err := ioutil.WriteFile(destination, data, 0644); err != nil {
+		if err := os.WriteFile(destination, data, 0644); err != nil {
 			return err
 		}
 		fmt.Printf("Copied file %s to %s\n", source, destination)

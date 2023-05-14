@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -24,7 +23,7 @@ func getConfig() (*models.Config, error) {
 		configDir = filepath.Join(homeDir, ".config")
 	}
 
-	data, err := ioutil.ReadFile(filepath.Join(configDir, "offlinerss/config.json"))
+	data, err := os.ReadFile(filepath.Join(configDir, "offlinerss/config.json"))
 	if err != nil {
 		return nil, err
 	}
