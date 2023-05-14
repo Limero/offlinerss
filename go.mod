@@ -5,8 +5,9 @@ go 1.18
 require (
 	github.com/bvinc/go-sqlite-lite v0.6.1
 	github.com/limero/go-newsblur v0.0.0-20210107204044-9310509d25a0
+	github.com/limero/go-sqldiff v0.0.0-20230514103122-6a74d00341ce
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.2
 	miniflux.app v0.0.0-20220724044632-45a9fd5af60e
 )
 
