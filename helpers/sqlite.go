@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/limero/go-sqldiff"
 	"github.com/limero/offlinerss/models"
@@ -33,20 +34,27 @@ func GetChangesFromSqlite(
 		return nil, nil
 	}
 
+	// Make copy of master cache to use for the sqldiff hack
+	tmpCachePath := fmt.Sprintf("%s/cache-%d.db", os.TempDir(), time.Now().UnixNano())
+	defer os.Remove(tmpCachePath)
+	if err := CopyFile(masterCachePath, tmpCachePath); err != nil {
+		return nil, err
+	}
+
 	fmt.Printf("Open master cache %s\n", masterCachePath)
-	db, err := sql.Open("sqlite3", masterCachePath)
+	db, err := sql.Open("sqlite3", tmpCachePath)
 	if err != nil {
 		return nil, err
 	}
 	defer db.Close()
 
 	// A one query workaround to get id to also show up in sqldiff
-	if _, err = db.Exec("UPDATE " + table + " SET " + idName + "=''"); err != nil {
+	if _, err = db.Exec("UPDATE " + table + " SET " + idName + "=NULL"); err != nil {
 		return nil, err
 	}
 
 	fmt.Printf("Comparing database %q with %q\n", masterCachePath, clientConfig.Paths.Cache)
-	diffs, err := sqldiff.Compare(masterCachePath, clientConfig.Paths.Cache)
+	diffs, err := sqldiff.Compare(tmpCachePath, clientConfig.Paths.Cache)
 	if err != nil {
 		return nil, err
 	}

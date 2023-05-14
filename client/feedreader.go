@@ -128,6 +128,11 @@ func (c Feedreader) CreateNewCache() error {
 }
 
 func (c Feedreader) AddToCache(folders []*models.Folder) error {
+	// TODO: Remove this once db has been confirmed idempotent, like the Newsboat client
+	if err := c.CreateNewCache(); err != nil {
+		return err
+	}
+
 	tmpCachePath := fmt.Sprintf("%s/cache-%d.db", os.TempDir(), time.Now().UnixNano())
 	defer os.Remove(tmpCachePath)
 

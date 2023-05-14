@@ -57,7 +57,6 @@ ln -sf ~/.local/share/offlinerss/quiterss/feeds.db ~/.local/share/QuiteRss/Quite
 ## Limitations
 
 * Only one server can be used at a time. However, all clients can be enabled simultaneously.
-* No support for delta updates. Databases are built from scratch each sync.
 * Clients can't be synced with each other, without syncing with the server first.
 
 ## License

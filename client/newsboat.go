@@ -50,6 +50,7 @@ func (c Newsboat) CreateNewCache() error {
 	defer db.Close()
 
 	fmt.Println("Creating tables in newsboat new temporary cache")
+	// NOT NULL constraint removed from guid so id hack in GetChangesFromSqlite works
 	if _, err = db.Exec(`
 		CREATE TABLE "rss_feed" (
 			"rssurl"	VARCHAR(1024) NOT NULL,
@@ -62,7 +63,7 @@ func (c Newsboat) CreateNewCache() error {
 		);
 		CREATE TABLE rss_item (
 			id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-			guid VARCHAR(64) NOT NULL,
+			guid VARCHAR(64),
 			title VARCHAR(1024) NOT NULL,
 			author VARCHAR(1024) NOT NULL,
 			url VARCHAR(1024) NOT NULL,
@@ -75,7 +76,8 @@ func (c Newsboat) CreateNewCache() error {
 			enqueued INTEGER(1) NOT NULL DEFAULT 0,
 			flags VARCHAR(52),
 			deleted INTEGER(1) NOT NULL DEFAULT 0,
-			base VARCHAR(128) NOT NULL DEFAULT ""
+			base VARCHAR(128) NOT NULL DEFAULT "",
+			UNIQUE("guid")
 		)`); err != nil {
 		return err
 	}
@@ -105,22 +107,27 @@ func (c Newsboat) AddToCache(folders []*models.Folder) error {
 	}
 	defer db.Close()
 
-	newsboatUrls := ""
+	// Mark all items as read, as we might miss read events and never mark them otherwise
+	if _, err = db.Exec("UPDATE rss_item SET unread = false"); err != nil {
+		return err
+	}
+
+	var newsboatUrls []string
 
 	fmt.Printf("Iterating over %d folders\n", len(folders))
 	for _, folder := range folders {
 		fmt.Printf("Iterating over %d feeds in '%s' folder\n", len(folder.Feeds), folder.Title)
 		for _, feed := range folder.Feeds {
 			// Newsboat stores urls in a separate file
-			newsboatUrls += fmt.Sprintf("%d", feed.Id) // id instead of url to disable manual refresh
+			u := fmt.Sprintf("%d", feed.Id) // id instead of url to disable manual refresh
 			if folder.Title != "" {
-				newsboatUrls += " " + "\"" + folder.Title + "\""
+				u += " " + "\"" + folder.Title + "\""
 			}
-			newsboatUrls += "\n"
+			newsboatUrls = append(newsboatUrls, u)
 
 			fmt.Printf("Add feed to database: %s\n", feed.Title)
 			if _, err = db.Exec(
-				"INSERT INTO rss_feed (rssurl, url, title) VALUES (?, ?, ?)",
+				"INSERT OR REPLACE INTO rss_feed (rssurl, url, title) VALUES (?, ?, ?)",
 				feed.Id, // id instead of url to disable manual refresh
 				feed.Website,
 				feed.Title,
@@ -131,7 +138,7 @@ func (c Newsboat) AddToCache(folders []*models.Folder) error {
 			fmt.Printf("Adding %d stories in feed %s\n", len(feed.Stories), feed.Title)
 			for _, story := range feed.Stories {
 				if _, err = db.Exec(
-					"INSERT INTO rss_item (guid, title, author, url, feedurl, pubDate, content, unread, flags) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+					"INSERT OR REPLACE INTO rss_item (guid, title, author, url, feedurl, pubDate, content, unread, flags) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
 					story.Hash, // our format is different, newsboat takes the <id> in <entry> if exists
 					story.Title,
 					story.Authors,
@@ -152,7 +159,7 @@ func (c Newsboat) AddToCache(folders []*models.Folder) error {
 		return err
 	}
 
-	if err := helpers.WriteFile(newsboatUrls, c.config.Paths.Urls); err != nil {
+	if err := helpers.MergeToFile(newsboatUrls, c.config.Paths.Urls); err != nil {
 		return err
 	}
 
