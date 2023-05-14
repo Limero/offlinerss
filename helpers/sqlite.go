@@ -22,16 +22,13 @@ func GetChangesFromSqlite(
 	starredValueTrue string,
 	starredValueFalse string,
 ) ([]models.SyncToAction, error) {
-	masterCachePath, err := GetMasterCachePath(clientConfig.Type)
-	if err != nil {
-		return nil, err
-	}
+	masterCachePath := GetMasterCachePath(clientConfig.Type)
 
-	if _, err = os.Stat(masterCachePath); os.IsNotExist(err) {
+	if _, err := os.Stat(masterCachePath); os.IsNotExist(err) {
 		fmt.Printf("Master cache does not exist at %s, nothing to sync to server\n", masterCachePath)
 		return nil, nil
 	}
-	if _, err = os.Stat(clientConfig.Paths.Cache); os.IsNotExist(err) {
+	if _, err := os.Stat(clientConfig.Paths.Cache); os.IsNotExist(err) {
 		fmt.Printf("Cache does not exist at %s, nothing to sync to server\n", clientConfig.Paths.Cache)
 		return nil, nil
 	}

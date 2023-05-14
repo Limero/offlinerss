@@ -76,10 +76,8 @@ func (c Newsboat) CreateNewCache() error {
 		return err
 	}
 
-	masterCachePath, err := helpers.GetMasterCachePath(c.config.Type)
-	if err != nil {
-		return err
-	}
+	masterCachePath := helpers.GetMasterCachePath(c.config.Type)
+
 	if err := helpers.CopyFile(tmpCachePath, masterCachePath, c.config.Paths.Cache); err != nil {
 		return err
 	}
@@ -91,12 +89,9 @@ func (c Newsboat) AddToCache(folders []*models.Folder) error {
 	tmpCachePath := fmt.Sprintf("%s/cache-%d.db", os.TempDir(), time.Now().UnixNano())
 	defer os.Remove(tmpCachePath)
 
-	masterCachePath, err := helpers.GetMasterCachePath(c.config.Type)
-	if err != nil {
-		return err
-	}
+	masterCachePath := helpers.GetMasterCachePath(c.config.Type)
 
-	if err = helpers.CopyFile(masterCachePath, tmpCachePath, c.config.Paths.Cache); err != nil {
+	if err := helpers.CopyFile(masterCachePath, tmpCachePath, c.config.Paths.Cache); err != nil {
 		return err
 	}
 

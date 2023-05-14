@@ -4,11 +4,11 @@ import (
 	"os"
 )
 
-func GetMasterCachePath(clientName string) (string, error) {
+func GetMasterCachePath(clientName string) string {
 	cacheDir, err := os.UserCacheDir()
 	if err != nil {
-		return "", err
+		panic(err)
 	}
 
-	return cacheDir + "/offlinerss/" + clientName + "/mastercache.db", nil
+	return cacheDir + "/offlinerss/" + clientName + "/mastercache.db"
 }
