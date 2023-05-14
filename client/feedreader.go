@@ -34,7 +34,7 @@ func (c Feedreader) GetChanges() ([]models.SyncToAction, error) {
 	)
 }
 
-func (c Feedreader) GenerateCache(folders []*models.Folder) error {
+func (c Feedreader) CreateNewCache() error {
 	tmpCachePath := fmt.Sprintf("%s/cache-%d.db", os.TempDir(), time.Now().UnixNano())
 	defer os.Remove(tmpCachePath)
 
@@ -114,6 +114,36 @@ func (c Feedreader) GenerateCache(folders []*models.Folder) error {
 		return err
 	}
 
+	masterCachePath, err := helpers.GetMasterCachePath(c.config.Type)
+	if err != nil {
+		return err
+	}
+	if err := helpers.CopyFile(tmpCachePath, masterCachePath, c.config.Paths.Cache); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c Feedreader) AddToCache(folders []*models.Folder) error {
+	tmpCachePath := fmt.Sprintf("%s/cache-%d.db", os.TempDir(), time.Now().UnixNano())
+	defer os.Remove(tmpCachePath)
+
+	masterCachePath, err := helpers.GetMasterCachePath(c.config.Type)
+	if err != nil {
+		return err
+	}
+
+	if err = helpers.CopyFile(masterCachePath, tmpCachePath, c.config.Paths.Cache); err != nil {
+		return err
+	}
+
+	db, err := sql.Open("sqlite3", tmpCachePath)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
 	fmt.Printf("Iterating over %d folders\n", len(folders))
 	for i, folder := range folders {
 		fmt.Printf("Add folder to database: %s\n", folder.Title)
@@ -168,10 +198,6 @@ func (c Feedreader) GenerateCache(folders []*models.Folder) error {
 		}
 	}
 
-	masterCachePath, err := helpers.GetMasterCachePath(c.config.Type)
-	if err != nil {
-		return err
-	}
 	if err := helpers.CopyFile(tmpCachePath, masterCachePath, c.config.Paths.Cache); err != nil {
 		return err
 	}

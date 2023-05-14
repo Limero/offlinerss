@@ -25,10 +25,12 @@ func (clients Clients) GetSyncToActions() ([]models.SyncToAction, error) {
 	return syncToActions, nil
 }
 
-func (clients Clients) GenerateDatabases(folders []*models.Folder) error {
-	// Generate new client databases
+func (clients Clients) Sync(folders []*models.Folder) error {
 	for _, client := range clients {
-		if err := client.GenerateCache(folders); err != nil {
+		if err := client.CreateNewCache(); err != nil {
+			return err
+		}
+		if err := client.AddToCache(folders); err != nil {
 			return err
 		}
 	}

@@ -34,7 +34,7 @@ func (c Newsboat) GetChanges() ([]models.SyncToAction, error) {
 	)
 }
 
-func (c Newsboat) GenerateCache(folders []*models.Folder) error {
+func (c Newsboat) CreateNewCache() error {
 	tmpCachePath := fmt.Sprintf("%s/cache-%d.db", os.TempDir(), time.Now().UnixNano())
 	defer os.Remove(tmpCachePath)
 
@@ -75,6 +75,36 @@ func (c Newsboat) GenerateCache(folders []*models.Folder) error {
 		)`); err != nil {
 		return err
 	}
+
+	masterCachePath, err := helpers.GetMasterCachePath(c.config.Type)
+	if err != nil {
+		return err
+	}
+	if err := helpers.CopyFile(tmpCachePath, masterCachePath, c.config.Paths.Cache); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c Newsboat) AddToCache(folders []*models.Folder) error {
+	tmpCachePath := fmt.Sprintf("%s/cache-%d.db", os.TempDir(), time.Now().UnixNano())
+	defer os.Remove(tmpCachePath)
+
+	masterCachePath, err := helpers.GetMasterCachePath(c.config.Type)
+	if err != nil {
+		return err
+	}
+
+	if err = helpers.CopyFile(masterCachePath, tmpCachePath, c.config.Paths.Cache); err != nil {
+		return err
+	}
+
+	db, err := sql.Open("sqlite3", tmpCachePath)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
 
 	newsboatUrls := ""
 
@@ -119,10 +149,6 @@ func (c Newsboat) GenerateCache(folders []*models.Folder) error {
 		}
 	}
 
-	masterCachePath, err := helpers.GetMasterCachePath(c.config.Type)
-	if err != nil {
-		return err
-	}
 	if err := helpers.CopyFile(tmpCachePath, masterCachePath, c.config.Paths.Cache); err != nil {
 		return err
 	}

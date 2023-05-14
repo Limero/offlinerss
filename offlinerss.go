@@ -85,7 +85,7 @@ func run() error {
 		return err
 	}
 
-	if err := clients.GenerateDatabases(folders); err != nil {
+	if err := clients.Sync(folders); err != nil {
 		return err
 	}
 

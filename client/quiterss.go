@@ -34,7 +34,7 @@ func (c QuiteRSS) GetChanges() ([]models.SyncToAction, error) {
 	)
 }
 
-func (c QuiteRSS) GenerateCache(folders []*models.Folder) error {
+func (c QuiteRSS) CreateNewCache() error {
 	tmpCachePath := fmt.Sprintf("%s/cache-%d.db", os.TempDir(), time.Now().UnixNano())
 	defer os.Remove(tmpCachePath)
 
@@ -158,6 +158,36 @@ func (c QuiteRSS) GenerateCache(folders []*models.Folder) error {
 		return err
 	}
 
+	masterCachePath, err := helpers.GetMasterCachePath(c.config.Type)
+	if err != nil {
+		return err
+	}
+	if err := helpers.CopyFile(tmpCachePath, masterCachePath, c.config.Paths.Cache); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c QuiteRSS) AddToCache(folders []*models.Folder) error {
+	tmpCachePath := fmt.Sprintf("%s/cache-%d.db", os.TempDir(), time.Now().UnixNano())
+	defer os.Remove(tmpCachePath)
+
+	masterCachePath, err := helpers.GetMasterCachePath(c.config.Type)
+	if err != nil {
+		return err
+	}
+
+	if err = helpers.CopyFile(masterCachePath, tmpCachePath, c.config.Paths.Cache); err != nil {
+		return err
+	}
+
+	db, err := sql.Open("sqlite3", tmpCachePath)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
 	latestFeedId := 0 // This is required because folder/feed share same table and use ids
 
 	fmt.Printf("Iterating over %d folders\n", len(folders))
@@ -212,10 +242,6 @@ func (c QuiteRSS) GenerateCache(folders []*models.Folder) error {
 		}
 	}
 
-	masterCachePath, err := helpers.GetMasterCachePath(c.config.Type)
-	if err != nil {
-		return err
-	}
 	if err := helpers.CopyFile(tmpCachePath, masterCachePath, c.config.Paths.Cache); err != nil {
 		return err
 	}
