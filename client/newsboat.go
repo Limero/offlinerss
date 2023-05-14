@@ -20,6 +20,10 @@ func NewNewsboat(config models.ClientConfig) *Newsboat {
 	}
 }
 
+func (c Newsboat) Name() string {
+	return c.config.Type
+}
+
 func (c Newsboat) GetChanges() ([]models.SyncToAction, error) {
 	return helpers.GetChangesFromSqlite(
 		c.config,

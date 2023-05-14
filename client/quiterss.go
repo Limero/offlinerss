@@ -20,6 +20,10 @@ func NewQuiteRSS(config models.ClientConfig) *QuiteRSS {
 	}
 }
 
+func (c QuiteRSS) Name() string {
+	return c.config.Type
+}
+
 func (c QuiteRSS) GetChanges() ([]models.SyncToAction, error) {
 	return helpers.GetChangesFromSqlite(
 		c.config,

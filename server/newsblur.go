@@ -23,7 +23,7 @@ func NewNewsblur(config models.ServerConfig) *Newsblur {
 }
 
 func (s *Newsblur) Name() string {
-	return "Newsblur"
+	return s.config.Type
 }
 
 func (s *Newsblur) Login() error {

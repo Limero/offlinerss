@@ -20,7 +20,7 @@ func NewMiniflux(config models.ServerConfig) *Miniflux {
 }
 
 func (s *Miniflux) Name() string {
-	return "Miniflux"
+	return s.config.Type
 }
 
 func (s *Miniflux) Login() error {

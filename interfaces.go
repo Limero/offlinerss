@@ -5,6 +5,7 @@ import (
 )
 
 type Client interface {
+	Name() string
 	GetChanges() ([]models.SyncToAction, error)
 	CreateNewCache() error
 	AddToCache(folders []*models.Folder) error

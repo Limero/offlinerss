@@ -20,6 +20,10 @@ func NewFeedreader(config models.ClientConfig) *Feedreader {
 	}
 }
 
+func (c Feedreader) Name() string {
+	return c.config.Type
+}
+
 func (c Feedreader) GetChanges() ([]models.SyncToAction, error) {
 	return helpers.GetChangesFromSqlite(
 		c.config,
