@@ -1,11 +1,11 @@
 package client
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 	"time"
 
-	"github.com/bvinc/go-sqlite-lite/sqlite3"
 	"github.com/limero/offlinerss/helpers"
 	"github.com/limero/offlinerss/models"
 )
@@ -39,16 +39,15 @@ func (c Feedreader) GenerateCache(folders []*models.Folder) error {
 	defer os.Remove(tmpCachePath)
 
 	fmt.Println("Creating feedreader temporary cache")
-	conn, err := sqlite3.Open(tmpCachePath)
+	db, err := sql.Open("sqlite3", tmpCachePath)
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
-	conn.BusyTimeout(5 * time.Second)
+	defer db.Close()
 
 	fmt.Println("Creating tables in feedreader new temporary cache")
 
-	if err := conn.Exec(`
+	if _, err = db.Exec(`
 		CREATE TABLE "CachedActions"
 			(
 				"action" INTEGER NOT NULL,
@@ -121,7 +120,7 @@ func (c Feedreader) GenerateCache(folders []*models.Folder) error {
 		category := 0 // 0 = Uncategorized
 		if folder.Title != "" {
 			category = i + 1
-			if err := conn.Exec(
+			if _, err = db.Exec(
 				"INSERT INTO categories (categorieID, title, Parent, Level) VALUES (?, ?, ?, ?)",
 				category,
 				folder.Title,
@@ -135,7 +134,7 @@ func (c Feedreader) GenerateCache(folders []*models.Folder) error {
 		fmt.Printf("Iterating over %d feeds in '%s' folder\n", len(folder.Feeds), folder.Title)
 		for _, feed := range folder.Feeds {
 			fmt.Printf("Add feed to database: %s\n", feed.Title)
-			if err := conn.Exec(
+			if _, err = db.Exec(
 				"INSERT INTO feeds (feed_id, name, url, category_id, xmlURL) VALUES (?, ?, ?, ?, ?)",
 				feed.Id,
 				feed.Title,
@@ -148,7 +147,7 @@ func (c Feedreader) GenerateCache(folders []*models.Folder) error {
 
 			fmt.Printf("Adding %d stories in feed %s\n", len(feed.Stories), feed.Title)
 			for _, story := range feed.Stories {
-				if err := conn.Exec(
+				if _, err = db.Exec(
 					"INSERT INTO articles (articleID, feedID, title, url, html, preview, unread, marked, date, guidHash, lastModified, contentFetched) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 					story.Hash,
 					feed.Id,

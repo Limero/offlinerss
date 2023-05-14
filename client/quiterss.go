@@ -1,11 +1,11 @@
 package client
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 	"time"
 
-	"github.com/bvinc/go-sqlite-lite/sqlite3"
 	"github.com/limero/offlinerss/helpers"
 	"github.com/limero/offlinerss/models"
 )
@@ -39,16 +39,15 @@ func (c QuiteRSS) GenerateCache(folders []*models.Folder) error {
 	defer os.Remove(tmpCachePath)
 
 	fmt.Println("Creating QuiteRSS temporary cache")
-	conn, err := sqlite3.Open(tmpCachePath)
+	db, err := sql.Open("sqlite3", tmpCachePath)
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
-	conn.BusyTimeout(5 * time.Second)
+	defer db.Close()
 
 	fmt.Println("Creating tables in QuiteRSS new temporary cache")
 
-	if err := conn.Exec(`
+	if _, err = db.Exec(`
 		CREATE TABLE feeds
 			(
 				id integer primary key,
@@ -168,7 +167,7 @@ func (c QuiteRSS) GenerateCache(folders []*models.Folder) error {
 		if folder.Title != "" {
 			latestFeedId++
 			category = latestFeedId
-			if err := conn.Exec(
+			if _, err = db.Exec(
 				"INSERT INTO feeds (id, text) VALUES (?, ?)",
 				latestFeedId,
 				folder.Title,
@@ -181,7 +180,7 @@ func (c QuiteRSS) GenerateCache(folders []*models.Folder) error {
 		for _, feed := range folder.Feeds {
 			fmt.Printf("Add feed to database: %s\n", feed.Title)
 			latestFeedId++
-			if err := conn.Exec(
+			if _, err = db.Exec(
 				"INSERT INTO feeds (id, text, title, xmlUrl, htmlUrl, unread, parentId) VALUES (?, ?, ?, ?, ?, ?, ?)",
 				latestFeedId,
 				feed.Title,
@@ -196,7 +195,7 @@ func (c QuiteRSS) GenerateCache(folders []*models.Folder) error {
 
 			fmt.Printf("Adding %d stories in feed %s\n", len(feed.Stories), feed.Title)
 			for _, story := range feed.Stories {
-				if err := conn.Exec(
+				if _, err = db.Exec(
 					"INSERT INTO news (feedId, guid, description, title, published, read, starred, link_href) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
 					latestFeedId,
 					story.Hash,

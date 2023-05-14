@@ -10,6 +10,7 @@ import (
 	"github.com/limero/offlinerss/client"
 	"github.com/limero/offlinerss/models"
 	"github.com/limero/offlinerss/server"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/mitchellh/go-homedir"
 )
 

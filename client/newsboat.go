@@ -1,11 +1,11 @@
 package client
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 	"time"
 
-	"github.com/bvinc/go-sqlite-lite/sqlite3"
 	"github.com/limero/offlinerss/helpers"
 	"github.com/limero/offlinerss/models"
 )
@@ -39,15 +39,14 @@ func (c Newsboat) GenerateCache(folders []*models.Folder) error {
 	defer os.Remove(tmpCachePath)
 
 	fmt.Println("Creating newsboat temporary cache")
-	conn, err := sqlite3.Open(tmpCachePath)
+	db, err := sql.Open("sqlite3", tmpCachePath)
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
-	conn.BusyTimeout(5 * time.Second)
+	defer db.Close()
 
 	fmt.Println("Creating tables in newsboat new temporary cache")
-	if err := conn.Exec(`
+	if _, err = db.Exec(`
 		CREATE TABLE "rss_feed" (
 			"rssurl"	VARCHAR(1024) NOT NULL,
 			"url"	VARCHAR(1024) NOT NULL,
@@ -91,7 +90,7 @@ func (c Newsboat) GenerateCache(folders []*models.Folder) error {
 			newsboatUrls += "\n"
 
 			fmt.Printf("Add feed to database: %s\n", feed.Title)
-			if err := conn.Exec(
+			if _, err = db.Exec(
 				"INSERT INTO rss_feed (rssurl, url, title) VALUES (?, ?, ?)",
 				feed.Id, // id instead of url to disable manual refresh
 				feed.Website,
@@ -102,7 +101,7 @@ func (c Newsboat) GenerateCache(folders []*models.Folder) error {
 
 			fmt.Printf("Adding %d stories in feed %s\n", len(feed.Stories), feed.Title)
 			for _, story := range feed.Stories {
-				if err := conn.Exec(
+				if _, err = db.Exec(
 					"INSERT INTO rss_item (guid, title, author, url, feedurl, pubDate, content, unread, flags) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
 					story.Hash, // our format is different, newsboat takes the <id> in <entry> if exists
 					story.Title,

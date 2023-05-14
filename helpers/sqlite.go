@@ -1,13 +1,12 @@
 package helpers
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
-	"github.com/bvinc/go-sqlite-lite/sqlite3"
 	"github.com/limero/go-sqldiff"
 	"github.com/limero/offlinerss/models"
 )
@@ -28,26 +27,24 @@ func GetChangesFromSqlite(
 		return nil, err
 	}
 
-	if _, err := os.Stat(masterCachePath); os.IsNotExist(err) {
+	if _, err = os.Stat(masterCachePath); os.IsNotExist(err) {
 		fmt.Printf("Master cache does not exist at %s, nothing to sync to server\n", masterCachePath)
 		return nil, nil
 	}
-	if _, err := os.Stat(clientConfig.Paths.Cache); os.IsNotExist(err) {
+	if _, err = os.Stat(clientConfig.Paths.Cache); os.IsNotExist(err) {
 		fmt.Printf("Cache does not exist at %s, nothing to sync to server\n", clientConfig.Paths.Cache)
 		return nil, nil
 	}
 
 	fmt.Printf("Open master cache %s\n", masterCachePath)
-	conn, err := sqlite3.Open(masterCachePath)
+	db, err := sql.Open("sqlite3", masterCachePath)
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Close()
-	conn.BusyTimeout(5 * time.Second)
+	defer db.Close()
 
 	// A one query workaround to get id to also show up in sqldiff
-	err = conn.Exec("UPDATE " + table + " SET " + idName + "=''")
-	if err != nil {
+	if _, err = db.Exec("UPDATE " + table + " SET " + idName + "=''"); err != nil {
 		return nil, err
 	}
 
