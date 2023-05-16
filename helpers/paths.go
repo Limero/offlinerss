@@ -1,7 +1,9 @@
 package helpers
 
 import (
+	"fmt"
 	"os"
+	"time"
 )
 
 func GetMasterCachePath(clientName string) string {
@@ -11,4 +13,8 @@ func GetMasterCachePath(clientName string) string {
 	}
 
 	return cacheDir + "/offlinerss/" + clientName + "/mastercache.db"
+}
+
+func NewTmpCachePath() string {
+	return fmt.Sprintf("%s/cache-%d.db", os.TempDir(), time.Now().UnixNano())
 }

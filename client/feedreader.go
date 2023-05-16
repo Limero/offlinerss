@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/limero/offlinerss/helpers"
 	"github.com/limero/offlinerss/models"
@@ -39,7 +38,7 @@ func (c Feedreader) GetChanges() ([]models.SyncToAction, error) {
 }
 
 func (c Feedreader) CreateNewCache() error {
-	tmpCachePath := fmt.Sprintf("%s/cache-%d.db", os.TempDir(), time.Now().UnixNano())
+	tmpCachePath := helpers.NewTmpCachePath()
 	defer os.Remove(tmpCachePath)
 
 	fmt.Println("Creating feedreader temporary cache")
@@ -133,7 +132,7 @@ func (c Feedreader) AddToCache(folders []*models.Folder) error {
 		return err
 	}
 
-	tmpCachePath := fmt.Sprintf("%s/cache-%d.db", os.TempDir(), time.Now().UnixNano())
+	tmpCachePath := helpers.NewTmpCachePath()
 	defer os.Remove(tmpCachePath)
 
 	masterCachePath := helpers.GetMasterCachePath(c.config.Type)

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/limero/go-sqldiff"
 	"github.com/limero/offlinerss/models"
@@ -35,7 +34,7 @@ func GetChangesFromSqlite(
 	}
 
 	// Make copy of master cache to use for the sqldiff hack
-	tmpCachePath := fmt.Sprintf("%s/cache-%d.db", os.TempDir(), time.Now().UnixNano())
+	tmpCachePath := NewTmpCachePath()
 	defer os.Remove(tmpCachePath)
 	if err := CopyFile(masterCachePath, tmpCachePath); err != nil {
 		return nil, err

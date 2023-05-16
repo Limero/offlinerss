@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/limero/offlinerss/helpers"
 	"github.com/limero/offlinerss/models"
@@ -39,7 +38,7 @@ func (c Newsboat) GetChanges() ([]models.SyncToAction, error) {
 }
 
 func (c Newsboat) CreateNewCache() error {
-	tmpCachePath := fmt.Sprintf("%s/cache-%d.db", os.TempDir(), time.Now().UnixNano())
+	tmpCachePath := helpers.NewTmpCachePath()
 	defer os.Remove(tmpCachePath)
 
 	fmt.Println("Creating newsboat temporary cache")
@@ -92,7 +91,7 @@ func (c Newsboat) CreateNewCache() error {
 }
 
 func (c Newsboat) AddToCache(folders []*models.Folder) error {
-	tmpCachePath := fmt.Sprintf("%s/cache-%d.db", os.TempDir(), time.Now().UnixNano())
+	tmpCachePath := helpers.NewTmpCachePath()
 	defer os.Remove(tmpCachePath)
 
 	masterCachePath := helpers.GetMasterCachePath(c.config.Type)
