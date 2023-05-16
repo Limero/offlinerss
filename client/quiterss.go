@@ -22,7 +22,7 @@ func NewQuiteRSS(config models.ClientConfig) *QuiteRSS {
 }
 
 func (c QuiteRSS) Name() string {
-	return c.config.Type
+	return "quiterss"
 }
 
 func (c QuiteRSS) UserDB() string {

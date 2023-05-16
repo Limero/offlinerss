@@ -22,7 +22,7 @@ func NewNewsboat(config models.ClientConfig) *Newsboat {
 }
 
 func (c Newsboat) Name() string {
-	return c.config.Type
+	return "newsboat"
 }
 
 func (c Newsboat) UserDB() string {

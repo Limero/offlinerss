@@ -22,7 +22,7 @@ func NewFeedreader(config models.ClientConfig) *Feedreader {
 }
 
 func (c Feedreader) Name() string {
-	return c.config.Type
+	return "feedreader"
 }
 
 func (c Feedreader) UserDB() string {
