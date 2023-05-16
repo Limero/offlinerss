@@ -10,12 +10,14 @@ import (
 )
 
 type Feedreader struct {
-	config models.ClientConfig
+	DataPath models.DataPath
+	config   models.ClientConfig
 }
 
 func NewFeedreader(config models.ClientConfig) *Feedreader {
 	return &Feedreader{
-		config: config,
+		DataPath: models.GetClientDataPath(config.Type),
+		config:   config,
 	}
 }
 
@@ -23,10 +25,18 @@ func (c Feedreader) Name() string {
 	return c.config.Type
 }
 
+func (c Feedreader) UserDB() string {
+	return c.DataPath.GetFile("feedreader-7.db")
+}
+
+func (c Feedreader) ReferenceDB() string {
+	return c.DataPath.GetReferenceDB()
+}
+
 func (c Feedreader) GetChanges() ([]models.SyncToAction, error) {
 	return helpers.GetChangesFromSqlite(
-		helpers.GetClientFilePath(c.config.Type, "feedreader-7.db"),
-		helpers.GetMasterCachePath(c.config.Type),
+		c.ReferenceDB(),
+		c.UserDB(),
 		"articles",
 		"guidHash",
 		"unread",
@@ -118,10 +128,7 @@ func (c Feedreader) CreateNewCache() error {
 		return err
 	}
 
-	masterCachePath := helpers.GetMasterCachePath(c.config.Type)
-	clientPath := helpers.GetClientFilePath(c.config.Type, "feedreader-7.db")
-
-	if err := helpers.CopyFile(tmpCachePath, masterCachePath, clientPath); err != nil {
+	if err := helpers.CopyFile(tmpCachePath, c.ReferenceDB(), c.UserDB()); err != nil {
 		return err
 	}
 
@@ -137,9 +144,7 @@ func (c Feedreader) AddToCache(folders []*models.Folder) error {
 	tmpCachePath := helpers.NewTmpCachePath()
 	defer os.Remove(tmpCachePath)
 
-	masterCachePath := helpers.GetMasterCachePath(c.config.Type)
-
-	if err := helpers.CopyFile(masterCachePath, tmpCachePath); err != nil {
+	if err := helpers.CopyFile(c.ReferenceDB(), tmpCachePath); err != nil {
 		return err
 	}
 
@@ -203,8 +208,7 @@ func (c Feedreader) AddToCache(folders []*models.Folder) error {
 		}
 	}
 
-	clientPath := helpers.GetClientFilePath(c.config.Type, "feedreader-7.db")
-	if err := helpers.CopyFile(tmpCachePath, masterCachePath, clientPath); err != nil {
+	if err := helpers.CopyFile(tmpCachePath, c.ReferenceDB(), c.UserDB()); err != nil {
 		return err
 	}
 

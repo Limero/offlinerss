@@ -10,12 +10,14 @@ import (
 )
 
 type Newsboat struct {
-	config models.ClientConfig
+	DataPath models.DataPath
+	config   models.ClientConfig
 }
 
 func NewNewsboat(config models.ClientConfig) *Newsboat {
 	return &Newsboat{
-		config: config,
+		DataPath: models.GetClientDataPath(config.Type),
+		config:   config,
 	}
 }
 
@@ -23,10 +25,18 @@ func (c Newsboat) Name() string {
 	return c.config.Type
 }
 
+func (c Newsboat) UserDB() string {
+	return c.DataPath.GetFile("cache.db")
+}
+
+func (c Newsboat) ReferenceDB() string {
+	return c.DataPath.GetReferenceDB()
+}
+
 func (c Newsboat) GetChanges() ([]models.SyncToAction, error) {
 	return helpers.GetChangesFromSqlite(
-		helpers.GetClientFilePath(c.config.Type, "cache.db"),
-		helpers.GetMasterCachePath(c.config.Type),
+		c.ReferenceDB(),
+		c.UserDB(),
 		"rss_item",
 		"guid",
 		"unread",
@@ -82,10 +92,7 @@ func (c Newsboat) CreateNewCache() error {
 		return err
 	}
 
-	masterCachePath := helpers.GetMasterCachePath(c.config.Type)
-	clientPath := helpers.GetClientFilePath(c.config.Type, "cache.db")
-
-	if err := helpers.CopyFile(tmpCachePath, masterCachePath, clientPath); err != nil {
+	if err := helpers.CopyFile(tmpCachePath, c.ReferenceDB(), c.UserDB()); err != nil {
 		return err
 	}
 
@@ -96,9 +103,7 @@ func (c Newsboat) AddToCache(folders []*models.Folder) error {
 	tmpCachePath := helpers.NewTmpCachePath()
 	defer os.Remove(tmpCachePath)
 
-	masterCachePath := helpers.GetMasterCachePath(c.config.Type)
-
-	if err := helpers.CopyFile(masterCachePath, tmpCachePath); err != nil {
+	if err := helpers.CopyFile(c.ReferenceDB(), tmpCachePath); err != nil {
 		return err
 	}
 
@@ -156,13 +161,11 @@ func (c Newsboat) AddToCache(folders []*models.Folder) error {
 		}
 	}
 
-	clientPath := helpers.GetClientFilePath(c.config.Type, "cache.db")
-	if err := helpers.CopyFile(tmpCachePath, masterCachePath, clientPath); err != nil {
+	if err := helpers.CopyFile(tmpCachePath, c.ReferenceDB(), c.UserDB()); err != nil {
 		return err
 	}
 
-	clientUrlsPath := helpers.GetClientFilePath(c.config.Type, "urls")
-	if err := helpers.MergeToFile(newsboatUrls, clientUrlsPath); err != nil {
+	if err := helpers.MergeToFile(newsboatUrls, c.DataPath.GetFile("urls")); err != nil {
 		return err
 	}
 

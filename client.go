@@ -4,7 +4,6 @@ import (
 	"errors"
 	"os"
 
-	"github.com/limero/offlinerss/helpers"
 	"github.com/limero/offlinerss/models"
 )
 
@@ -29,8 +28,7 @@ func (clients Clients) GetSyncToActions() ([]models.SyncToAction, error) {
 
 func (clients Clients) Sync(folders []*models.Folder) error {
 	for _, client := range clients {
-		masterCachePath := helpers.GetMasterCachePath(client.Name())
-		if _, err := os.Stat(masterCachePath); errors.Is(err, os.ErrNotExist) {
+		if _, err := os.Stat(client.ReferenceDB()); errors.Is(err, os.ErrNotExist) {
 			if err := client.CreateNewCache(); err != nil {
 				return err
 			}

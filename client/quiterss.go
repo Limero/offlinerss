@@ -10,12 +10,14 @@ import (
 )
 
 type QuiteRSS struct {
-	config models.ClientConfig
+	DataPath models.DataPath
+	config   models.ClientConfig
 }
 
 func NewQuiteRSS(config models.ClientConfig) *QuiteRSS {
 	return &QuiteRSS{
-		config: config,
+		DataPath: models.GetClientDataPath(config.Type),
+		config:   config,
 	}
 }
 
@@ -23,10 +25,18 @@ func (c QuiteRSS) Name() string {
 	return c.config.Type
 }
 
+func (c QuiteRSS) UserDB() string {
+	return c.DataPath.GetFile("feeds.db")
+}
+
+func (c QuiteRSS) ReferenceDB() string {
+	return c.DataPath.GetReferenceDB()
+}
+
 func (c QuiteRSS) GetChanges() ([]models.SyncToAction, error) {
 	return helpers.GetChangesFromSqlite(
-		helpers.GetClientFilePath(c.config.Type, "feeds.db"),
-		helpers.GetMasterCachePath(c.config.Type),
+		c.ReferenceDB(),
+		c.UserDB(),
 		"news",
 		"guid",
 		"read",
@@ -162,10 +172,7 @@ func (c QuiteRSS) CreateNewCache() error {
 		return err
 	}
 
-	masterCachePath := helpers.GetMasterCachePath(c.config.Type)
-	clientPath := helpers.GetClientFilePath(c.config.Type, "feeds.db")
-
-	if err := helpers.CopyFile(tmpCachePath, masterCachePath, clientPath); err != nil {
+	if err := helpers.CopyFile(tmpCachePath, c.ReferenceDB(), c.UserDB()); err != nil {
 		return err
 	}
 
@@ -181,9 +188,7 @@ func (c QuiteRSS) AddToCache(folders []*models.Folder) error {
 	tmpCachePath := helpers.NewTmpCachePath()
 	defer os.Remove(tmpCachePath)
 
-	masterCachePath := helpers.GetMasterCachePath(c.config.Type)
-
-	if err := helpers.CopyFile(masterCachePath, tmpCachePath); err != nil {
+	if err := helpers.CopyFile(c.ReferenceDB(), tmpCachePath); err != nil {
 		return err
 	}
 
@@ -247,8 +252,7 @@ func (c QuiteRSS) AddToCache(folders []*models.Folder) error {
 		}
 	}
 
-	clientPath := helpers.GetClientFilePath(c.config.Type, "feeds.db")
-	if err := helpers.CopyFile(tmpCachePath, masterCachePath, clientPath); err != nil {
+	if err := helpers.CopyFile(tmpCachePath, c.ReferenceDB(), c.UserDB()); err != nil {
 		return err
 	}
 
