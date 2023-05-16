@@ -42,7 +42,7 @@ func run() error {
 		return err
 	}
 
-	var clients Clients
+	var clients models.Clients
 	for _, clientConfig := range config.Clients {
 		switch clientConfig.Type {
 		case "feedreader":
@@ -54,12 +54,12 @@ func run() error {
 		}
 	}
 
-	syncToActions, err := clients.GetSyncToActions()
+	syncToActions, err := GetSyncToActions(clients)
 	if err != nil {
 		return err
 	}
 
-	var s Server
+	var s models.Server
 	switch config.Server.Type {
 	case "miniflux":
 		s = server.NewMiniflux(config.Server)
@@ -72,7 +72,7 @@ func run() error {
 		return err
 	}
 
-	if err := clients.Sync(folders); err != nil {
+	if err := SyncClients(clients, folders); err != nil {
 		return err
 	}
 

@@ -6,7 +6,7 @@ import (
 	"github.com/limero/offlinerss/models"
 )
 
-func SyncServer(server Server, syncToActions []models.SyncToAction) ([]*models.Folder, error) {
+func SyncServer(server models.Server, syncToActions []models.SyncToAction) ([]*models.Folder, error) {
 	// Sync changes back to server and get new stories
 
 	fmt.Println("Logging in to " + server.Name())

@@ -7,7 +7,7 @@ import (
 	"github.com/limero/offlinerss/models"
 )
 
-func (clients Clients) GetSyncToActions() ([]models.SyncToAction, error) {
+func GetSyncToActions(clients models.Clients) ([]models.SyncToAction, error) {
 	if len(clients) == 0 {
 		return nil, errors.New("You have to enable at least one client in the config file")
 	}
@@ -26,7 +26,7 @@ func (clients Clients) GetSyncToActions() ([]models.SyncToAction, error) {
 	return syncToActions, nil
 }
 
-func (clients Clients) Sync(folders []*models.Folder) error {
+func SyncClients(clients models.Clients, folders []*models.Folder) error {
 	for _, client := range clients {
 		if _, err := os.Stat(client.ReferenceDB()); errors.Is(err, os.ErrNotExist) {
 			if err := client.CreateNewCache(); err != nil {
