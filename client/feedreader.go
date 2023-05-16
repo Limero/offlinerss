@@ -25,7 +25,8 @@ func (c Feedreader) Name() string {
 
 func (c Feedreader) GetChanges() ([]models.SyncToAction, error) {
 	return helpers.GetChangesFromSqlite(
-		c.config,
+		helpers.GetClientFilePath(c.config.Type, "feedreader-7.db"),
+		helpers.GetMasterCachePath(c.config.Type),
 		"articles",
 		"guidHash",
 		"unread",
@@ -118,8 +119,9 @@ func (c Feedreader) CreateNewCache() error {
 	}
 
 	masterCachePath := helpers.GetMasterCachePath(c.config.Type)
+	clientPath := helpers.GetClientFilePath(c.config.Type, "feedreader-7.db")
 
-	if err := helpers.CopyFile(tmpCachePath, masterCachePath, c.config.Paths.Cache); err != nil {
+	if err := helpers.CopyFile(tmpCachePath, masterCachePath, clientPath); err != nil {
 		return err
 	}
 
@@ -201,7 +203,8 @@ func (c Feedreader) AddToCache(folders []*models.Folder) error {
 		}
 	}
 
-	if err := helpers.CopyFile(tmpCachePath, masterCachePath, c.config.Paths.Cache); err != nil {
+	clientPath := helpers.GetClientFilePath(c.config.Type, "feedreader-7.db")
+	if err := helpers.CopyFile(tmpCachePath, masterCachePath, clientPath); err != nil {
 		return err
 	}
 

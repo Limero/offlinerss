@@ -1,10 +1,5 @@
 package models
 
-type Paths struct {
-	Cache string `json:"cache"`
-	Urls  string `json:"urls"`
-}
-
 type ServerConfig struct {
 	Type     string `json:"type"`
 	Username string `json:"username"`
@@ -12,8 +7,7 @@ type ServerConfig struct {
 }
 
 type ClientConfig struct {
-	Type  string `json:"type"`
-	Paths Paths  `json:"paths"`
+	Type string `json:"type"`
 }
 
 type Config struct {

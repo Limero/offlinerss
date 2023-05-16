@@ -25,7 +25,8 @@ func (c QuiteRSS) Name() string {
 
 func (c QuiteRSS) GetChanges() ([]models.SyncToAction, error) {
 	return helpers.GetChangesFromSqlite(
-		c.config,
+		helpers.GetClientFilePath(c.config.Type, "feeds.db"),
+		helpers.GetMasterCachePath(c.config.Type),
 		"news",
 		"guid",
 		"read",
@@ -162,8 +163,9 @@ func (c QuiteRSS) CreateNewCache() error {
 	}
 
 	masterCachePath := helpers.GetMasterCachePath(c.config.Type)
+	clientPath := helpers.GetClientFilePath(c.config.Type, "feeds.db")
 
-	if err := helpers.CopyFile(tmpCachePath, masterCachePath, c.config.Paths.Cache); err != nil {
+	if err := helpers.CopyFile(tmpCachePath, masterCachePath, clientPath); err != nil {
 		return err
 	}
 
@@ -245,7 +247,8 @@ func (c QuiteRSS) AddToCache(folders []*models.Folder) error {
 		}
 	}
 
-	if err := helpers.CopyFile(tmpCachePath, masterCachePath, c.config.Paths.Cache); err != nil {
+	clientPath := helpers.GetClientFilePath(c.config.Type, "feeds.db")
+	if err := helpers.CopyFile(tmpCachePath, masterCachePath, clientPath); err != nil {
 		return err
 	}
 

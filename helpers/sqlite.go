@@ -12,7 +12,8 @@ import (
 )
 
 func GetChangesFromSqlite(
-	clientConfig models.ClientConfig,
+	clientPath string,
+	masterPath string,
 	table string,
 	idName string,
 	unreadName string,
@@ -22,25 +23,23 @@ func GetChangesFromSqlite(
 	starredValueTrue string,
 	starredValueFalse string,
 ) ([]models.SyncToAction, error) {
-	masterCachePath := GetMasterCachePath(clientConfig.Type)
-
-	if _, err := os.Stat(masterCachePath); os.IsNotExist(err) {
-		fmt.Printf("Master cache does not exist at %s, nothing to sync to server\n", masterCachePath)
+	if _, err := os.Stat(masterPath); os.IsNotExist(err) {
+		fmt.Printf("Master cache does not exist at %s, nothing to sync to server\n", masterPath)
 		return nil, nil
 	}
-	if _, err := os.Stat(clientConfig.Paths.Cache); os.IsNotExist(err) {
-		fmt.Printf("Cache does not exist at %s, nothing to sync to server\n", clientConfig.Paths.Cache)
+	if _, err := os.Stat(clientPath); os.IsNotExist(err) {
+		fmt.Printf("Cache does not exist at %s, nothing to sync to server\n", clientPath)
 		return nil, nil
 	}
 
 	// Make copy of master cache to use for the sqldiff hack
 	tmpCachePath := NewTmpCachePath()
 	defer os.Remove(tmpCachePath)
-	if err := CopyFile(masterCachePath, tmpCachePath); err != nil {
+	if err := CopyFile(masterPath, tmpCachePath); err != nil {
 		return nil, err
 	}
 
-	fmt.Printf("Open master cache %s\n", masterCachePath)
+	fmt.Printf("Open master cache %s\n", masterPath)
 	db, err := sql.Open("sqlite3", tmpCachePath)
 	if err != nil {
 		return nil, err
@@ -52,8 +51,8 @@ func GetChangesFromSqlite(
 		return nil, err
 	}
 
-	fmt.Printf("Comparing database %q with %q\n", masterCachePath, clientConfig.Paths.Cache)
-	diffs, err := sqldiff.Compare(tmpCachePath, clientConfig.Paths.Cache)
+	fmt.Printf("Comparing database %q with %q\n", masterPath, clientPath)
+	diffs, err := sqldiff.Compare(tmpCachePath, clientPath)
 	if err != nil {
 		return nil, err
 	}

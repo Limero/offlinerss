@@ -10,7 +10,6 @@ import (
 	"github.com/limero/offlinerss/models"
 	"github.com/limero/offlinerss/server"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/mitchellh/go-homedir"
 )
 
 func getConfig() (*models.Config, error) {
@@ -32,18 +31,6 @@ func getConfig() (*models.Config, error) {
 	err = json.Unmarshal(data, &config)
 	if err != nil {
 		return nil, err
-	}
-
-	// Expand paths for each client (~ -> /home/username)
-	// only i is used because it can overwrite the value
-	for i := range config.Clients {
-		if config.Clients[i].Paths.Cache, err = homedir.Expand(config.Clients[i].Paths.Cache); err != nil {
-			return nil, err
-		}
-
-		if config.Clients[i].Paths.Urls, err = homedir.Expand(config.Clients[i].Paths.Urls); err != nil {
-			return nil, err
-		}
 	}
 
 	return &config, nil

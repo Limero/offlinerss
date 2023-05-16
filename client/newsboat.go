@@ -25,7 +25,8 @@ func (c Newsboat) Name() string {
 
 func (c Newsboat) GetChanges() ([]models.SyncToAction, error) {
 	return helpers.GetChangesFromSqlite(
-		c.config,
+		helpers.GetClientFilePath(c.config.Type, "cache.db"),
+		helpers.GetMasterCachePath(c.config.Type),
 		"rss_item",
 		"guid",
 		"unread",
@@ -82,8 +83,9 @@ func (c Newsboat) CreateNewCache() error {
 	}
 
 	masterCachePath := helpers.GetMasterCachePath(c.config.Type)
+	clientPath := helpers.GetClientFilePath(c.config.Type, "cache.db")
 
-	if err := helpers.CopyFile(tmpCachePath, masterCachePath, c.config.Paths.Cache); err != nil {
+	if err := helpers.CopyFile(tmpCachePath, masterCachePath, clientPath); err != nil {
 		return err
 	}
 
@@ -154,11 +156,13 @@ func (c Newsboat) AddToCache(folders []*models.Folder) error {
 		}
 	}
 
-	if err := helpers.CopyFile(tmpCachePath, masterCachePath, c.config.Paths.Cache); err != nil {
+	clientPath := helpers.GetClientFilePath(c.config.Type, "cache.db")
+	if err := helpers.CopyFile(tmpCachePath, masterCachePath, clientPath); err != nil {
 		return err
 	}
 
-	if err := helpers.MergeToFile(newsboatUrls, c.config.Paths.Urls); err != nil {
+	clientUrlsPath := helpers.GetClientFilePath(c.config.Type, "urls")
+	if err := helpers.MergeToFile(newsboatUrls, clientUrlsPath); err != nil {
 		return err
 	}
 
