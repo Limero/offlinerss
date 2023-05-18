@@ -19,6 +19,11 @@ func TestClients(t *testing.T) {
 
 	stories := []*models.Story{
 		{
+			Hash:   "123",
+			Unread: true,
+		},
+		{
+			Hash:   "321",
 			Unread: true,
 		},
 	}
@@ -39,26 +44,30 @@ func TestClients(t *testing.T) {
 	os.Create(filepath.Join(tmpDir, "newsboat", "urls"))
 
 	for _, tt := range []struct {
-		client      models.Client
-		updateQuery string
+		client       models.Client
+		storiesTable string
+		updateQuery  string
 	}{
 		{
 			client: client.Feedreader{
 				DataPath: models.DataPath(filepath.Join(tmpDir, "feedreader")),
 			},
-			updateQuery: "UPDATE articles SET unread = 8",
+			storiesTable: "articles",
+			updateQuery:  "UPDATE articles SET unread = 8",
 		},
 		{
 			client: client.Newsboat{
 				DataPath: models.DataPath(filepath.Join(tmpDir, "newsboat")),
 			},
-			updateQuery: "UPDATE rss_item SET unread = false",
+			storiesTable: "rss_item",
+			updateQuery:  "UPDATE rss_item SET unread = false",
 		},
 		{
 			client: client.QuiteRSS{
 				DataPath: models.DataPath(filepath.Join(tmpDir, "quiterss")),
 			},
-			updateQuery: "UPDATE news SET read = 2",
+			storiesTable: "news",
+			updateQuery:  "UPDATE news SET read = 2",
 		},
 	} {
 		t.Run(tt.client.Name()+" create new cache", func(t *testing.T) {
@@ -73,6 +82,28 @@ func TestClients(t *testing.T) {
 
 		t.Run(tt.client.Name()+" add folders to cache", func(t *testing.T) {
 			require.NoError(t, tt.client.AddToCache(folders))
+
+			db, err := sql.Open("sqlite3", tt.client.ReferenceDB())
+			require.NoError(t, err)
+
+			var count int
+			err = db.QueryRow("SELECT COUNT(*) FROM " + tt.storiesTable).Scan(&count)
+			require.NoError(t, err)
+			assert.Len(t, stories, count)
+			require.NoError(t, db.Close())
+		})
+
+		t.Run(tt.client.Name()+" add same folders again to test idempotency", func(t *testing.T) {
+			require.NoError(t, tt.client.AddToCache(folders))
+
+			db, err := sql.Open("sqlite3", tt.client.ReferenceDB())
+			require.NoError(t, err)
+
+			var count int
+			err = db.QueryRow("SELECT COUNT(*) FROM " + tt.storiesTable).Scan(&count)
+			require.NoError(t, err)
+			assert.Len(t, stories, count)
+			require.NoError(t, db.Close())
 		})
 
 		t.Run(tt.client.Name()+" perform changes to user database", func(t *testing.T) {
@@ -87,7 +118,7 @@ func TestClients(t *testing.T) {
 		t.Run(tt.client.Name()+" get changes performed", func(t *testing.T) {
 			actions, err := tt.client.GetChanges()
 			require.NoError(t, err)
-			assert.Len(t, actions, 1)
+			assert.Len(t, actions, len(stories))
 		})
 	}
 }
