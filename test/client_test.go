@@ -42,6 +42,7 @@ func TestClients(t *testing.T) {
 	folders := []*models.Folder{
 		{
 			Id:    123,
+			Title: "Folder",
 			Feeds: feeds,
 		},
 	}

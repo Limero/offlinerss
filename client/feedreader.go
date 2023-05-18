@@ -136,11 +136,6 @@ func (c Feedreader) CreateNewCache() error {
 }
 
 func (c Feedreader) AddToCache(folders []*models.Folder) error {
-	// TODO: Remove this once db has been confirmed idempotent, like the Newsboat client
-	if err := c.CreateNewCache(); err != nil {
-		return err
-	}
-
 	tmpCachePath := helpers.NewTmpCachePath()
 	defer os.Remove(tmpCachePath)
 
@@ -161,7 +156,8 @@ func (c Feedreader) AddToCache(folders []*models.Folder) error {
 		if folder.Title != "" {
 			category = i + 1
 			if _, err = db.Exec(
-				"INSERT INTO categories (categorieID, title, Parent, Level) VALUES (?, ?, ?, ?)",
+				// TODO: categorieID is unique and if folders are changed between syncs, this might mess up
+				"INSERT OR REPLACE INTO categories (categorieID, title, Parent, Level) VALUES (?, ?, ?, ?)",
 				category,
 				folder.Title,
 				-2, // ???
@@ -175,7 +171,7 @@ func (c Feedreader) AddToCache(folders []*models.Folder) error {
 		for _, feed := range folder.Feeds {
 			fmt.Printf("Add feed to database: %s\n", feed.Title)
 			if _, err = db.Exec(
-				"INSERT INTO feeds (feed_id, name, url, category_id, xmlURL) VALUES (?, ?, ?, ?, ?)",
+				"INSERT OR REPLACE INTO feeds (feed_id, name, url, category_id, xmlURL) VALUES (?, ?, ?, ?, ?)",
 				feed.Id,
 				feed.Title,
 				feed.Website,
@@ -188,7 +184,7 @@ func (c Feedreader) AddToCache(folders []*models.Folder) error {
 			fmt.Printf("Adding %d stories in feed %s\n", len(feed.Stories), feed.Title)
 			for _, story := range feed.Stories {
 				if _, err = db.Exec(
-					"INSERT INTO articles (articleID, feedID, title, url, html, preview, unread, marked, date, guidHash, lastModified, contentFetched) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+					"INSERT OR REPLACE INTO articles (articleID, feedID, title, url, html, preview, unread, marked, date, guidHash, lastModified, contentFetched) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 					story.Hash,
 					feed.Id,
 					story.Title,
