@@ -17,7 +17,7 @@ func TestClients(t *testing.T) {
 	tmpDir := os.TempDir()
 	defer os.Remove(tmpDir)
 
-	stories := []*models.Story{
+	stories1 := []*models.Story{
 		{
 			Hash:   "123",
 			Unread: true,
@@ -27,10 +27,16 @@ func TestClients(t *testing.T) {
 			Unread: true,
 		},
 	}
+	stories2 := []*models.Story{
+		{
+			Hash:   "456",
+			Unread: true,
+		},
+	}
 	feeds := []*models.Feed{
 		{
 			Id:      123,
-			Stories: stories,
+			Stories: stories1,
 		},
 	}
 	folders := []*models.Folder{
@@ -89,7 +95,7 @@ func TestClients(t *testing.T) {
 			var count int
 			err = db.QueryRow("SELECT COUNT(*) FROM " + tt.storiesTable).Scan(&count)
 			require.NoError(t, err)
-			assert.Len(t, stories, count)
+			assert.Len(t, stories1, count)
 			require.NoError(t, db.Close())
 		})
 
@@ -102,9 +108,27 @@ func TestClients(t *testing.T) {
 			var count int
 			err = db.QueryRow("SELECT COUNT(*) FROM " + tt.storiesTable).Scan(&count)
 			require.NoError(t, err)
-			assert.Len(t, stories, count)
+			assert.Len(t, stories1, count)
 			require.NoError(t, db.Close())
 		})
+
+		/*
+			t.Run(tt.client.Name()+" add different folders test delta updates", func(t *testing.T) {
+				folders[0].Feeds[0].Stories = stories2
+				require.NoError(t, tt.client.AddToCache(folders))
+				folders[0].Feeds[0].Stories = stories1
+
+				db, err := sql.Open("sqlite3", tt.client.ReferenceDB())
+				require.NoError(t, err)
+
+				var count int
+				err = db.QueryRow("SELECT COUNT(*) FROM " + tt.storiesTable).Scan(&count)
+				require.NoError(t, err)
+				assert.Equal(t, len(stories1)+len(stories2), count)
+				require.NoError(t, db.Close())
+			})
+		*/
+		_ = stories2
 
 		t.Run(tt.client.Name()+" perform changes to user database", func(t *testing.T) {
 			db, err := sql.Open("sqlite3", tt.client.UserDB())
@@ -118,7 +142,10 @@ func TestClients(t *testing.T) {
 		t.Run(tt.client.Name()+" get changes performed", func(t *testing.T) {
 			actions, err := tt.client.GetChanges()
 			require.NoError(t, err)
-			assert.Len(t, actions, len(stories))
+			// Note: This is only events from stories2, as everything from stories1
+			// was marked as read by the delta AddToCache call
+			//assert.Len(t, actions, len(stories2))
+			assert.Len(t, actions, len(stories1))
 		})
 	}
 }
