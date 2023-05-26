@@ -116,7 +116,6 @@ func getRowsFromDB(dbPath, table, idName, unreadName, starredName string) ([]Row
 			return nil, err
 		}
 		rows = append(rows, r)
-		fmt.Printf("---%s\n", r.Starred)
 	}
 	if err = dbRows.Err(); err != nil {
 		return nil, err
