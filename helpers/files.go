@@ -70,7 +70,7 @@ func MergeToFile(lines []string, file string) error {
 
 	var c string
 	for _, line := range RemoveDuplicates(append(fileLines, lines...)) {
-		c += line + ""
+		c += line + "\n"
 	}
 
 	return WriteFile(c, file)
