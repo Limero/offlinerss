@@ -60,7 +60,6 @@ func (c Newsboat) CreateNewCache() error {
 	defer db.Close()
 
 	fmt.Println("Creating tables in newsboat new temporary cache")
-	// NOT NULL constraint removed from guid so id hack in GetChangesFromSqlite works
 	if _, err = db.Exec(`
 		CREATE TABLE "rss_feed" (
 			"rssurl"	VARCHAR(1024) NOT NULL,
@@ -73,7 +72,7 @@ func (c Newsboat) CreateNewCache() error {
 		);
 		CREATE TABLE rss_item (
 			id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-			guid VARCHAR(64),
+			guid VARCHAR(64) NOT NULL,
 			title VARCHAR(1024) NOT NULL,
 			author VARCHAR(1024) NOT NULL,
 			url VARCHAR(1024) NOT NULL,
