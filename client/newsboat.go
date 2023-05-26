@@ -43,8 +43,8 @@ func (c Newsboat) GetChanges() ([]models.SyncToAction, error) {
 		"1",
 		"0",
 		"flags",
-		"'s'",
-		"''",
+		"s",
+		"",
 	)
 }
 
