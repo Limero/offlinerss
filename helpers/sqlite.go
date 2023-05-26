@@ -2,14 +2,17 @@ package helpers
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"os"
-	"strings"
 
-	"github.com/limero/go-sqldiff"
 	"github.com/limero/offlinerss/models"
 )
+
+type Row struct {
+	Id      string
+	Unread  string
+	Starred string
+}
 
 func GetChangesFromSqlite(
 	referenceDBPath string,
@@ -32,76 +35,92 @@ func GetChangesFromSqlite(
 		return nil, nil
 	}
 
-	// Make copy of reference database to use for the sqldiff hack
-	tmpCachePath := NewTmpCachePath()
-	defer os.Remove(tmpCachePath)
-	if err := CopyFile(referenceDBPath, tmpCachePath); err != nil {
+	refRows, err := getRowsFromDB(referenceDBPath, table, idName, unreadName, starredName)
+	if err != nil {
+		return nil, err
+	}
+	userRows, err := getRowsFromDB(userDBPath, table, idName, unreadName, starredName)
+	if err != nil {
 		return nil, err
 	}
 
-	fmt.Printf("Opening reference database %s\n", referenceDBPath)
-	db, err := sql.Open("sqlite3", tmpCachePath)
+	var syncToActions []models.SyncToAction
+	for _, refRow := range refRows {
+		for _, userRow := range userRows {
+			if refRow.Id != userRow.Id {
+				continue
+			}
+
+			if refRow.Unread != userRow.Unread {
+				switch userRow.Unread {
+				case unreadValueTrue:
+					syncToActions = append(syncToActions, models.SyncToAction{
+						Id:     refRow.Id,
+						Action: models.ActionStoryUnread,
+					})
+				case unreadValueFalse:
+					syncToActions = append(syncToActions, models.SyncToAction{
+						Id:     refRow.Id,
+						Action: models.ActionStoryRead,
+					})
+				}
+			}
+
+			if refRow.Starred != userRow.Starred {
+				switch userRow.Starred {
+				case starredValueTrue:
+					syncToActions = append(syncToActions, models.SyncToAction{
+						Id:     refRow.Id,
+						Action: models.ActionStoryStarred,
+					})
+				case starredValueFalse:
+					syncToActions = append(syncToActions, models.SyncToAction{
+						Id:     refRow.Id,
+						Action: models.ActionStoryUnstarred,
+					})
+				}
+			}
+
+			break
+		}
+	}
+
+	return syncToActions, nil
+}
+
+func getRowsFromDB(dbPath, table, idName, unreadName, starredName string) ([]Row, error) {
+	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
 		return nil, err
 	}
 	defer db.Close()
 
-	// A one query workaround to get id to also show up in sqldiff
-	if _, err = db.Exec("UPDATE " + table + " SET " + idName + "=NULL"); err != nil {
-		return nil, err
-	}
+	query := fmt.Sprintf(
+		"SELECT %s, %s, %s FROM %s",
+		idName,
+		unreadName,
+		starredName,
+		table,
+	)
 
-	fmt.Printf("Comparing database %q with %q\n", referenceDBPath, userDBPath)
-	diffs, err := sqldiff.Compare(tmpCachePath, userDBPath)
+	dbRows, err := db.Query(query)
 	if err != nil {
 		return nil, err
 	}
+	defer dbRows.Close()
 
-	fmt.Printf("Iterating over %d database differences\n", len(diffs))
-	var syncToActions []models.SyncToAction
-	for _, row := range diffs {
-		if strings.Contains(row, " "+unreadName+"=") {
-			fmt.Printf("Change to %s: %s\n", unreadName, row)
-			if !strings.Contains(row, idName+"=") {
-				if err != nil {
-					return nil, errors.New(idName + " not found: " + row)
-				}
-			}
-			hash := strings.Split(strings.Split(row, idName+"='")[1], "'")[0]
-			if strings.Contains(row, " "+unreadName+"="+unreadValueTrue) {
-				syncToActions = append(syncToActions, models.SyncToAction{
-					Id:     hash,
-					Action: models.ActionStoryUnread,
-				})
-			} else if strings.Contains(row, " "+unreadName+"="+unreadValueFalse) {
-				syncToActions = append(syncToActions, models.SyncToAction{
-					Id:     hash,
-					Action: models.ActionStoryRead,
-				})
-			}
+	rows := make([]Row, 0)
+	for dbRows.Next() {
+		var r Row
+		if err = dbRows.Scan(&r.Id, &r.Unread, &r.Starred); err != nil {
+			return nil, err
 		}
-		if strings.Contains(row, " "+starredName+"=") {
-			fmt.Printf("Change to %s: %s\n", starredName, row)
-			if !strings.Contains(row, idName+"=") {
-				if err != nil {
-					return nil, errors.New(idName + " not found: " + row)
-				}
-			}
-			hash := strings.Split(strings.Split(row, idName+"='")[1], "'")[0]
-
-			if strings.Contains(row, " "+starredName+"="+starredValueTrue) {
-				syncToActions = append(syncToActions, models.SyncToAction{
-					Id:     hash,
-					Action: models.ActionStoryStarred,
-				})
-			} else if strings.Contains(row, " "+starredName+"="+starredValueFalse) {
-				syncToActions = append(syncToActions, models.SyncToAction{
-					Id:     hash,
-					Action: models.ActionStoryUnstarred,
-				})
-			}
-		}
+		rows = append(rows, r)
+		fmt.Printf("---%s\n", r.Starred)
+	}
+	if err = dbRows.Err(); err != nil {
+		return nil, err
 	}
 
-	return syncToActions, nil
+	return rows, nil
 }
