@@ -146,14 +146,14 @@ func (s *Miniflux) SyncToServer(syncToActions []models.SyncToAction) error {
 		if err := s.client.UpdateEntries(readIds, miniflux.EntryStatusRead); err != nil {
 			return err
 		}
-		log.Debug(fmt.Sprintf("%d items has been marked as read", len(readIds)))
+		log.Debug("%d items has been marked as read", len(readIds))
 	}
 
 	if len(unreadIds) > 0 {
 		if err := s.client.UpdateEntries(unreadIds, miniflux.EntryStatusUnread); err != nil {
 			return err
 		}
-		log.Debug(fmt.Sprintf("%d items has been marked as unread", len(unreadIds)))
+		log.Debug("%d items has been marked as unread", len(unreadIds))
 	}
 
 	return nil

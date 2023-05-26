@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"bufio"
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -27,7 +26,7 @@ func CopyFile(source string, destinations ...string) error {
 		if err := os.WriteFile(destination, data, 0644); err != nil {
 			return err
 		}
-		log.Debug(fmt.Sprintf("Copied file %s to %s", source, destination))
+		log.Debug("Copied file %s to %s", source, destination)
 	}
 	return nil
 }
@@ -47,7 +46,7 @@ func WriteFile(content string, destinations ...string) error {
 			return err
 		}
 
-		log.Debug(fmt.Sprintf("Wrote file: %s", destination))
+		log.Debug("Wrote file: %s", destination)
 	}
 
 	return nil

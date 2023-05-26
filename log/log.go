@@ -5,9 +5,9 @@ import (
 	"os"
 )
 
-func Debug(s string) {
+func Debug(format string, a ...any) {
 	if os.Getenv("debug") == "" {
 		//return
 	}
-	fmt.Println(s)
+	fmt.Printf(format+"\n", a...)
 }

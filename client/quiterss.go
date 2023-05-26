@@ -2,7 +2,6 @@ package client
 
 import (
 	"database/sql"
-	"fmt"
 	"os"
 
 	"github.com/limero/offlinerss/helpers"
@@ -201,9 +200,9 @@ func (c QuiteRSS) AddToCache(folders []*models.Folder) error {
 
 	latestFeedId := 0 // This is required because folder/feed share same table and use ids
 
-	log.Debug(fmt.Sprintf("Iterating over %d folders", len(folders)))
+	log.Debug("Iterating over %d folders", len(folders))
 	for _, folder := range folders {
-		log.Debug(fmt.Sprintf("Add folder to database: %s", folder.Title))
+		log.Debug("Add folder to database: %s", folder.Title)
 		category := 0 // Category variable separate to lastFeedId to support feeds without a folder
 		if folder.Title != "" {
 			latestFeedId++
@@ -217,9 +216,9 @@ func (c QuiteRSS) AddToCache(folders []*models.Folder) error {
 			}
 		}
 
-		log.Debug(fmt.Sprintf("Iterating over %d feeds in '%s' folder", len(folder.Feeds), folder.Title))
+		log.Debug("Iterating over %d feeds in '%s' folder", len(folder.Feeds), folder.Title)
 		for _, feed := range folder.Feeds {
-			log.Debug(fmt.Sprintf("Add feed to database: %s", feed.Title))
+			log.Debug("Add feed to database: %s", feed.Title)
 			latestFeedId++
 			if _, err = db.Exec(
 				"INSERT INTO feeds (id, text, title, xmlUrl, htmlUrl, unread, parentId) VALUES (?, ?, ?, ?, ?, ?, ?)",
@@ -234,7 +233,7 @@ func (c QuiteRSS) AddToCache(folders []*models.Folder) error {
 				return err
 			}
 
-			log.Debug(fmt.Sprintf("Adding %d stories in feed %s", len(feed.Stories), feed.Title))
+			log.Debug("Adding %d stories in feed %s", len(feed.Stories), feed.Title)
 			for _, story := range feed.Stories {
 				if _, err = db.Exec(
 					"INSERT INTO news (feedId, guid, description, title, published, read, starred, link_href) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",

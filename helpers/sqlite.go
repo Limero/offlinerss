@@ -28,11 +28,11 @@ func GetChangesFromSqlite(
 	starredValueFalse string,
 ) ([]models.SyncToAction, error) {
 	if _, err := os.Stat(referenceDBPath); os.IsNotExist(err) {
-		log.Debug(fmt.Sprintf("Reference database does not exist at %s, nothing to sync to server", referenceDBPath))
+		log.Debug("Reference database does not exist at %s, nothing to sync to server", referenceDBPath)
 		return nil, nil
 	}
 	if _, err := os.Stat(userDBPath); os.IsNotExist(err) {
-		log.Debug(fmt.Sprintf("User database does not exist at %s, nothing to sync to server", userDBPath))
+		log.Debug("User database does not exist at %s, nothing to sync to server", userDBPath)
 		return nil, nil
 	}
 
