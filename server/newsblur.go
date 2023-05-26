@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/limero/go-newsblur"
+	"github.com/limero/offlinerss/log"
 	"github.com/limero/offlinerss/models"
 )
 
@@ -36,7 +37,7 @@ func (s *Newsblur) Login() error {
 		Jar: cookieJar,
 	}
 
-	fmt.Println("Calling external NewsBlur API: Login")
+	log.Debug("Calling external NewsBlur API: Login")
 	loginOutput, err := newsblur.ApiLogin(client, &newsblur.LoginInput{
 		Username: s.config.Username,
 		Password: s.config.Password,
@@ -69,7 +70,7 @@ func (s *Newsblur) GetFoldersWithStories() ([]*models.Folder, error) {
 	}
 
 	for page := 1; true; page++ {
-		fmt.Printf("Calling external NewsBlur API: ReaderRiverStories. Number of feeds: %d. Page: %d\n", len(feedIds), page)
+		log.Debug(fmt.Sprintf("Calling external NewsBlur API: ReaderRiverStories. Number of feeds: %d. Page: %d", len(feedIds), page))
 		readerRiverStoriesOutput, err := newsblur.ApiReaderRiverStories(s.client, &newsblur.ReaderRiverStoriesInput{
 			Feeds: feedIds,
 			Page:  strconv.Itoa(page),
@@ -104,7 +105,7 @@ func (s *Newsblur) GetFoldersWithStories() ([]*models.Folder, error) {
 			}
 		}
 
-		fmt.Printf("Stories added: %d\n", len(readerRiverStoriesOutput.Stories))
+		log.Debug(fmt.Sprintf("Stories added: %d", len(readerRiverStoriesOutput.Stories)))
 		if len(readerRiverStoriesOutput.Stories) == 0 {
 			break
 		}
@@ -122,19 +123,19 @@ func (s *Newsblur) SyncToServer(syncToActions []models.SyncToAction) error {
 			readHashes = append(readHashes, syncToAction.Id)
 		case models.ActionStoryUnread:
 			// Batching of unread events is not supported by NewsBlur, so just handle individually directly
-			fmt.Printf("Item with hash %s has been marked as unread\n", syncToAction.Id)
+			log.Debug(fmt.Sprintf("Item with hash %s has been marked as unread", syncToAction.Id))
 			if err := s.markStoriesAsUnread(syncToAction.Id); err != nil {
 				return err
 			}
 		case models.ActionStoryStarred:
 			// Batching of starred events is not supported by NewsBlur, so just handle individually directly
-			fmt.Printf("Item with hash %s has been marked as starred\n", syncToAction.Id)
+			log.Debug(fmt.Sprintf("Item with hash %s has been marked as starred", syncToAction.Id))
 			if err := s.markStoriesAsStarred(syncToAction.Id); err != nil {
 				return err
 			}
 		case models.ActionStoryUnstarred:
 			// Batching of unstarred events is not supported by NewsBlur, so just handle individually directly
-			fmt.Printf("Item with hash %s has been marked as unstarred\n", syncToAction.Id)
+			log.Debug(fmt.Sprintf("Item with hash %s has been marked as unstarred", syncToAction.Id))
 			if err := s.markStoriesAsUnstarred(syncToAction.Id); err != nil {
 				return err
 			}
@@ -146,12 +147,12 @@ func (s *Newsblur) SyncToServer(syncToActions []models.SyncToAction) error {
 	if err := s.markStoriesAsRead(readHashes...); err != nil {
 		return err
 	}
-	fmt.Printf("%d items has been marked as read\n", len(readHashes))
+	log.Debug(fmt.Sprintf("%d items has been marked as read", len(readHashes)))
 	return nil
 }
 
 func (s *Newsblur) getFolders() ([]*models.Folder, error) {
-	fmt.Println("Calling external NewsBlur API: ReaderFeeds")
+	log.Debug("Calling external NewsBlur API: ReaderFeeds")
 	readerFeedsOutput, err := newsblur.ApiReaderFeeds(s.client)
 	if err != nil {
 		return nil, err
@@ -218,7 +219,7 @@ func (s *Newsblur) markStoriesAsRead(hashes ...string) error {
 		return nil
 	}
 
-	fmt.Printf("Calling external NewsBlur API: MarkStoryHashesAsRead. Hashes: %+v\n", hashes)
+	log.Debug(fmt.Sprintf("Calling external NewsBlur API: MarkStoryHashesAsRead. Hashes: %+v", hashes))
 	_, err := newsblur.ApiMarkStoryHashesAsRead(s.client, &newsblur.MarkStoryHashesAsReadInput{
 		StoryHash: hashes,
 	})
@@ -228,7 +229,7 @@ func (s *Newsblur) markStoriesAsRead(hashes ...string) error {
 func (s *Newsblur) markStoriesAsUnread(hashes ...string) error {
 	// NewsBlur doesn't support batching unread events. So we have to handle them individually
 	for _, hash := range hashes {
-		fmt.Printf("Calling external NewsBlur API: MarkStoryHashAsUnread. Hash: %s\n", hash)
+		log.Debug(fmt.Sprintf("Calling external NewsBlur API: MarkStoryHashAsUnread. Hash: %s", hash))
 		_, err := newsblur.ApiMarkStoryHashAsUnread(s.client, &newsblur.MarkStoryHashAsUnreadInput{
 			StoryHash: hash,
 		})
@@ -242,7 +243,7 @@ func (s *Newsblur) markStoriesAsUnread(hashes ...string) error {
 func (s *Newsblur) markStoriesAsStarred(hashes ...string) error {
 	// NewsBlur doesn't support batching starred events. So we have to handle them individually
 	for _, hash := range hashes {
-		fmt.Printf("Calling external NewsBlur API: MarkStoryHashAsStarred. Hash: %s\n", hash)
+		log.Debug(fmt.Sprintf("Calling external NewsBlur API: MarkStoryHashAsStarred. Hash: %s", hash))
 		_, err := newsblur.ApiMarkStoryHashAsStarred(s.client, &newsblur.MarkStoryHashAsStarredInput{
 			StoryHash: hash,
 		})
@@ -256,7 +257,7 @@ func (s *Newsblur) markStoriesAsStarred(hashes ...string) error {
 func (s *Newsblur) markStoriesAsUnstarred(hashes ...string) error {
 	// NewsBlur doesn't support batching unstarred events. So we have to handle them individually
 	for _, hash := range hashes {
-		fmt.Printf("Calling external NewsBlur API: MarkStoryHashAsUnstarred. Hash: %s\n", hash)
+		log.Debug(fmt.Sprintf("Calling external NewsBlur API: MarkStoryHashAsUnstarred. Hash: %s", hash))
 		_, err := newsblur.ApiMarkStoryHashAsUnstarred(s.client, &newsblur.MarkStoryHashAsUnstarredInput{
 			StoryHash: hash,
 		})

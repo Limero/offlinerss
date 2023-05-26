@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/limero/offlinerss/log"
 	"github.com/limero/offlinerss/models"
 	miniflux "miniflux.app/client"
 )
@@ -145,14 +146,14 @@ func (s *Miniflux) SyncToServer(syncToActions []models.SyncToAction) error {
 		if err := s.client.UpdateEntries(readIds, miniflux.EntryStatusRead); err != nil {
 			return err
 		}
-		fmt.Printf("%d items has been marked as read\n", len(readIds))
+		log.Debug(fmt.Sprintf("%d items has been marked as read", len(readIds)))
 	}
 
 	if len(unreadIds) > 0 {
 		if err := s.client.UpdateEntries(unreadIds, miniflux.EntryStatusUnread); err != nil {
 			return err
 		}
-		fmt.Printf("%d items has been marked as unread\n", len(unreadIds))
+		log.Debug(fmt.Sprintf("%d items has been marked as unread", len(unreadIds)))
 	}
 
 	return nil

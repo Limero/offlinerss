@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/limero/offlinerss/helpers"
+	"github.com/limero/offlinerss/log"
 	"github.com/limero/offlinerss/models"
 )
 
@@ -52,14 +53,14 @@ func (c Feedreader) CreateNewCache() error {
 	tmpCachePath := helpers.NewTmpCachePath()
 	defer os.Remove(tmpCachePath)
 
-	fmt.Println("Creating feedreader temporary cache")
+	log.Debug("Creating feedreader temporary cache")
 	db, err := sql.Open("sqlite3", tmpCachePath)
 	if err != nil {
 		return err
 	}
 	defer db.Close()
 
-	fmt.Println("Creating tables in feedreader new temporary cache")
+	log.Debug("Creating tables in feedreader new temporary cache")
 
 	if _, err = db.Exec(`
 		CREATE TABLE "CachedActions"
@@ -149,9 +150,9 @@ func (c Feedreader) AddToCache(folders []*models.Folder) error {
 	}
 	defer db.Close()
 
-	fmt.Printf("Iterating over %d folders\n", len(folders))
+	log.Debug(fmt.Sprintf("Iterating over %d folders", len(folders)))
 	for i, folder := range folders {
-		fmt.Printf("Add folder to database: %s\n", folder.Title)
+		log.Debug(fmt.Sprintf("Add folder to database: %s", folder.Title))
 		category := 0 // 0 = Uncategorized
 		if folder.Title != "" {
 			category = i + 1
@@ -167,9 +168,9 @@ func (c Feedreader) AddToCache(folders []*models.Folder) error {
 			}
 		}
 
-		fmt.Printf("Iterating over %d feeds in '%s' folder\n", len(folder.Feeds), folder.Title)
+		log.Debug(fmt.Sprintf("Iterating over %d feeds in '%s' folder", len(folder.Feeds), folder.Title))
 		for _, feed := range folder.Feeds {
-			fmt.Printf("Add feed to database: %s\n", feed.Title)
+			log.Debug(fmt.Sprintf("Add feed to database: %s", feed.Title))
 			if _, err = db.Exec(
 				"INSERT OR REPLACE INTO feeds (feed_id, name, url, category_id, xmlURL) VALUES (?, ?, ?, ?, ?)",
 				feed.Id,
@@ -181,7 +182,7 @@ func (c Feedreader) AddToCache(folders []*models.Folder) error {
 				return err
 			}
 
-			fmt.Printf("Adding %d stories in feed %s\n", len(feed.Stories), feed.Title)
+			log.Debug(fmt.Sprintf("Adding %d stories in feed %s", len(feed.Stories), feed.Title))
 			for _, story := range feed.Stories {
 				if _, err = db.Exec(
 					"INSERT OR REPLACE INTO articles (articleID, feedID, title, url, html, preview, unread, marked, date, guidHash, lastModified, contentFetched) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",

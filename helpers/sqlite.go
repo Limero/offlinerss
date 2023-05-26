@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/limero/offlinerss/log"
 	"github.com/limero/offlinerss/models"
 )
 
@@ -27,11 +28,11 @@ func GetChangesFromSqlite(
 	starredValueFalse string,
 ) ([]models.SyncToAction, error) {
 	if _, err := os.Stat(referenceDBPath); os.IsNotExist(err) {
-		fmt.Printf("Reference database does not exist at %s, nothing to sync to server\n", referenceDBPath)
+		log.Debug(fmt.Sprintf("Reference database does not exist at %s, nothing to sync to server", referenceDBPath))
 		return nil, nil
 	}
 	if _, err := os.Stat(userDBPath); os.IsNotExist(err) {
-		fmt.Printf("User database does not exist at %s, nothing to sync to server\n", userDBPath)
+		log.Debug(fmt.Sprintf("User database does not exist at %s, nothing to sync to server", userDBPath))
 		return nil, nil
 	}
 

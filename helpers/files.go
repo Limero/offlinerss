@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/limero/offlinerss/log"
 )
 
 func CopyFile(source string, destinations ...string) error {
@@ -25,7 +27,7 @@ func CopyFile(source string, destinations ...string) error {
 		if err := os.WriteFile(destination, data, 0644); err != nil {
 			return err
 		}
-		fmt.Printf("Copied file %s to %s\n", source, destination)
+		log.Debug(fmt.Sprintf("Copied file %s to %s", source, destination))
 	}
 	return nil
 }
@@ -45,7 +47,7 @@ func WriteFile(content string, destinations ...string) error {
 			return err
 		}
 
-		fmt.Printf("Wrote file: %s\n", destination)
+		log.Debug(fmt.Sprintf("Wrote file: %s", destination))
 	}
 
 	return nil
@@ -69,7 +71,7 @@ func MergeToFile(lines []string, file string) error {
 
 	var c string
 	for _, line := range RemoveDuplicates(append(fileLines, lines...)) {
-		c += line + "\n"
+		c += line + ""
 	}
 
 	return WriteFile(c, file)
