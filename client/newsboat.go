@@ -99,7 +99,7 @@ func (c Newsboat) CreateNewCache() error {
 	return nil
 }
 
-func (c Newsboat) AddToCache(folders []*models.Folder) error {
+func (c Newsboat) AddToCache(folders models.Folders) error {
 	tmpCachePath := helpers.NewTmpCachePath()
 	defer os.Remove(tmpCachePath)
 

@@ -39,7 +39,7 @@ func TestClients(t *testing.T) {
 			Stories: stories1,
 		},
 	}
-	folders := []*models.Folder{
+	folders := models.Folders{
 		{
 			Id:    123,
 			Title: "Folder",

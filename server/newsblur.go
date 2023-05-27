@@ -53,7 +53,7 @@ func (s *Newsblur) Login() error {
 	return nil
 }
 
-func (s *Newsblur) GetFoldersWithStories() ([]*models.Folder, error) {
+func (s *Newsblur) GetFoldersWithStories() (models.Folders, error) {
 	// Like GetFolders but it will also load all unread stories with it
 	folders, err := s.getFolders()
 	if err != nil {
@@ -150,7 +150,7 @@ func (s *Newsblur) SyncToServer(syncToActions models.SyncToActions) error {
 	return nil
 }
 
-func (s *Newsblur) getFolders() ([]*models.Folder, error) {
+func (s *Newsblur) getFolders() (models.Folders, error) {
 	log.Debug("Calling external NewsBlur API: ReaderFeeds")
 	readerFeedsOutput, err := newsblur.ApiReaderFeeds(s.client)
 	if err != nil {
@@ -163,7 +163,7 @@ func (s *Newsblur) getFolders() ([]*models.Folder, error) {
 		Feeds: []*models.Feed{},
 	}
 
-	var newFolders []*models.Folder
+	var newFolders models.Folders
 	for _, element := range readerFeedsOutput.Folders {
 		switch element.(type) {
 		case float64, float32:

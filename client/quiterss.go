@@ -179,7 +179,7 @@ func (c QuiteRSS) CreateNewCache() error {
 	return nil
 }
 
-func (c QuiteRSS) AddToCache(folders []*models.Folder) error {
+func (c QuiteRSS) AddToCache(folders models.Folders) error {
 	// TODO: Remove this once db has been confirmed idempotent, like the Newsboat client
 	if err := c.CreateNewCache(); err != nil {
 		return err

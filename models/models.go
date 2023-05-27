@@ -36,6 +36,8 @@ type Folder struct {
 	Feeds []*Feed
 }
 
+type Folders []*Folder
+
 type Feed struct {
 	Id      int
 	Unread  int

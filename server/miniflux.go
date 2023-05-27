@@ -35,8 +35,8 @@ func (s *Miniflux) Login() error {
 	return nil
 }
 
-func (s *Miniflux) GetFoldersWithStories() ([]*models.Folder, error) {
-	var folders []*models.Folder
+func (s *Miniflux) GetFoldersWithStories() (models.Folders, error) {
+	var folders models.Folders
 
 	entries, err := s.client.Entries(&miniflux.Filter{
 		Status: miniflux.EntryStatusUnread,

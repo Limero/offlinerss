@@ -51,7 +51,7 @@ func GetSyncToActions(clients models.Clients) (models.SyncToActions, error) {
 	return syncToActions, nil
 }
 
-func SyncClients(clients models.Clients, folders []*models.Folder) error {
+func SyncClients(clients models.Clients, folders models.Folders) error {
 	for _, client := range clients {
 		if _, err := os.Stat(client.ReferenceDB()); errors.Is(err, os.ErrNotExist) {
 			if err := client.CreateNewCache(); err != nil {

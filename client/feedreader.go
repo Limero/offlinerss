@@ -135,7 +135,7 @@ func (c Feedreader) CreateNewCache() error {
 	return nil
 }
 
-func (c Feedreader) AddToCache(folders []*models.Folder) error {
+func (c Feedreader) AddToCache(folders models.Folders) error {
 	tmpCachePath := helpers.NewTmpCachePath()
 	defer os.Remove(tmpCachePath)
 

@@ -6,7 +6,7 @@ type Client interface {
 	ReferenceDB() string
 	GetChanges() (SyncToActions, error)
 	CreateNewCache() error
-	AddToCache(folders []*Folder) error
+	AddToCache(folders Folders) error
 }
 
 type Clients []Client
