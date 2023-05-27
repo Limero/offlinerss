@@ -13,11 +13,13 @@ func SyncServer(server models.Server, syncToActions []models.SyncToAction) ([]*m
 		return nil, err
 	}
 
-	log.Debug("Syncing changes to " + server.Name())
-	if err := server.SyncToServer(syncToActions); err != nil {
-		return nil, err
+	if len(syncToActions) > 0 {
+		log.Info("Syncing changes to " + server.Name())
+		if err := server.SyncToServer(syncToActions); err != nil {
+			return nil, err
+		}
 	}
 
-	log.Debug("Retrieving new stories from " + server.Name())
+	log.Info("Retrieving new stories from " + server.Name())
 	return server.GetFoldersWithStories()
 }

@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/limero/offlinerss/client"
+	"github.com/limero/offlinerss/log"
 	"github.com/limero/offlinerss/models"
 	"github.com/limero/offlinerss/server"
 	_ "github.com/mattn/go-sqlite3"
@@ -75,6 +76,8 @@ func run() error {
 	if err := SyncClients(clients, folders); err != nil {
 		return err
 	}
+
+	log.Info("Everything synced!")
 
 	return nil
 }
