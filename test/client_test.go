@@ -17,7 +17,7 @@ func TestClients(t *testing.T) {
 	tmpDir := filepath.Join(os.TempDir(), "offlinerss")
 	defer os.RemoveAll(tmpDir)
 
-	stories1 := []*models.Story{
+	stories1 := models.Stories{
 		{
 			Hash:   "123",
 			Unread: true,
@@ -27,7 +27,7 @@ func TestClients(t *testing.T) {
 			Unread: true,
 		},
 	}
-	stories2 := []*models.Story{
+	stories2 := models.Stories{
 		{
 			Hash:   "456",
 			Unread: true,

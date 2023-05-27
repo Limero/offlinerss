@@ -60,3 +60,5 @@ type Story struct {
 	Date      string // Example: 2006-01-02 15:04:05
 	Starred   bool
 }
+
+type Stories []*Story

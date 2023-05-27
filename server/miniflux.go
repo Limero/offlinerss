@@ -97,7 +97,7 @@ func (s *Miniflux) GetFoldersWithStories() (models.Folders, error) {
 				Title:   entry.Feed.Title,
 				Url:     entry.Feed.FeedURL,
 				Website: entry.Feed.SiteURL,
-				Stories: []*models.Story{},
+				Stories: models.Stories{},
 			}
 			storyFolder.Feeds = models.AddFeedToFeeds(storyFolder.Feeds, storyFeed)
 		}
