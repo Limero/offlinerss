@@ -47,9 +47,6 @@ func TestClients(t *testing.T) {
 		},
 	}
 
-	// TODO: Make client create this file
-	os.Create(filepath.Join(tmpDir, "newsboat", "urls"))
-
 	for _, tt := range []struct {
 		client       models.Client
 		storiesTable string
