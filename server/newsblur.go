@@ -160,7 +160,7 @@ func (s *Newsblur) getFolders() (models.Folders, error) {
 	// noFolder is a collection of feeds without folder
 	noFolder := models.Folder{
 		Title: "",
-		Feeds: []*models.Feed{},
+		Feeds: models.Feeds{},
 	}
 
 	var newFolders models.Folders
@@ -175,7 +175,7 @@ func (s *Newsblur) getFolders() (models.Folders, error) {
 			for folder, feeds := range folders {
 				newFolder := models.Folder{
 					Title: folder,
-					Feeds: []*models.Feed{},
+					Feeds: models.Feeds{},
 				}
 
 				for _, feedId := range feeds.([]interface{}) {

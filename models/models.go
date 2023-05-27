@@ -47,6 +47,8 @@ type Feed struct {
 	Stories []*Story
 }
 
+type Feeds []*Feed
+
 type Story struct {
 	Timestamp string // Example: 1600000000
 	Hash      string

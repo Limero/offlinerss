@@ -33,7 +33,7 @@ func TestClients(t *testing.T) {
 			Unread: true,
 		},
 	}
-	feeds := []*models.Feed{
+	feeds := models.Feeds{
 		{
 			Id:      123,
 			Stories: stories1,
