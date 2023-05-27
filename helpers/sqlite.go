@@ -26,7 +26,7 @@ func GetChangesFromSqlite(
 	starredName string,
 	starredValueTrue string,
 	starredValueFalse string,
-) ([]models.SyncToAction, error) {
+) (models.SyncToActions, error) {
 	if _, err := os.Stat(referenceDBPath); os.IsNotExist(err) {
 		log.Debug("Reference database does not exist at %s, nothing to sync to server", referenceDBPath)
 		return nil, nil
@@ -45,7 +45,7 @@ func GetChangesFromSqlite(
 		return nil, err
 	}
 
-	var syncToActions []models.SyncToAction
+	var syncToActions models.SyncToActions
 	for _, refRow := range refRows {
 		for _, userRow := range userRows {
 			if refRow.Id != userRow.Id {

@@ -113,7 +113,7 @@ func (s *Newsblur) GetFoldersWithStories() ([]*models.Folder, error) {
 	return folders, nil
 }
 
-func (s *Newsblur) SyncToServer(syncToActions []models.SyncToAction) error {
+func (s *Newsblur) SyncToServer(syncToActions models.SyncToActions) error {
 	var readHashes []string
 	for _, syncToAction := range syncToActions {
 		switch syncToAction.Action {

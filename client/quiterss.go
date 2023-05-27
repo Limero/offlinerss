@@ -33,7 +33,7 @@ func (c QuiteRSS) ReferenceDB() string {
 	return c.DataPath.GetReferenceDB()
 }
 
-func (c QuiteRSS) GetChanges() ([]models.SyncToAction, error) {
+func (c QuiteRSS) GetChanges() (models.SyncToActions, error) {
 	return helpers.GetChangesFromSqlite(
 		c.ReferenceDB(),
 		c.UserDB(),

@@ -33,7 +33,7 @@ func (c Feedreader) ReferenceDB() string {
 	return c.DataPath.GetReferenceDB()
 }
 
-func (c Feedreader) GetChanges() ([]models.SyncToAction, error) {
+func (c Feedreader) GetChanges() (models.SyncToActions, error) {
 	return helpers.GetChangesFromSqlite(
 		c.ReferenceDB(),
 		c.UserDB(),

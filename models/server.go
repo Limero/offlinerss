@@ -4,5 +4,5 @@ type Server interface {
 	Name() string
 	Login() error
 	GetFoldersWithStories() ([]*Folder, error)
-	SyncToServer(syncToActions []SyncToAction) error
+	SyncToServer(syncToActions SyncToActions) error
 }

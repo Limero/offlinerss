@@ -12,6 +12,24 @@ type SyncToAction struct {
 	Action int
 }
 
+type SyncToActions []SyncToAction
+
+func (actions SyncToActions) SumActionTypes() (read int, unread int, starred int, unstarred int) {
+	for _, action := range actions {
+		switch action.Action {
+		case ActionStoryRead:
+			read++
+		case ActionStoryUnread:
+			unread++
+		case ActionStoryStarred:
+			starred++
+		case ActionStoryUnstarred:
+			unstarred++
+		}
+	}
+	return read, unread, starred, unstarred
+}
+
 type Folder struct {
 	Id    int
 	Title string

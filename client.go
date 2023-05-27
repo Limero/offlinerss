@@ -8,13 +8,13 @@ import (
 	"github.com/limero/offlinerss/models"
 )
 
-func GetSyncToActions(clients models.Clients) ([]models.SyncToAction, error) {
+func GetSyncToActions(clients models.Clients) (models.SyncToActions, error) {
 	if len(clients) == 0 {
 		return nil, errors.New("You have to enable at least one client in the config file")
 	}
 
 	// Grab changes from each client
-	var syncToActions []models.SyncToAction
+	var syncToActions models.SyncToActions
 
 	for _, client := range clients {
 		actions, err := client.GetChanges()
@@ -26,36 +26,19 @@ func GetSyncToActions(clients models.Clients) ([]models.SyncToAction, error) {
 			continue
 		}
 
-		readActions := 0
-		unreadActions := 0
-		starredActions := 0
-		unstarredActions := 0
-
-		for _, action := range actions {
-			switch action.Action {
-			case models.ActionStoryRead:
-				readActions++
-			case models.ActionStoryUnread:
-				unreadActions++
-			case models.ActionStoryStarred:
-				starredActions++
-			case models.ActionStoryUnstarred:
-				unstarredActions++
-			}
-		}
-
 		log.Info("Found %d changes in %s", len(actions), client.Name())
-		if readActions > 0 {
-			log.Info("  📖 %d read", readActions)
+		read, unread, starred, unstarred := actions.SumActionTypes()
+		if read > 0 {
+			log.Info("  📖 %d read", read)
 		}
-		if unreadActions > 0 {
-			log.Info("  📕 %d unread", unreadActions)
+		if unread > 0 {
+			log.Info("  📕 %d unread", unread)
 		}
-		if starredActions > 0 {
-			log.Info("  ⭐ %d starred", starredActions)
+		if starred > 0 {
+			log.Info("  ⭐ %d starred", starred)
 		}
-		if unstarredActions > 0 {
-			log.Info("  ☁️  %d unstarred", unstarredActions)
+		if unstarred > 0 {
+			log.Info("  ☁️  %d unstarred", unstarred)
 		}
 
 		syncToActions = append(syncToActions, actions...)

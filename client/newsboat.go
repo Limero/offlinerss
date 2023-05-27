@@ -34,7 +34,7 @@ func (c Newsboat) ReferenceDB() string {
 	return c.DataPath.GetReferenceDB()
 }
 
-func (c Newsboat) GetChanges() ([]models.SyncToAction, error) {
+func (c Newsboat) GetChanges() (models.SyncToActions, error) {
 	return helpers.GetChangesFromSqlite(
 		c.ReferenceDB(),
 		c.UserDB(),

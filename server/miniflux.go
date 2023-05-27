@@ -112,7 +112,7 @@ func (s *Miniflux) GetFoldersWithStories() ([]*models.Folder, error) {
 	return folders, nil
 }
 
-func (s *Miniflux) SyncToServer(syncToActions []models.SyncToAction) error {
+func (s *Miniflux) SyncToServer(syncToActions models.SyncToActions) error {
 	var readIds []int64
 	var unreadIds []int64
 
