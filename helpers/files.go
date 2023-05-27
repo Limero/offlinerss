@@ -2,6 +2,8 @@ package helpers
 
 import (
 	"bufio"
+	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 
@@ -55,18 +57,22 @@ func WriteFile(content string, destinations ...string) error {
 func MergeToFile(lines []string, file string) error {
 	/*
 		All lines that don't already exist in the file will be added to it
+		If original file doesn't exist, it will be created with the new lines
 	*/
+	var fileLines []string
 	readFile, err := os.Open(file)
 	if err != nil {
-		return err
+		if !errors.Is(err, fs.ErrNotExist) {
+			return err
+		}
+	} else {
+		fileScanner := bufio.NewScanner(readFile)
+		fileScanner.Split(bufio.ScanLines)
+		for fileScanner.Scan() {
+			fileLines = append(fileLines, fileScanner.Text())
+		}
+		readFile.Close()
 	}
-	fileScanner := bufio.NewScanner(readFile)
-	fileScanner.Split(bufio.ScanLines)
-	var fileLines []string
-	for fileScanner.Scan() {
-		fileLines = append(fileLines, fileScanner.Text())
-	}
-	readFile.Close()
 
 	var c string
 	for _, line := range RemoveDuplicates(append(fileLines, lines...)) {

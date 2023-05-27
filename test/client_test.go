@@ -14,8 +14,8 @@ import (
 )
 
 func TestClients(t *testing.T) {
-	tmpDir := os.TempDir()
-	defer os.Remove(tmpDir)
+	tmpDir := filepath.Join(os.TempDir(), "offlinerss")
+	defer os.RemoveAll(tmpDir)
 
 	stories1 := []*models.Story{
 		{
