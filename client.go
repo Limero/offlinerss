@@ -38,7 +38,7 @@ func GetSyncToActions(clients models.Clients) (models.SyncToActions, error) {
 			log.Info("  ⭐ %d starred", starred)
 		}
 		if unstarred > 0 {
-			log.Info("  ☁️  %d unstarred", unstarred)
+			log.Info("  ☁️ %d unstarred", unstarred)
 		}
 
 		syncToActions = append(syncToActions, actions...)
