@@ -38,6 +38,11 @@ func WriteFile(content string, destinations ...string) error {
 		Create file at destinations with content. If file exists, it will be overwritten.
 	*/
 	for _, destination := range destinations {
+		// Create parent directories
+		if err := os.MkdirAll(filepath.Dir(destination), os.ModePerm); err != nil {
+			return err
+		}
+
 		file, err := os.Create(destination)
 		if err != nil {
 			return err
@@ -77,7 +82,7 @@ func MergeToFile(lines []string, file string) error {
 		If original file doesn't exist, it will be created with the new lines
 	*/
 	fileLines, err := ReadFileToLines(file)
-	if !errors.Is(err, fs.ErrNotExist) {
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return err
 	}
 
