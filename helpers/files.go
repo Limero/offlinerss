@@ -54,24 +54,31 @@ func WriteFile(content string, destinations ...string) error {
 	return nil
 }
 
+func ReadFileToLines(file string) ([]string, error) {
+	var fileLines []string
+	readFile, err := os.Open(file)
+	if err != nil {
+		return fileLines, err
+	}
+
+	fileScanner := bufio.NewScanner(readFile)
+	fileScanner.Split(bufio.ScanLines)
+	for fileScanner.Scan() {
+		fileLines = append(fileLines, fileScanner.Text())
+	}
+	readFile.Close()
+
+	return fileLines, nil
+}
+
 func MergeToFile(lines []string, file string) error {
 	/*
 		All lines that don't already exist in the file will be added to it
 		If original file doesn't exist, it will be created with the new lines
 	*/
-	var fileLines []string
-	readFile, err := os.Open(file)
-	if err != nil {
-		if !errors.Is(err, fs.ErrNotExist) {
-			return err
-		}
-	} else {
-		fileScanner := bufio.NewScanner(readFile)
-		fileScanner.Split(bufio.ScanLines)
-		for fileScanner.Scan() {
-			fileLines = append(fileLines, fileScanner.Text())
-		}
-		readFile.Close()
+	fileLines, err := ReadFileToLines(file)
+	if !errors.Is(err, fs.ErrNotExist) {
+		return err
 	}
 
 	var c string
