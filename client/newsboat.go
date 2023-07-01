@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/limero/offlinerss/helpers"
 	"github.com/limero/offlinerss/log"
@@ -169,10 +170,21 @@ func (c Newsboat) AddToCache(folders models.Folders) error {
 	if err := helpers.MergeToFile(
 		newsboatUrls,
 		c.DataPath.GetFile("urls"),
-		nil,
+		urlsSortFunc(),
 	); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func urlsSortFunc() func(s1, s2 string) bool {
+	return func(s1, s2 string) bool {
+		// Split lines into words
+		words1 := strings.Fields(s1)
+		words2 := strings.Fields(s2)
+
+		// Compare the last words
+		return words1[len(words1)-1] < words2[len(words2)-1]
+	}
 }
