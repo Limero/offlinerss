@@ -166,7 +166,11 @@ func (c Newsboat) AddToCache(folders models.Folders) error {
 		return err
 	}
 
-	if err := helpers.MergeToFile(newsboatUrls, c.DataPath.GetFile("urls")); err != nil {
+	if err := helpers.MergeToFile(
+		newsboatUrls,
+		c.DataPath.GetFile("urls"),
+		nil,
+	); err != nil {
 		return err
 	}
 

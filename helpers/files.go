@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"sort"
 
 	"github.com/limero/offlinerss/log"
 )
@@ -76,7 +77,7 @@ func ReadFileToLines(file string) ([]string, error) {
 	return fileLines, nil
 }
 
-func MergeToFile(lines []string, file string) error {
+func MergeToFile(lines []string, file string, sortFunc func(s1, s2 string) bool) error {
 	/*
 		All lines that don't already exist in the file will be added to it
 		If original file doesn't exist, it will be created with the new lines
@@ -85,9 +86,16 @@ func MergeToFile(lines []string, file string) error {
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return err
 	}
+	lines = append(fileLines, lines...)
+
+	if sortFunc != nil {
+		sort.Slice(lines, func(i, j int) bool {
+			return sortFunc(lines[i], lines[j])
+		})
+	}
 
 	var c string
-	for _, line := range RemoveDuplicates(append(fileLines, lines...)) {
+	for _, line := range RemoveDuplicates(lines) {
 		c += line + "\n"
 	}
 
