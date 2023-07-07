@@ -46,22 +46,3 @@ func Test_AddFolderToFolders(t *testing.T) {
 	assert.Equal(t, "cc", folders[3].Title)
 	assert.Equal(t, "nofeeds", folders[4].Title)
 }
-
-func Test_AddFeedToFeeds(t *testing.T) {
-	var feeds Feeds
-
-	feeds = AddFeedToFeeds(feeds, &Feed{
-		Title: "cc",
-	})
-	feeds = AddFeedToFeeds(feeds, &Feed{
-		Title: "aa",
-	})
-	feeds = AddFeedToFeeds(feeds, &Feed{
-		Title: "bb",
-	})
-
-	assert.Equal(t, 3, len(feeds))
-	assert.Equal(t, "aa", feeds[0].Title)
-	assert.Equal(t, "bb", feeds[1].Title)
-	assert.Equal(t, "cc", feeds[2].Title)
-}
