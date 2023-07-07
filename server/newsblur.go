@@ -200,7 +200,7 @@ func (s *Newsblur) addFeedToFolder(readerFeedsOutput *newsblur.ReaderFeedsOutput
 			// Match found
 			if tmpFeed.Ps != 0 || tmpFeed.Nt != 0 {
 				// Feed has unread items, add it
-				newFolder.Feeds = models.AddFeedToFeeds(newFolder.Feeds, &models.Feed{
+				newFolder.Feeds = newFolder.Feeds.AddFeed(&models.Feed{
 					Id:      tmpFeed.ID,
 					Unread:  tmpFeed.Ps + tmpFeed.Nt,
 					Title:   tmpFeed.FeedTitle,

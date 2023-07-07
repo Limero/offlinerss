@@ -99,7 +99,7 @@ func (s *Miniflux) GetFoldersWithStories() (models.Folders, error) {
 				Website: entry.Feed.SiteURL,
 				Stories: models.Stories{},
 			}
-			storyFolder.Feeds = models.AddFeedToFeeds(storyFolder.Feeds, storyFeed)
+			storyFolder.Feeds = storyFolder.Feeds.AddFeed(storyFeed)
 		}
 
 		if story.Unread {

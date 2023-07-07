@@ -11,7 +11,7 @@ type Feed struct {
 
 type Feeds []*Feed
 
-func AddFeedToFeeds(feeds []*Feed, newFeed *Feed) (newFeeds []*Feed) {
+func (feeds Feeds) AddFeed(newFeed *Feed) (newFeeds Feeds) {
 	/*
 		Add a feed to a struct of feeds in alphabetized order
 	*/

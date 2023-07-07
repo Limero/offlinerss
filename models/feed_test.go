@@ -6,16 +6,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_AddFeedToFeeds(t *testing.T) {
+func TestAddFeed(t *testing.T) {
 	var feeds Feeds
 
-	feeds = AddFeedToFeeds(feeds, &Feed{
+	feeds = feeds.AddFeed(&Feed{
 		Title: "cc",
 	})
-	feeds = AddFeedToFeeds(feeds, &Feed{
+	feeds = feeds.AddFeed(&Feed{
 		Title: "aa",
 	})
-	feeds = AddFeedToFeeds(feeds, &Feed{
+	feeds = feeds.AddFeed(&Feed{
 		Title: "bb",
 	})
 
