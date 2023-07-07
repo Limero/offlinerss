@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_AddFolderToFolders(t *testing.T) {
+func TestAddFolder(t *testing.T) {
 	var folders Folders
 
 	feeds := Feeds{
@@ -15,27 +15,27 @@ func Test_AddFolderToFolders(t *testing.T) {
 		},
 	}
 
-	folders = AddFolderToFolders(folders, &Folder{
+	folders = folders.AddFolder(&Folder{
 		Title: "cc",
 		Feeds: feeds,
 	})
 
-	folders = AddFolderToFolders(folders, &Folder{
+	folders = folders.AddFolder(&Folder{
 		Title: "aa",
 		Feeds: feeds,
 	})
 
-	folders = AddFolderToFolders(folders, &Folder{
+	folders = folders.AddFolder(&Folder{
 		Title: "bb",
 		Feeds: feeds,
 	})
 
-	folders = AddFolderToFolders(folders, &Folder{
+	folders = folders.AddFolder(&Folder{
 		Title: "",
 		Feeds: feeds,
 	})
 
-	folders = AddFolderToFolders(folders, &Folder{
+	folders = folders.AddFolder(&Folder{
 		Title: "nofeeds",
 	})
 

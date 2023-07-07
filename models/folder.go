@@ -8,7 +8,7 @@ type Folder struct {
 
 type Folders []*Folder
 
-func AddFolderToFolders(folders []*Folder, newFolder *Folder) (newFolders []*Folder) {
+func (folders Folders) AddFolder(newFolder *Folder) (newFolders Folders) {
 	/*
 		Add a folder to a struct of folders in alphabetized order
 	*/

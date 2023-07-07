@@ -184,13 +184,13 @@ func (s *Newsblur) getFolders() (models.Folders, error) {
 
 				// Add folder if it's not empty
 				if len(newFolder.Feeds) > 0 {
-					newFolders = models.AddFolderToFolders(newFolders, &newFolder)
+					newFolders = newFolders.AddFolder(&newFolder)
 				}
 			}
 		}
 	}
 
-	return models.AddFolderToFolders(newFolders, &noFolder), nil
+	return newFolders.AddFolder(&noFolder), nil
 }
 
 func (s *Newsblur) addFeedToFolder(readerFeedsOutput *newsblur.ReaderFeedsOutput, feedId interface{}, newFolder *models.Folder) {

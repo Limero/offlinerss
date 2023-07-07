@@ -79,7 +79,7 @@ func (s *Miniflux) GetFoldersWithStories() (models.Folders, error) {
 				Feeds: models.Feeds{},
 			}
 
-			folders = models.AddFolderToFolders(folders, storyFolder)
+			folders = folders.AddFolder(storyFolder)
 		}
 
 		var storyFeed *models.Feed
