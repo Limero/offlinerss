@@ -9,9 +9,16 @@ import (
 	miniflux "miniflux.app/client"
 )
 
+type MinifluxClient interface {
+	Entry(entryID int64) (*miniflux.Entry, error)
+	Entries(filter *miniflux.Filter) (*miniflux.EntryResultSet, error)
+	UpdateEntries(entryIDs []int64, status string) error
+	ToggleBookmark(entryID int64) error
+}
+
 type Miniflux struct {
 	config models.ServerConfig
-	client *miniflux.Client
+	client MinifluxClient
 }
 
 func NewMiniflux(config models.ServerConfig) *Miniflux {
@@ -129,11 +136,7 @@ func (s *Miniflux) SyncToServer(syncToActions models.SyncToActions) error {
 		case models.ActionStoryUnread:
 			// Batch unread events so only one request has to be done
 			unreadIds = append(unreadIds, actionId)
-		case models.ActionStoryStarred:
-			if err := s.handleStarred(syncToAction); err != nil {
-				return err
-			}
-		case models.ActionStoryUnstarred:
+		case models.ActionStoryStarred, models.ActionStoryUnstarred:
 			if err := s.handleStarred(syncToAction); err != nil {
 				return err
 			}
