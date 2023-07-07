@@ -29,36 +29,3 @@ func (actions SyncToActions) SumActionTypes() (read int, unread int, starred int
 	}
 	return read, unread, starred, unstarred
 }
-
-type Folder struct {
-	Id    int
-	Title string
-	Feeds []*Feed
-}
-
-type Folders []*Folder
-
-type Feed struct {
-	Id      int
-	Unread  int
-	Title   string
-	Url     string // Link to the feed (usually .xml/.json)
-	Website string // Link to the website
-	Stories []*Story
-}
-
-type Feeds []*Feed
-
-type Story struct {
-	Timestamp string // Example: 1600000000
-	Hash      string
-	Title     string
-	Authors   string
-	Content   string
-	Url       string
-	Unread    bool
-	Date      string // Example: 2006-01-02 15:04:05
-	Starred   bool
-}
-
-type Stories []*Story
