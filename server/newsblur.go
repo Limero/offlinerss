@@ -13,12 +13,20 @@ import (
 
 type Newsblur struct {
 	config models.ServerConfig
-	client *http.Client
+	client *newsblur.Newsblur
 }
 
 func NewNewsblur(config models.ServerConfig) *Newsblur {
+	cookieJar, err := cookiejar.New(nil)
+	if err != nil {
+		panic(err)
+	}
+
 	return &Newsblur{
 		config: config,
+		client: newsblur.New(&http.Client{
+			Jar: cookieJar,
+		}),
 	}
 }
 
@@ -27,30 +35,9 @@ func (s *Newsblur) Name() string {
 }
 
 func (s *Newsblur) Login() error {
-	cookieJar, err := cookiejar.New(nil)
-	if err != nil {
-		return err
-	}
-
-	client := &http.Client{
-		Jar: cookieJar,
-	}
-
 	log.Debug("Calling external NewsBlur API: Login")
-	loginOutput, err := newsblur.ApiLogin(client, &newsblur.LoginInput{
-		Username: s.config.Username,
-		Password: s.config.Password,
-	})
-	if err != nil {
-		return err
-	}
-
-	if !loginOutput.Authenticated {
-		return fmt.Errorf("Failed to login to NewsBlur. %v", loginOutput.Errors)
-	}
-
-	s.client = client
-	return nil
+	_, err := s.client.Login(s.config.Username, s.config.Password)
+	return err
 }
 
 func (s *Newsblur) GetFoldersWithStories() (models.Folders, error) {
@@ -70,10 +57,7 @@ func (s *Newsblur) GetFoldersWithStories() (models.Folders, error) {
 
 	for page := 1; true; page++ {
 		log.Debug("Calling external NewsBlur API: ReaderRiverStories. Number of feeds: %d. Page: %d", len(feedIds), page)
-		readerRiverStoriesOutput, err := newsblur.ApiReaderRiverStories(s.client, &newsblur.ReaderRiverStoriesInput{
-			Feeds: feedIds,
-			Page:  strconv.Itoa(page),
-		})
+		readerRiverStoriesOutput, err := s.client.ReaderRiverStories(feedIds, page)
 		if err != nil {
 			return nil, err
 		}
@@ -152,7 +136,7 @@ func (s *Newsblur) SyncToServer(syncToActions models.SyncToActions) error {
 
 func (s *Newsblur) getFolders() (models.Folders, error) {
 	log.Debug("Calling external NewsBlur API: ReaderFeeds")
-	readerFeedsOutput, err := newsblur.ApiReaderFeeds(s.client)
+	readerFeedsOutput, err := s.client.ReaderFeeds()
 	if err != nil {
 		return nil, err
 	}
@@ -219,9 +203,7 @@ func (s *Newsblur) markStoriesAsRead(hashes ...string) error {
 	}
 
 	log.Debug("Calling external NewsBlur API: MarkStoryHashesAsRead. Hashes: %+v", hashes)
-	_, err := newsblur.ApiMarkStoryHashesAsRead(s.client, &newsblur.MarkStoryHashesAsReadInput{
-		StoryHash: hashes,
-	})
+	_, err := s.client.MarkStoryHashesAsRead(hashes)
 	return err
 }
 
@@ -229,9 +211,7 @@ func (s *Newsblur) markStoriesAsUnread(hashes ...string) error {
 	// NewsBlur doesn't support batching unread events. So we have to handle them individually
 	for _, hash := range hashes {
 		log.Debug("Calling external NewsBlur API: MarkStoryHashAsUnread. Hash: %s", hash)
-		_, err := newsblur.ApiMarkStoryHashAsUnread(s.client, &newsblur.MarkStoryHashAsUnreadInput{
-			StoryHash: hash,
-		})
+		_, err := s.client.MarkStoryHashAsUnread(hash)
 		if err != nil {
 			return err
 		}
@@ -243,9 +223,7 @@ func (s *Newsblur) markStoriesAsStarred(hashes ...string) error {
 	// NewsBlur doesn't support batching starred events. So we have to handle them individually
 	for _, hash := range hashes {
 		log.Debug("Calling external NewsBlur API: MarkStoryHashAsStarred. Hash: %s", hash)
-		_, err := newsblur.ApiMarkStoryHashAsStarred(s.client, &newsblur.MarkStoryHashAsStarredInput{
-			StoryHash: hash,
-		})
+		_, err := s.client.MarkStoryHashAsStarred(hash)
 		if err != nil {
 			return err
 		}
@@ -257,9 +235,7 @@ func (s *Newsblur) markStoriesAsUnstarred(hashes ...string) error {
 	// NewsBlur doesn't support batching unstarred events. So we have to handle them individually
 	for _, hash := range hashes {
 		log.Debug("Calling external NewsBlur API: MarkStoryHashAsUnstarred. Hash: %s", hash)
-		_, err := newsblur.ApiMarkStoryHashAsUnstarred(s.client, &newsblur.MarkStoryHashAsUnstarredInput{
-			StoryHash: hash,
-		})
+		_, err := s.client.MarkStoryHashAsUnstarred(hash)
 		if err != nil {
 			return err
 		}
