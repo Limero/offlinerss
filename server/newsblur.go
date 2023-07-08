@@ -11,9 +11,19 @@ import (
 	"github.com/limero/offlinerss/models"
 )
 
+type NewsblurClient interface {
+	Login(username, password string) (output *newsblur.LoginOutput, err error)
+	ReaderRiverStories(feeds []string, page int) (output *newsblur.ReaderRiverStoriesOutput, err error)
+	ReaderFeeds() (output *newsblur.ReaderFeedsOutput, err error)
+	MarkStoryHashesAsRead(storyHash []string) (output *newsblur.MarkStoryHashesAsReadOutput, err error)
+	MarkStoryHashAsUnread(storyHash string) (output *newsblur.MarkStoryHashAsUnreadOutput, err error)
+	MarkStoryHashAsStarred(storyHash string) (output *newsblur.MarkStoryHashAsStarredOutput, err error)
+	MarkStoryHashAsUnstarred(storyHash string) (output *newsblur.MarkStoryHashAsUnstarredOutput, err error)
+}
+
 type Newsblur struct {
 	config models.ServerConfig
-	client *newsblur.Newsblur
+	client NewsblurClient
 }
 
 func NewNewsblur(config models.ServerConfig) *Newsblur {
