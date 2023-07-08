@@ -37,15 +37,25 @@ func (c Feedreader) GetChanges() (models.SyncToActions, error) {
 	return helpers.GetChangesFromSqlite(
 		c.ReferenceDB(),
 		c.UserDB(),
-		"articles",
-		"guidHash",
-		"unread",
-		"9",
-		"8",
-		"marked",
-		"11",
-		"10",
+		c.GetDatabaseInfo(),
 	)
+}
+
+func (c Feedreader) GetDatabaseInfo() models.DatabaseInfo {
+	return models.DatabaseInfo{
+		StoriesTable:    "articles",
+		StoriesIdColumn: "guidHash",
+		Unread: models.ColumnInfo{
+			Column:   "unread",
+			Positive: "9",
+			Negative: "8",
+		},
+		Starred: models.ColumnInfo{
+			Column:   "marked",
+			Positive: "11",
+			Negative: "10",
+		},
+	}
 }
 
 func (c Feedreader) CreateNewCache() error {

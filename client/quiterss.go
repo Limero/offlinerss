@@ -37,15 +37,25 @@ func (c QuiteRSS) GetChanges() (models.SyncToActions, error) {
 	return helpers.GetChangesFromSqlite(
 		c.ReferenceDB(),
 		c.UserDB(),
-		"news",
-		"guid",
-		"read",
-		"0",
-		"2",
-		"starred",
-		"1",
-		"0",
+		c.GetDatabaseInfo(),
 	)
+}
+
+func (c QuiteRSS) GetDatabaseInfo() models.DatabaseInfo {
+	return models.DatabaseInfo{
+		StoriesTable:    "news",
+		StoriesIdColumn: "guid",
+		Unread: models.ColumnInfo{
+			Column:   "read",
+			Positive: "0",
+			Negative: "2",
+		},
+		Starred: models.ColumnInfo{
+			Column:   "starred",
+			Positive: "1",
+			Negative: "0",
+		},
+	}
 }
 
 func (c QuiteRSS) CreateNewCache() error {

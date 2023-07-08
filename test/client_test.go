@@ -2,6 +2,7 @@ package test
 
 import (
 	"database/sql"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -48,30 +49,22 @@ func TestClients(t *testing.T) {
 	}
 
 	for _, tt := range []struct {
-		client       models.Client
-		storiesTable string
-		updateQuery  string
+		client models.Client
 	}{
 		{
 			client: client.Feedreader{
 				DataPath: models.DataPath(filepath.Join(tmpDir, "feedreader")),
 			},
-			storiesTable: "articles",
-			updateQuery:  "UPDATE articles SET unread = 8",
 		},
 		{
 			client: client.Newsboat{
 				DataPath: models.DataPath(filepath.Join(tmpDir, "newsboat")),
 			},
-			storiesTable: "rss_item",
-			updateQuery:  "UPDATE rss_item SET unread = false",
 		},
 		{
 			client: client.QuiteRSS{
 				DataPath: models.DataPath(filepath.Join(tmpDir, "quiterss")),
 			},
-			storiesTable: "news",
-			updateQuery:  "UPDATE news SET read = 2",
 		},
 	} {
 		t.Run(tt.client.Name()+" create new cache", func(t *testing.T) {
@@ -91,7 +84,7 @@ func TestClients(t *testing.T) {
 			require.NoError(t, err)
 
 			var count int
-			err = db.QueryRow("SELECT COUNT(*) FROM " + tt.storiesTable).Scan(&count)
+			err = db.QueryRow("SELECT COUNT(*) FROM " + tt.client.GetDatabaseInfo().StoriesTable).Scan(&count)
 			require.NoError(t, err)
 			assert.Len(t, stories1, count)
 			require.NoError(t, db.Close())
@@ -104,7 +97,7 @@ func TestClients(t *testing.T) {
 			require.NoError(t, err)
 
 			var count int
-			err = db.QueryRow("SELECT COUNT(*) FROM " + tt.storiesTable).Scan(&count)
+			err = db.QueryRow("SELECT COUNT(*) FROM " + tt.client.GetDatabaseInfo().StoriesTable).Scan(&count)
 			require.NoError(t, err)
 			assert.Len(t, stories1, count)
 			require.NoError(t, db.Close())
@@ -120,7 +113,7 @@ func TestClients(t *testing.T) {
 				require.NoError(t, err)
 
 				var count int
-				err = db.QueryRow("SELECT COUNT(*) FROM " + tt.storiesTable).Scan(&count)
+				err = db.QueryRow("SELECT COUNT(*) FROM " + tt.client.GetDatabaseInfo().StoriesTable).Scan(&count)
 				require.NoError(t, err)
 				assert.Equal(t, len(stories1)+len(stories2), count)
 				require.NoError(t, db.Close())
@@ -132,7 +125,13 @@ func TestClients(t *testing.T) {
 			db, err := sql.Open("sqlite3", tt.client.UserDB())
 			require.NoError(t, err)
 
-			_, err = db.Exec(tt.updateQuery)
+			dbInfo := tt.client.GetDatabaseInfo()
+			_, err = db.Exec(fmt.Sprintf(
+				"UPDATE %s SET %s = %s",
+				dbInfo.StoriesTable,
+				dbInfo.Unread.Column,
+				dbInfo.Unread.Negative,
+			))
 			require.NoError(t, err)
 			require.NoError(t, db.Close())
 		})

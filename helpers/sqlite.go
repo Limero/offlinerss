@@ -18,14 +18,7 @@ type Row struct {
 func GetChangesFromSqlite(
 	referenceDBPath string,
 	userDBPath string,
-	table string,
-	idName string,
-	unreadName string,
-	unreadValueTrue string,
-	unreadValueFalse string,
-	starredName string,
-	starredValueTrue string,
-	starredValueFalse string,
+	dbInfo models.DatabaseInfo,
 ) (models.SyncToActions, error) {
 	if _, err := os.Stat(referenceDBPath); os.IsNotExist(err) {
 		log.Debug("Reference database does not exist at %s, nothing to sync to server", referenceDBPath)
@@ -35,12 +28,23 @@ func GetChangesFromSqlite(
 		log.Debug("User database does not exist at %s, nothing to sync to server", userDBPath)
 		return nil, nil
 	}
-
-	refRows, err := getRowsFromDB(referenceDBPath, table, idName, unreadName, starredName)
+	refRows, err := getRowsFromDB(
+		referenceDBPath,
+		dbInfo.StoriesTable,
+		dbInfo.StoriesIdColumn,
+		dbInfo.Unread.Column,
+		dbInfo.Starred.Column,
+	)
 	if err != nil {
 		return nil, err
 	}
-	userRows, err := getRowsFromDB(userDBPath, table, idName, unreadName, starredName)
+	userRows, err := getRowsFromDB(
+		userDBPath,
+		dbInfo.StoriesTable,
+		dbInfo.StoriesIdColumn,
+		dbInfo.Unread.Column,
+		dbInfo.Starred.Column,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -54,12 +58,12 @@ func GetChangesFromSqlite(
 
 			if refRow.Unread != userRow.Unread {
 				switch userRow.Unread {
-				case unreadValueTrue:
+				case dbInfo.Unread.Positive:
 					syncToActions = append(syncToActions, models.SyncToAction{
 						Id:     refRow.Id,
 						Action: models.ActionStoryUnread,
 					})
-				case unreadValueFalse:
+				case dbInfo.Unread.Negative:
 					syncToActions = append(syncToActions, models.SyncToAction{
 						Id:     refRow.Id,
 						Action: models.ActionStoryRead,
@@ -69,12 +73,12 @@ func GetChangesFromSqlite(
 
 			if refRow.Starred != userRow.Starred {
 				switch userRow.Starred {
-				case starredValueTrue:
+				case dbInfo.Starred.Positive:
 					syncToActions = append(syncToActions, models.SyncToAction{
 						Id:     refRow.Id,
 						Action: models.ActionStoryStarred,
 					})
-				case starredValueFalse:
+				case dbInfo.Starred.Negative:
 					syncToActions = append(syncToActions, models.SyncToAction{
 						Id:     refRow.Id,
 						Action: models.ActionStoryUnstarred,

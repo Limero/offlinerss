@@ -5,6 +5,7 @@ type Client interface {
 	UserDB() string
 	ReferenceDB() string
 	GetChanges() (SyncToActions, error)
+	GetDatabaseInfo() DatabaseInfo
 	CreateNewCache() error
 	AddToCache(folders Folders) error
 }

@@ -39,15 +39,25 @@ func (c Newsboat) GetChanges() (models.SyncToActions, error) {
 	return helpers.GetChangesFromSqlite(
 		c.ReferenceDB(),
 		c.UserDB(),
-		"rss_item",
-		"guid",
-		"unread",
-		"1",
-		"0",
-		"flags",
-		"s",
-		"",
+		c.GetDatabaseInfo(),
 	)
+}
+
+func (c Newsboat) GetDatabaseInfo() models.DatabaseInfo {
+	return models.DatabaseInfo{
+		StoriesTable:    "rss_item",
+		StoriesIdColumn: "guid",
+		Unread: models.ColumnInfo{
+			Column:   "unread",
+			Positive: "1",
+			Negative: "0",
+		},
+		Starred: models.ColumnInfo{
+			Column:   "flags",
+			Positive: "s",
+			Negative: "",
+		},
+	}
 }
 
 func (c Newsboat) CreateNewCache() error {
