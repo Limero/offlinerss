@@ -151,46 +151,25 @@ func (s *Newsblur) getFolders() (models.Folders, error) {
 		return nil, err
 	}
 
-	// noFolder is a collection of feeds without folder
-	noFolder := models.Folder{
-		Title: "",
-		Feeds: models.Feeds{},
-	}
-
 	var newFolders models.Folders
-	for _, element := range readerFeedsOutput.Folders {
-		switch element.(type) {
-		case float64, float32:
-			// Feed without folder
-			s.addFeedToFolder(readerFeedsOutput, element, &noFolder)
-		case map[string]interface{}:
-			// Feed with folder
-			folders := element.(map[string]interface{})
-			for folder, feeds := range folders {
-				newFolder := models.Folder{
-					Title: folder,
-					Feeds: models.Feeds{},
-				}
-
-				for _, feedId := range feeds.([]interface{}) {
-					s.addFeedToFolder(readerFeedsOutput, feedId, &newFolder)
-				}
-
-				// Add folder if it's not empty
-				if len(newFolder.Feeds) > 0 {
-					newFolders = newFolders.AddFolder(&newFolder)
-				}
-			}
+	for _, folder := range readerFeedsOutput.Folders {
+		newFolder := models.Folder{
+			Title: folder.Title,
+			Feeds: models.Feeds{},
 		}
+		for _, feedId := range folder.FeedIDs {
+			s.addFeedToFolder(readerFeedsOutput, feedId, &newFolder)
+		}
+		newFolders = append(newFolders, &newFolder)
 	}
 
-	return newFolders.AddFolder(&noFolder), nil
+	return newFolders, nil
 }
 
-func (s *Newsblur) addFeedToFolder(readerFeedsOutput *newsblur.ReaderFeedsOutput, feedId interface{}, newFolder *models.Folder) {
+func (s *Newsblur) addFeedToFolder(readerFeedsOutput *newsblur.ReaderFeedsOutput, feedId int, newFolder *models.Folder) {
 	// Loop through list of feeds to find one with matching id
 	for _, tmpFeed := range readerFeedsOutput.Feeds {
-		if int(feedId.(float64)) == tmpFeed.ID {
+		if feedId == tmpFeed.ID {
 			// Match found
 			if tmpFeed.Ps != 0 || tmpFeed.Nt != 0 {
 				// Feed has unread items, add it
