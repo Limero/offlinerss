@@ -2,15 +2,67 @@ package server
 
 import (
 	"testing"
+	"time"
 
 	"github.com/limero/go-newsblur"
 	"github.com/limero/offlinerss/models"
 	"github.com/limero/offlinerss/server/mock"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestNewsblurGetFoldersWithStories(t *testing.T) {
-	t.Skip("TODO")
+	mockClient := new(mock.MockNewsblurClient)
+
+	s := Newsblur{
+		client: mockClient,
+	}
+	now := time.Now()
+	story := models.Story{
+		Timestamp: time.Unix(now.Unix(), 0),
+		Hash:      "123",
+		Unread:    true,
+	}
+
+	mockClient.On("ReaderFeeds").
+		Return(&newsblur.ReaderFeedsOutput{
+			Folders: []newsblur.Folder{
+				{
+					Title:   "folder",
+					FeedIDs: []int{1},
+				},
+			},
+			Feeds: []newsblur.ApiFeed{
+				{
+					ID: 1,
+					Nt: 1,
+				},
+			},
+		}, nil)
+
+	mockClient.On("ReaderRiverStories", []string{"1"}, 1).
+		Return(&newsblur.ReaderRiverStoriesOutput{
+			Stories: []newsblur.ApiStory{
+				{
+					StoryTimestamp: story.Timestamp.Unix(),
+					StoryHash:      story.Hash,
+					StoryFeedID:    1,
+				},
+			},
+		}, nil)
+
+	mockClient.On("ReaderRiverStories", []string{"1"}, 2).
+		Return(&newsblur.ReaderRiverStoriesOutput{}, nil)
+
+	folders, err := s.GetFoldersWithStories()
+	require.NoError(t, err)
+
+	assert.Len(t, folders, 1)
+	assert.Len(t, folders[0].Feeds, 1)
+	assert.Len(t, folders[0].Feeds[0].Stories, 1)
+	assert.Equal(t, &story, folders[0].Feeds[0].Stories[0])
+
+	mockClient.AssertExpectations(t)
 }
 
 func TestNewsblurSyncToServer(t *testing.T) {
