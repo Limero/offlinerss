@@ -107,8 +107,8 @@ func (s *Newsblur) getFolders() (models.Folders, error) {
 		return nil, err
 	}
 
-	var newFolders models.Folders
-	for _, folder := range readerFeedsOutput.Folders {
+	newFolders := make(models.Folders, len(readerFeedsOutput.Folders))
+	for i, folder := range readerFeedsOutput.Folders {
 		newFolder := models.Folder{
 			Title: folder.Title,
 			Feeds: models.Feeds{},
@@ -116,29 +116,29 @@ func (s *Newsblur) getFolders() (models.Folders, error) {
 		for _, feedId := range folder.FeedIDs {
 			s.addFeedToFolder(readerFeedsOutput, feedId, &newFolder)
 		}
-		newFolders = append(newFolders, &newFolder)
+		newFolders[i] = &newFolder
 	}
 
 	return newFolders, nil
 }
 
 func (s *Newsblur) addFeedToFolder(readerFeedsOutput *newsblur.ReaderFeedsOutput, feedId int, newFolder *models.Folder) {
-	// Loop through list of feeds to find one with matching id
 	for _, tmpFeed := range readerFeedsOutput.Feeds {
-		if feedId == tmpFeed.ID {
-			// Match found
-			if tmpFeed.Ps != 0 || tmpFeed.Nt != 0 {
-				// Feed has unread items, add it
-				newFolder.Feeds = newFolder.Feeds.AddFeed(&models.Feed{
-					Id:      int64(tmpFeed.ID),
-					Unread:  tmpFeed.Ps + tmpFeed.Nt,
-					Title:   tmpFeed.FeedTitle,
-					Url:     tmpFeed.FeedAddress,
-					Website: tmpFeed.FeedLink,
-				})
-			}
-			return
+		if feedId != tmpFeed.ID {
+			continue
 		}
+
+		if tmpFeed.Ps != 0 || tmpFeed.Nt != 0 {
+			// Feed has unread items, add it
+			newFolder.Feeds = newFolder.Feeds.AddFeed(&models.Feed{
+				Id:      int64(tmpFeed.ID),
+				Unread:  tmpFeed.Ps + tmpFeed.Nt,
+				Title:   tmpFeed.FeedTitle,
+				Url:     tmpFeed.FeedAddress,
+				Website: tmpFeed.FeedLink,
+			})
+		}
+		return
 	}
 }
 
