@@ -74,14 +74,7 @@ func (s *Newsblur) GetFoldersWithStories() (models.Folders, error) {
 
 		// Map stories to feeds
 		for _, story := range readerRiverStoriesOutput.Stories {
-			var storyFeed *models.Feed
-			for _, folder := range folders {
-				for _, feed := range folder.Feeds {
-					if feed.Id == int64(story.StoryFeedID) {
-						storyFeed = feed
-					}
-				}
-			}
+			storyFeed := folders.FindFeed(int64(story.StoryFeedID))
 
 			// Append if latest story in feed is not the same as this one
 			if len(storyFeed.Stories) == 0 || storyFeed.Stories[len(storyFeed.Stories)-1].Hash != story.StoryHash {

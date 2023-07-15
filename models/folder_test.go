@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAddFolder(t *testing.T) {
@@ -70,4 +71,26 @@ func TestGetOrCreateFolder(t *testing.T) {
 		assert.Equal(t, int64(2), folder.Id)
 		assert.Equal(t, "c", folder.Title)
 	})
+}
+
+func TestFindFeed(t *testing.T) {
+	folders := Folders{
+		{},
+		{
+			Feeds: Feeds{
+				{},
+				{
+					Id:    1,
+					Title: "a",
+				},
+			},
+		},
+	}
+
+	feed := folders.FindFeed(1)
+	require.NotNil(t, feed)
+	assert.Equal(t, "a", feed.Title)
+
+	feed = folders.FindFeed(2)
+	require.Nil(t, feed)
 }
