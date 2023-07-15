@@ -81,12 +81,8 @@ func (s *Newsblur) GetFoldersWithStories() (models.Folders, error) {
 					if feed.Id == story.StoryFeedID {
 						// Append if latest story in feed is not the same as this one
 						if len(feed.Stories) == 0 || feed.Stories[len(feed.Stories)-1].Hash != story.StoryHash {
-							timestamp, err := strconv.ParseInt(story.StoryTimestamp, 10, 64)
-							if err != nil {
-								return nil, err
-							}
 							feed.Stories = append(feed.Stories, &models.Story{
-								Timestamp: time.Unix(timestamp, 0),
+								Timestamp: time.Unix(story.StoryTimestamp, 0),
 								Hash:      story.StoryHash,
 								Title:     story.StoryTitle,
 								Authors:   story.StoryAuthors,
