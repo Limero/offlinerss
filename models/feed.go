@@ -1,7 +1,7 @@
 package models
 
 type Feed struct {
-	Id      int
+	Id      int64
 	Unread  int
 	Title   string
 	Url     string // Link to the feed (usually .xml/.json)
@@ -32,4 +32,24 @@ func (feeds Feeds) AddFeed(newFeed *Feed) (newFeeds Feeds) {
 	}
 
 	return newFeeds
+}
+
+func (feeds *Feeds) GetOrCreateFeed(id int64, title string, url string, website string) *Feed {
+	for _, feed := range *feeds {
+		if feed.Id == id {
+			return feed
+		}
+	}
+
+	newFeed := &Feed{
+		Id:      id,
+		Unread:  0,
+		Title:   title,
+		Url:     url,
+		Website: website,
+		Stories: Stories{},
+	}
+
+	*feeds = feeds.AddFeed(newFeed)
+	return newFeed
 }

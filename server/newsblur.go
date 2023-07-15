@@ -62,7 +62,7 @@ func (s *Newsblur) GetFoldersWithStories() (models.Folders, error) {
 
 	for _, folder := range folders {
 		for _, feed := range folder.Feeds {
-			feedIds = append(feedIds, strconv.Itoa(feed.Id))
+			feedIds = append(feedIds, strconv.FormatInt(feed.Id, 10))
 		}
 	}
 
@@ -78,7 +78,7 @@ func (s *Newsblur) GetFoldersWithStories() (models.Folders, error) {
 		for _, story := range readerRiverStoriesOutput.Stories {
 			for _, folder := range folders {
 				for _, feed := range folder.Feeds {
-					if feed.Id == story.StoryFeedID {
+					if feed.Id == int64(story.StoryFeedID) {
 						// Append if latest story in feed is not the same as this one
 						if len(feed.Stories) == 0 || feed.Stories[len(feed.Stories)-1].Hash != story.StoryHash {
 							feed.Stories = append(feed.Stories, &models.Story{
@@ -195,7 +195,7 @@ func (s *Newsblur) addFeedToFolder(readerFeedsOutput *newsblur.ReaderFeedsOutput
 			if tmpFeed.Ps != 0 || tmpFeed.Nt != 0 {
 				// Feed has unread items, add it
 				newFolder.Feeds = newFolder.Feeds.AddFeed(&models.Feed{
-					Id:      tmpFeed.ID,
+					Id:      int64(tmpFeed.ID),
 					Unread:  tmpFeed.Ps + tmpFeed.Nt,
 					Title:   tmpFeed.FeedTitle,
 					Url:     tmpFeed.FeedAddress,
