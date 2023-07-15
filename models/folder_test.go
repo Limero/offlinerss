@@ -46,3 +46,28 @@ func TestAddFolder(t *testing.T) {
 	assert.Equal(t, "cc", folders[3].Title)
 	assert.Equal(t, "nofeeds", folders[4].Title)
 }
+
+func TestGetOrCreateFolder(t *testing.T) {
+	var folders Folders
+
+	t.Run("create folder", func(t *testing.T) {
+		folder := folders.GetOrCreateFolder(1, "a")
+		assert.Len(t, folders, 1)
+		assert.Equal(t, int64(1), folder.Id)
+		assert.Equal(t, "a", folder.Title)
+	})
+
+	t.Run("get existing folder", func(t *testing.T) {
+		folder := folders.GetOrCreateFolder(1, "b")
+		assert.Len(t, folders, 1)
+		assert.Equal(t, int64(1), folder.Id)
+		assert.Equal(t, "a", folder.Title)
+	})
+
+	t.Run("create another folder", func(t *testing.T) {
+		folder := folders.GetOrCreateFolder(2, "c")
+		assert.Len(t, folders, 2)
+		assert.Equal(t, int64(2), folder.Id)
+		assert.Equal(t, "c", folder.Title)
+	})
+}

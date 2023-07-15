@@ -64,24 +64,7 @@ func (s *Miniflux) GetFoldersWithStories() (models.Folders, error) {
 			Starred:   entry.Starred,
 		}
 
-		var storyFolder *models.Folder
-
-		for _, folder := range folders {
-			if int64(folder.Id) == entry.Feed.Category.ID {
-				storyFolder = folder
-				break
-			}
-		}
-		if storyFolder == nil {
-			// New folder
-			storyFolder = &models.Folder{
-				Id:    int(entry.Feed.Category.ID),
-				Title: entry.Feed.Category.Title,
-				Feeds: models.Feeds{},
-			}
-
-			folders = folders.AddFolder(storyFolder)
-		}
+		var storyFolder = folders.GetOrCreateFolder(entry.Feed.Category.ID, entry.Feed.Category.Title)
 
 		var storyFeed *models.Feed
 		for _, feed := range storyFolder.Feeds {
