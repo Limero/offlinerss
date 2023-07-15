@@ -53,11 +53,6 @@ func (s *Miniflux) GetFoldersWithStories() (models.Folders, error) {
 	}
 
 	for _, entry := range entries.Entries {
-		unread := true
-		if entry.Status == miniflux.EntryStatusRead {
-			unread = false
-		}
-
 		story := &models.Story{
 			Timestamp: strconv.FormatInt(entry.Date.Unix(), 10),
 			Hash:      strconv.FormatInt(entry.ID, 10), // Miniflux has "hash" but IDs are used for marking entries
@@ -65,7 +60,7 @@ func (s *Miniflux) GetFoldersWithStories() (models.Folders, error) {
 			Authors:   entry.Author,
 			Content:   entry.Content,
 			Url:       entry.URL,
-			Unread:    unread,
+			Unread:    entry.Status != miniflux.EntryStatusRead,
 			Date:      entry.Date.Format("2006-01-02 15:04:05"),
 			Starred:   entry.Starred,
 		}

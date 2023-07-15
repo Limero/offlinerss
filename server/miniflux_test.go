@@ -1,16 +1,59 @@
 package server
 
 import (
+	"fmt"
 	"testing"
+	"time"
 
 	"github.com/limero/offlinerss/models"
 	"github.com/limero/offlinerss/server/mock"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	miniflux "miniflux.app/client"
 )
 
 func TestMinifluxGetFoldersWithStories(t *testing.T) {
-	t.Skip("TODO")
+	mockClient := new(mock.MockMinifluxClient)
+
+	s := Miniflux{
+		client: mockClient,
+	}
+
+	now := time.Now()
+	story := models.Story{
+		Timestamp: fmt.Sprintf("%d", now.Unix()),
+		Hash:      "123",
+		Unread:    true,
+		Date:      now.Format("2006-01-02 15:04:05"),
+	}
+
+	entries := miniflux.Entries{
+		{
+			ID:     123,
+			Status: miniflux.EntryStatusUnread,
+			Date:   now,
+			Feed: &miniflux.Feed{
+				Category: &miniflux.Category{},
+			},
+		},
+	}
+
+	mockClient.On("Entries", &miniflux.Filter{
+		Status: miniflux.EntryStatusUnread,
+	}).Return(&miniflux.EntryResultSet{
+		Total:   len(entries),
+		Entries: entries,
+	}, nil)
+
+	folders, err := s.GetFoldersWithStories()
+	require.NoError(t, err)
+
+	assert.Len(t, folders, 1)
+	assert.Len(t, folders[0].Feeds, 1)
+	assert.Len(t, folders[0].Feeds[0].Stories, 1)
+	assert.Equal(t, &story, folders[0].Feeds[0].Stories[0])
+
+	mockClient.AssertExpectations(t)
 }
 
 func TestMinifluxSyncToServer(t *testing.T) {
