@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -19,19 +18,17 @@ func TestMinifluxGetFoldersWithStories(t *testing.T) {
 		client: mockClient,
 	}
 
-	now := time.Now()
 	story := models.Story{
-		Timestamp: fmt.Sprintf("%d", now.Unix()),
+		Timestamp: time.Now(),
 		Hash:      "123",
 		Unread:    true,
-		Date:      now.Format("2006-01-02 15:04:05"),
 	}
 
 	entries := miniflux.Entries{
 		{
 			ID:     123,
 			Status: miniflux.EntryStatusUnread,
-			Date:   now,
+			Date:   story.Timestamp,
 			Feed: &miniflux.Feed{
 				Category: &miniflux.Category{},
 			},

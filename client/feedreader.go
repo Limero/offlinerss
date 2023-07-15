@@ -203,7 +203,7 @@ func (c Feedreader) AddToCache(folders models.Folders) error {
 					story.Content,
 					helpers.CondString(story.Unread, "9", "8"),
 					helpers.CondString(story.Starred, "11", "10"),
-					story.Timestamp,
+					story.Timestamp.Unix(),
 					story.Hash,
 					0,
 					0,

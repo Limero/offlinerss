@@ -251,7 +251,7 @@ func (c QuiteRSS) AddToCache(folders models.Folders) error {
 					story.Hash,
 					story.Content,
 					story.Title,
-					story.Timestamp,
+					story.Timestamp.Unix(),
 					helpers.CondString(story.Unread, "0", "2"),
 					story.Starred,
 					story.Url,

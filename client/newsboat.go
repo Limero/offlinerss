@@ -162,7 +162,7 @@ func (c Newsboat) AddToCache(folders models.Folders) error {
 					story.Authors,
 					story.Url,
 					feed.Id, // id instead of url to disable manual refresh
-					story.Timestamp,
+					story.Timestamp.Unix(),
 					story.Content,
 					story.Unread,
 					helpers.CondString(story.Starred, "s", ""),

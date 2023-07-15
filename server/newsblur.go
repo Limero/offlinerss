@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"strconv"
+	"time"
 
 	"github.com/limero/go-newsblur"
 	"github.com/limero/offlinerss/log"
@@ -80,15 +81,18 @@ func (s *Newsblur) GetFoldersWithStories() (models.Folders, error) {
 					if feed.Id == story.StoryFeedID {
 						// Append if latest story in feed is not the same as this one
 						if len(feed.Stories) == 0 || feed.Stories[len(feed.Stories)-1].Hash != story.StoryHash {
+							timestamp, err := strconv.ParseInt(story.StoryTimestamp, 10, 64)
+							if err != nil {
+								return nil, err
+							}
 							feed.Stories = append(feed.Stories, &models.Story{
-								Timestamp: story.StoryTimestamp,
+								Timestamp: time.Unix(timestamp, 0),
 								Hash:      story.StoryHash,
 								Title:     story.StoryTitle,
 								Authors:   story.StoryAuthors,
 								Content:   story.StoryContent,
 								Url:       story.StoryPermalink,
 								Unread:    story.ReadStatus != 1,
-								Date:      story.StoryDate,
 								Starred:   story.Starred,
 							})
 						}
