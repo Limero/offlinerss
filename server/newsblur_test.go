@@ -51,9 +51,6 @@ func TestNewsblurGetFoldersWithStories(t *testing.T) {
 			},
 		}, nil)
 
-	mockClient.On("ReaderRiverStories", []string{"1"}, 2).
-		Return(&newsblur.ReaderRiverStoriesOutput{}, nil)
-
 	folders, err := s.GetFoldersWithStories()
 	require.NoError(t, err)
 

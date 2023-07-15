@@ -59,9 +59,11 @@ func (s *Newsblur) GetFoldersWithStories() (models.Folders, error) {
 
 	var feedIds []string
 
+	var storiesLeft int
 	for _, folder := range folders {
 		for _, feed := range folder.Feeds {
 			feedIds = append(feedIds, strconv.FormatInt(feed.Id, 10))
+			storiesLeft += feed.Unread
 		}
 	}
 
@@ -92,7 +94,8 @@ func (s *Newsblur) GetFoldersWithStories() (models.Folders, error) {
 		}
 
 		log.Debug("Stories added: %d", len(readerRiverStoriesOutput.Stories))
-		if len(readerRiverStoriesOutput.Stories) == 0 {
+		storiesLeft -= len(readerRiverStoriesOutput.Stories)
+		if storiesLeft <= 0 || len(readerRiverStoriesOutput.Stories) == 0 {
 			break
 		}
 	}
