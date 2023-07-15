@@ -52,7 +52,6 @@ func (s *Newsblur) Login() error {
 }
 
 func (s *Newsblur) GetFoldersWithStories() (models.Folders, error) {
-	// Like GetFolders but it will also load all unread stories with it
 	folders, err := s.getFolders()
 	if err != nil {
 		return nil, err
@@ -74,27 +73,28 @@ func (s *Newsblur) GetFoldersWithStories() (models.Folders, error) {
 		}
 
 		// Map stories to feeds
-	STORIES:
 		for _, story := range readerRiverStoriesOutput.Stories {
+			var storyFeed *models.Feed
 			for _, folder := range folders {
 				for _, feed := range folder.Feeds {
 					if feed.Id == int64(story.StoryFeedID) {
-						// Append if latest story in feed is not the same as this one
-						if len(feed.Stories) == 0 || feed.Stories[len(feed.Stories)-1].Hash != story.StoryHash {
-							feed.Stories = append(feed.Stories, &models.Story{
-								Timestamp: time.Unix(story.StoryTimestamp, 0),
-								Hash:      story.StoryHash,
-								Title:     story.StoryTitle,
-								Authors:   story.StoryAuthors,
-								Content:   story.StoryContent,
-								Url:       story.StoryPermalink,
-								Unread:    story.ReadStatus != 1,
-								Starred:   story.Starred,
-							})
-						}
-						continue STORIES
+						storyFeed = feed
 					}
 				}
+			}
+
+			// Append if latest story in feed is not the same as this one
+			if len(storyFeed.Stories) == 0 || storyFeed.Stories[len(storyFeed.Stories)-1].Hash != story.StoryHash {
+				storyFeed.Stories = append(storyFeed.Stories, &models.Story{
+					Timestamp: time.Unix(story.StoryTimestamp, 0),
+					Hash:      story.StoryHash,
+					Title:     story.StoryTitle,
+					Authors:   story.StoryAuthors,
+					Content:   story.StoryContent,
+					Url:       story.StoryPermalink,
+					Unread:    story.ReadStatus != 1,
+					Starred:   story.Starred,
+				})
 			}
 		}
 
@@ -105,43 +105,6 @@ func (s *Newsblur) GetFoldersWithStories() (models.Folders, error) {
 	}
 
 	return folders, nil
-}
-
-func (s *Newsblur) SyncToServer(syncToActions models.SyncToActions) error {
-	var readHashes []string
-	for _, syncToAction := range syncToActions {
-		switch syncToAction.Action {
-		case models.ActionStoryRead:
-			// Batch read events so only one request has to be done
-			readHashes = append(readHashes, syncToAction.Id)
-		case models.ActionStoryUnread:
-			// Batching of unread events is not supported by NewsBlur, so just handle individually directly
-			log.Debug("Item with hash %s has been marked as unread", syncToAction.Id)
-			if err := s.markStoriesAsUnread(syncToAction.Id); err != nil {
-				return err
-			}
-		case models.ActionStoryStarred:
-			// Batching of starred events is not supported by NewsBlur, so just handle individually directly
-			log.Debug("Item with hash %s has been marked as starred", syncToAction.Id)
-			if err := s.markStoriesAsStarred(syncToAction.Id); err != nil {
-				return err
-			}
-		case models.ActionStoryUnstarred:
-			// Batching of unstarred events is not supported by NewsBlur, so just handle individually directly
-			log.Debug("Item with hash %s has been marked as unstarred", syncToAction.Id)
-			if err := s.markStoriesAsUnstarred(syncToAction.Id); err != nil {
-				return err
-			}
-		default:
-			return fmt.Errorf("Unsupported Newsblur syncToAction: %d", syncToAction.Action)
-		}
-	}
-
-	if err := s.markStoriesAsRead(readHashes...); err != nil {
-		return err
-	}
-	log.Debug("%d items has been marked as read", len(readHashes))
-	return nil
 }
 
 func (s *Newsblur) getFolders() (models.Folders, error) {
@@ -184,6 +147,43 @@ func (s *Newsblur) addFeedToFolder(readerFeedsOutput *newsblur.ReaderFeedsOutput
 			return
 		}
 	}
+}
+
+func (s *Newsblur) SyncToServer(syncToActions models.SyncToActions) error {
+	var readHashes []string
+	for _, syncToAction := range syncToActions {
+		switch syncToAction.Action {
+		case models.ActionStoryRead:
+			// Batch read events so only one request has to be done
+			readHashes = append(readHashes, syncToAction.Id)
+		case models.ActionStoryUnread:
+			// Batching of unread events is not supported by NewsBlur, so just handle individually directly
+			log.Debug("Item with hash %s has been marked as unread", syncToAction.Id)
+			if err := s.markStoriesAsUnread(syncToAction.Id); err != nil {
+				return err
+			}
+		case models.ActionStoryStarred:
+			// Batching of starred events is not supported by NewsBlur, so just handle individually directly
+			log.Debug("Item with hash %s has been marked as starred", syncToAction.Id)
+			if err := s.markStoriesAsStarred(syncToAction.Id); err != nil {
+				return err
+			}
+		case models.ActionStoryUnstarred:
+			// Batching of unstarred events is not supported by NewsBlur, so just handle individually directly
+			log.Debug("Item with hash %s has been marked as unstarred", syncToAction.Id)
+			if err := s.markStoriesAsUnstarred(syncToAction.Id); err != nil {
+				return err
+			}
+		default:
+			return fmt.Errorf("Unsupported Newsblur syncToAction: %d", syncToAction.Action)
+		}
+	}
+
+	if err := s.markStoriesAsRead(readHashes...); err != nil {
+		return err
+	}
+	log.Debug("%d items has been marked as read", len(readHashes))
+	return nil
 }
 
 func (s *Newsblur) markStoriesAsRead(hashes ...string) error {
