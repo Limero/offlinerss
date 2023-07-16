@@ -58,28 +58,41 @@ func (s *Newsblur) GetFoldersWithStories() (models.Folders, error) {
 		return nil, err
 	}
 
-	var feedIds []string
+	var feedIDs []string
 
-	var storiesLeft int
+	var unreadLeft int
 	for _, folder := range folders {
 		for _, feed := range folder.Feeds {
 			if feed.Unread == 0 {
 				continue
 			}
-			feedIds = append(feedIds, strconv.FormatInt(feed.Id, 10))
-			storiesLeft += feed.Unread
+			feedIDs = append(feedIDs, strconv.FormatInt(feed.Id, 10))
+			unreadLeft += feed.Unread
 		}
 	}
 
+	if err = s.fetchStories("unread", &folders, unreadLeft, feedIDs); err != nil {
+		return nil, err
+	}
+
+	return folders, nil
+}
+
+func (s *Newsblur) fetchStories(storyType string, folders *models.Folders, storiesLeft int, feedIDs []string) error {
+	var storiesOutput *newsblur.StoriesOutput
+	var err error
+
 	for page := 1; true; page++ {
-		log.Debug("Calling external NewsBlur API: ReaderRiverStories. Number of feeds: %d. Page: %d", len(feedIds), page)
-		readerRiverStoriesOutput, err := s.client.ReaderRiverStories(feedIds, page)
-		if err != nil {
-			return nil, err
+		if storyType == "unread" {
+			log.Debug("Calling external NewsBlur API: ReaderRiverStories. Number of feeds: %d. Page: %d", len(feedIDs), page)
+			storiesOutput, err = s.client.ReaderRiverStories(feedIDs, page)
+			if err != nil {
+				return err
+			}
 		}
 
 		// Map stories to feeds
-		for _, story := range readerRiverStoriesOutput.Stories {
+		for _, story := range storiesOutput.Stories {
 			storyFeed := folders.FindFeed(int64(story.StoryFeedID))
 
 			// Append if latest story in feed is not the same as this one
@@ -97,14 +110,13 @@ func (s *Newsblur) GetFoldersWithStories() (models.Folders, error) {
 			}
 		}
 
-		log.Debug("Stories added: %d", len(readerRiverStoriesOutput.Stories))
-		storiesLeft -= len(readerRiverStoriesOutput.Stories)
-		if storiesLeft <= 0 || len(readerRiverStoriesOutput.Stories) == 0 {
-			break
+		log.Debug("Stories added: %d", len(storiesOutput.Stories))
+		storiesLeft -= len(storiesOutput.Stories)
+		if storiesLeft <= 0 || len(storiesOutput.Stories) == 0 {
+			return nil
 		}
 	}
-
-	return folders, nil
+	return nil
 }
 
 func (s *Newsblur) getFolders() (models.Folders, error) {
