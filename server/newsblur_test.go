@@ -41,7 +41,7 @@ func TestNewsblurGetFoldersWithStories(t *testing.T) {
 		}, nil)
 
 	mockClient.On("ReaderRiverStories", []string{"1"}, 1).
-		Return(&newsblur.ReaderRiverStoriesOutput{
+		Return(&newsblur.StoriesOutput{
 			Stories: []newsblur.ApiStory{
 				{
 					StoryTimestamp: story.Timestamp.Unix(),
