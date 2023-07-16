@@ -62,6 +62,9 @@ func (s *Newsblur) GetFoldersWithStories() (models.Folders, error) {
 	var storiesLeft int
 	for _, folder := range folders {
 		for _, feed := range folder.Feeds {
+			if feed.Unread == 0 {
+				continue
+			}
 			feedIds = append(feedIds, strconv.FormatInt(feed.Id, 10))
 			storiesLeft += feed.Unread
 		}
@@ -130,17 +133,13 @@ func (s *Newsblur) addFeedToFolder(readerFeedsOutput *newsblur.ReaderFeedsOutput
 		if feedId != tmpFeed.ID {
 			continue
 		}
-
-		if tmpFeed.Ps != 0 || tmpFeed.Nt != 0 {
-			// Feed has unread items, add it
-			newFolder.Feeds = newFolder.Feeds.AddFeed(&models.Feed{
-				Id:      int64(tmpFeed.ID),
-				Unread:  tmpFeed.Ps + tmpFeed.Nt,
-				Title:   tmpFeed.FeedTitle,
-				Url:     tmpFeed.FeedAddress,
-				Website: tmpFeed.FeedLink,
-			})
-		}
+		newFolder.Feeds = newFolder.Feeds.AddFeed(&models.Feed{
+			Id:      int64(tmpFeed.ID),
+			Unread:  tmpFeed.Ps + tmpFeed.Nt,
+			Title:   tmpFeed.FeedTitle,
+			Url:     tmpFeed.FeedAddress,
+			Website: tmpFeed.FeedLink,
+		})
 		return
 	}
 }
