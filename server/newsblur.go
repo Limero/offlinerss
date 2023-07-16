@@ -14,6 +14,7 @@ import (
 
 type NewsblurClient interface {
 	Login(username, password string) (output *newsblur.LoginOutput, err error)
+	ReaderStarredStories(page int) (output *newsblur.StoriesOutput, err error)
 	ReaderRiverStories(feeds []string, page int) (output *newsblur.StoriesOutput, err error)
 	ReaderFeeds() (output *newsblur.ReaderFeedsOutput, err error)
 	MarkStoryHashesAsRead(storyHash []string) (output *newsblur.MarkStoryHashesAsReadOutput, err error)

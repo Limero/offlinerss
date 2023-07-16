@@ -14,6 +14,11 @@ func (m *MockNewsblurClient) Login(username, password string) (*newsblur.LoginOu
 	return args.Get(0).(*newsblur.LoginOutput), args.Error(1)
 }
 
+func (m *MockNewsblurClient) ReaderStarredStories(page int) (output *newsblur.StoriesOutput, err error) {
+	args := m.Called(page)
+	return args.Get(0).(*newsblur.StoriesOutput), args.Error(1)
+}
+
 func (m *MockNewsblurClient) ReaderRiverStories(feeds []string, page int) (*newsblur.StoriesOutput, error) {
 	args := m.Called(feeds, page)
 	return args.Get(0).(*newsblur.StoriesOutput), args.Error(1)
