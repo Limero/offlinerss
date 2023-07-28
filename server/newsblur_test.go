@@ -51,12 +51,27 @@ func TestNewsblurGetFoldersWithStories(t *testing.T) {
 			},
 		}, nil)
 
+	mockClient.On("ReaderStarredStories", 1).
+		Return(&newsblur.StoriesOutput{
+			Stories: []newsblur.ApiStory{
+				{
+					StoryTimestamp: now.Unix(),
+					StoryHash:      "321",
+					StoryFeedID:    1,
+				},
+			},
+		}, nil)
+	mockClient.On("ReaderStarredStories", 2).
+		Return(&newsblur.StoriesOutput{
+			Stories: []newsblur.ApiStory{},
+		}, nil)
+
 	folders, err := s.GetFoldersWithStories()
 	require.NoError(t, err)
 
 	assert.Len(t, folders, 1)
 	assert.Len(t, folders[0].Feeds, 1)
-	assert.Len(t, folders[0].Feeds[0].Stories, 1)
+	assert.Len(t, folders[0].Feeds[0].Stories, 2)
 	assert.Equal(t, &story, folders[0].Feeds[0].Stories[0])
 
 	mockClient.AssertExpectations(t)

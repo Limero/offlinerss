@@ -74,6 +74,9 @@ func (s *Newsblur) GetFoldersWithStories() (models.Folders, error) {
 	if err = s.fetchStories("unread", &folders, unreadLeft, feedIDs); err != nil {
 		return nil, err
 	}
+	if err = s.fetchStories("starred", &folders, 9999, nil); err != nil {
+		return nil, err
+	}
 
 	return folders, nil
 }
@@ -83,17 +86,32 @@ func (s *Newsblur) fetchStories(storyType string, folders *models.Folders, stori
 	var err error
 
 	for page := 1; true; page++ {
-		if storyType == "unread" {
+		switch storyType {
+		case "unread":
 			log.Debug("Calling external NewsBlur API: ReaderRiverStories. Number of feeds: %d. Page: %d", len(feedIDs), page)
 			storiesOutput, err = s.client.ReaderRiverStories(feedIDs, page)
 			if err != nil {
 				return err
 			}
+		case "starred":
+			log.Debug("Calling external NewsBlur API: ReaderStarredStories. Page: %d", page)
+			storiesOutput, err = s.client.ReaderStarredStories(page)
+			if err != nil {
+				return err
+			}
+		}
+
+		if storiesOutput == nil || len(storiesOutput.Stories) == 0 {
+			return nil
 		}
 
 		// Map stories to feeds
 		for _, story := range storiesOutput.Stories {
 			storyFeed := folders.FindFeed(int64(story.StoryFeedID))
+			if storyFeed == nil {
+				log.Debug("Could not find feed %d. Skipping story %q", story.StoryFeedID, story.StoryTitle)
+				continue
+			}
 
 			// Append if latest story in feed is not the same as this one
 			if len(storyFeed.Stories) == 0 || storyFeed.Stories[len(storyFeed.Stories)-1].Hash != story.StoryHash {

@@ -15,3 +15,7 @@ func Debug(format string, a ...any) {
 func Info(format string, a ...any) {
 	fmt.Printf(format+"\n", a...)
 }
+
+func Warn(format string, a ...any) {
+	fmt.Printf("WARN! "+format+"\n", a...)
+}

@@ -3,7 +3,7 @@ module github.com/limero/offlinerss
 go 1.18
 
 require (
-	github.com/limero/go-newsblur v0.0.0-20230716145106-1b3456ff28a1
+	github.com/limero/go-newsblur v0.0.0-20230728191811-1825344b46c6
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/stretchr/testify v1.8.4
 	miniflux.app v0.0.0-20220724044632-45a9fd5af60e
