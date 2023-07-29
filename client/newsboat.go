@@ -124,9 +124,9 @@ func (c Newsboat) AddToCache(folders models.Folders) error {
 	}
 	defer db.Close()
 
-	// Mark all items as read, as we might miss read events and never mark them otherwise
-	// Everything currently unread should be included in the folders we are adding here
-	if _, err = db.Exec("UPDATE rss_item SET unread = false"); err != nil {
+	// Mark all items as read and unstarred, as we might never mark them otherwise
+	// Everything currently unread and starred should be included in the folders we are adding here
+	if _, err = db.Exec("UPDATE rss_item SET unread = false, flags = ''"); err != nil {
 		return err
 	}
 
