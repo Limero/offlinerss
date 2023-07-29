@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/cookiejar"
-	"strconv"
 	"time"
 
 	"github.com/limero/go-newsblur"
@@ -14,9 +13,12 @@ import (
 
 type NewsblurClient interface {
 	Login(username, password string) (output *newsblur.LoginOutput, err error)
-	ReaderStarredStories(page int) (output *newsblur.StoriesOutput, err error)
-	ReaderRiverStories(feeds []string, page int) (output *newsblur.StoriesOutput, err error)
+
 	ReaderFeeds() (output *newsblur.ReaderFeedsOutput, err error)
+	ReaderUnreadStoryHashes() ([]string, error)
+	ReaderStarredStoryHashes() ([]string, error)
+	ReaderRiverStories_StoryHash(storyHash []string) (output *newsblur.StoriesOutput, err error)
+
 	MarkStoryHashesAsRead(storyHash []string) (output *newsblur.MarkStoryHashesAsReadOutput, err error)
 	MarkStoryHashAsUnread(storyHash string) (output *newsblur.MarkStoryHashAsUnreadOutput, err error)
 	MarkStoryHashAsStarred(storyHash string) (output *newsblur.MarkStoryHashAsStarredOutput, err error)
@@ -58,83 +60,94 @@ func (s *Newsblur) GetFoldersWithStories() (models.Folders, error) {
 		return nil, err
 	}
 
-	var feedIDs []string
-
-	var unreadLeft int
-	for _, folder := range folders {
-		for _, feed := range folder.Feeds {
-			if feed.Unread == 0 {
-				continue
-			}
-			feedIDs = append(feedIDs, strconv.FormatInt(feed.Id, 10))
-			unreadLeft += feed.Unread
-		}
-	}
-
-	if err = s.fetchStories("unread", &folders, unreadLeft, feedIDs); err != nil {
+	storyHashes, err := s.getUnreadStoryHashes()
+	if err != nil {
 		return nil, err
 	}
-	if err = s.fetchStories("starred", &folders, 9999, nil); err != nil {
+
+	starredStoryHashes, err := s.getStarredStoryHashes()
+	if err != nil {
+		return nil, err
+	}
+	storyHashes = append(storyHashes, starredStoryHashes...)
+
+	if err = s.fetchStories(&folders, storyHashes); err != nil {
 		return nil, err
 	}
 
 	return folders, nil
 }
 
-func (s *Newsblur) fetchStories(storyType string, folders *models.Folders, storiesLeft int, feedIDs []string) error {
+func (s *Newsblur) getUnreadStoryHashes() ([]string, error) {
+	log.Debug("Calling external NewsBlur API: ReaderUnreadStoryHashes")
+	return s.client.ReaderUnreadStoryHashes()
+}
+
+func (s *Newsblur) getStarredStoryHashes() ([]string, error) {
+	log.Debug("Calling external NewsBlur API: ReaderStarredStoryHashes")
+	return s.client.ReaderStarredStoryHashes()
+}
+
+func (s *Newsblur) fetchStories(folders *models.Folders, storyHashes []string) error {
 	var storiesOutput *newsblur.StoriesOutput
 	var err error
 
+	perPage := 100
+
 	for page := 1; true; page++ {
-		switch storyType {
-		case "unread":
-			log.Debug("Calling external NewsBlur API: ReaderRiverStories. Number of feeds: %d. Page: %d", len(feedIDs), page)
-			storiesOutput, err = s.client.ReaderRiverStories(feedIDs, page)
-			if err != nil {
-				return err
-			}
-		case "starred":
-			log.Debug("Calling external NewsBlur API: ReaderStarredStories. Page: %d", page)
-			storiesOutput, err = s.client.ReaderStarredStories(page)
-			if err != nil {
-				return err
-			}
+		from := (page - 1) * perPage
+		to := (page) * perPage
+		if to > len(storyHashes) {
+			to = len(storyHashes)
 		}
-
-		if storiesOutput == nil || len(storiesOutput.Stories) == 0 {
+		if from >= to {
 			return nil
 		}
+		currentHashes := storyHashes[from:to]
 
-		// Map stories to feeds
-		for _, story := range storiesOutput.Stories {
-			storyFeed := folders.FindFeed(int64(story.StoryFeedID))
-			if storyFeed == nil {
-				log.Debug("Could not find feed %d. Skipping story %q", story.StoryFeedID, story.StoryTitle)
-				continue
-			}
-
-			// Append if latest story in feed is not the same as this one
-			if len(storyFeed.Stories) == 0 || storyFeed.Stories[len(storyFeed.Stories)-1].Hash != story.StoryHash {
-				storyFeed.Stories = append(storyFeed.Stories, &models.Story{
-					Timestamp: time.Unix(story.StoryTimestamp, 0),
-					Hash:      story.StoryHash,
-					Title:     story.StoryTitle,
-					Authors:   story.StoryAuthors,
-					Content:   story.StoryContent,
-					Url:       story.StoryPermalink,
-					Unread:    story.ReadStatus != 1,
-					Starred:   story.Starred,
-				})
-			}
+		log.Debug("Calling external NewsBlur API: ReaderRiverStories. Number of storyHashes: %d. Page: %d", len(currentHashes), page)
+		storiesOutput, err = s.client.ReaderRiverStories_StoryHash(currentHashes)
+		if err != nil {
+			return err
 		}
 
+		s.mapStoriesToFeeds(folders, storiesOutput.Stories)
+
+		// Note that this might be fewer than the number of storyHashes
+		// because ReaderRiverStories skips "disliked" intelligence trainer items
 		log.Debug("Stories added: %d", len(storiesOutput.Stories))
-		storiesLeft -= len(storiesOutput.Stories)
-		if storiesLeft <= 0 || len(storiesOutput.Stories) == 0 {
-			return nil
-		}
 	}
 	return nil
+}
+
+func (s *Newsblur) mapStoriesToFeeds(folders *models.Folders, stories []newsblur.ApiStory) {
+	for _, story := range stories {
+		storyFeed := folders.FindFeed(int64(story.StoryFeedID))
+		if storyFeed == nil {
+			log.Debug("Could not find feed %d. Skipping story %q", story.StoryFeedID, story.StoryTitle)
+			continue
+		}
+
+		// Append if latest story in feed is not the same as this one
+		if len(storyFeed.Stories) == 0 || storyFeed.Stories[len(storyFeed.Stories)-1].Hash != story.StoryHash {
+			unread := story.ReadStatus != 1
+			if story.Starred {
+				// For some reason, read starred stories show up as unread
+				unread = false
+			}
+
+			storyFeed.Stories = append(storyFeed.Stories, &models.Story{
+				Timestamp: time.Unix(story.StoryTimestamp, 0),
+				Hash:      story.StoryHash,
+				Title:     story.StoryTitle,
+				Authors:   story.StoryAuthors,
+				Content:   story.StoryContent,
+				Url:       story.StoryPermalink,
+				Unread:    unread,
+				Starred:   story.Starred,
+			})
+		}
+	}
 }
 
 func (s *Newsblur) getFolders() (models.Folders, error) {

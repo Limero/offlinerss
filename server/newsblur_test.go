@@ -18,9 +18,14 @@ func TestNewsblurGetFoldersWithStories(t *testing.T) {
 		client: mockClient,
 	}
 	now := time.Now()
-	story := models.Story{
+	unreadStory := models.Story{
 		Timestamp: time.Unix(now.Unix(), 0),
 		Hash:      "123",
+		Unread:    true,
+	}
+	starredStory := models.Story{
+		Timestamp: time.Unix(now.Unix(), 0),
+		Hash:      "321",
 		Unread:    true,
 	}
 
@@ -40,30 +45,26 @@ func TestNewsblurGetFoldersWithStories(t *testing.T) {
 			},
 		}, nil)
 
-	mockClient.On("ReaderRiverStories", []string{"1"}, 1).
-		Return(&newsblur.StoriesOutput{
-			Stories: []newsblur.ApiStory{
-				{
-					StoryTimestamp: story.Timestamp.Unix(),
-					StoryHash:      story.Hash,
-					StoryFeedID:    1,
-				},
-			},
-		}, nil)
+	mockClient.On("ReaderUnreadStoryHashes").
+		Return([]string{unreadStory.Hash}, nil)
 
-	mockClient.On("ReaderStarredStories", 1).
+	mockClient.On("ReaderStarredStoryHashes").
+		Return([]string{starredStory.Hash}, nil)
+
+	mockClient.On("ReaderRiverStories_StoryHash", []string{unreadStory.Hash, starredStory.Hash}).
 		Return(&newsblur.StoriesOutput{
 			Stories: []newsblur.ApiStory{
 				{
-					StoryTimestamp: now.Unix(),
-					StoryHash:      "321",
+					StoryTimestamp: unreadStory.Timestamp.Unix(),
+					StoryHash:      unreadStory.Hash,
+					StoryFeedID:    1,
+				},
+				{
+					StoryTimestamp: starredStory.Timestamp.Unix(),
+					StoryHash:      starredStory.Hash,
 					StoryFeedID:    1,
 				},
 			},
-		}, nil)
-	mockClient.On("ReaderStarredStories", 2).
-		Return(&newsblur.StoriesOutput{
-			Stories: []newsblur.ApiStory{},
 		}, nil)
 
 	folders, err := s.GetFoldersWithStories()
@@ -72,7 +73,8 @@ func TestNewsblurGetFoldersWithStories(t *testing.T) {
 	assert.Len(t, folders, 1)
 	assert.Len(t, folders[0].Feeds, 1)
 	assert.Len(t, folders[0].Feeds[0].Stories, 2)
-	assert.Equal(t, &story, folders[0].Feeds[0].Stories[0])
+	assert.Equal(t, &unreadStory, folders[0].Feeds[0].Stories[0])
+	assert.Equal(t, &starredStory, folders[0].Feeds[0].Stories[1])
 
 	mockClient.AssertExpectations(t)
 }

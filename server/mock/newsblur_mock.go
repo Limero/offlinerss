@@ -14,19 +14,24 @@ func (m *MockNewsblurClient) Login(username, password string) (*newsblur.LoginOu
 	return args.Get(0).(*newsblur.LoginOutput), args.Error(1)
 }
 
-func (m *MockNewsblurClient) ReaderStarredStories(page int) (output *newsblur.StoriesOutput, err error) {
-	args := m.Called(page)
-	return args.Get(0).(*newsblur.StoriesOutput), args.Error(1)
-}
-
-func (m *MockNewsblurClient) ReaderRiverStories(feeds []string, page int) (*newsblur.StoriesOutput, error) {
-	args := m.Called(feeds, page)
-	return args.Get(0).(*newsblur.StoriesOutput), args.Error(1)
-}
-
 func (m *MockNewsblurClient) ReaderFeeds() (*newsblur.ReaderFeedsOutput, error) {
 	args := m.Called()
 	return args.Get(0).(*newsblur.ReaderFeedsOutput), args.Error(1)
+}
+
+func (m *MockNewsblurClient) ReaderUnreadStoryHashes() ([]string, error) {
+	args := m.Called()
+	return args.Get(0).([]string), args.Error(1)
+}
+
+func (m *MockNewsblurClient) ReaderStarredStoryHashes() ([]string, error) {
+	args := m.Called()
+	return args.Get(0).([]string), args.Error(1)
+}
+
+func (m *MockNewsblurClient) ReaderRiverStories_StoryHash(storyHash []string) (*newsblur.StoriesOutput, error) {
+	args := m.Called(storyHash)
+	return args.Get(0).(*newsblur.StoriesOutput), args.Error(1)
 }
 
 func (m *MockNewsblurClient) MarkStoryHashesAsRead(storyHash []string) (*newsblur.MarkStoryHashesAsReadOutput, error) {
