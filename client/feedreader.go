@@ -159,6 +159,10 @@ func (c Feedreader) AddToCache(folders models.Folders) error {
 	}
 	defer db.Close()
 
+	if err = helpers.MarkOldStoriesAsReadAndUnstarred(db, c.GetDatabaseInfo()); err != nil {
+		return err
+	}
+
 	log.Debug("Iterating over %d folders", len(folders))
 	for i, folder := range folders {
 		log.Debug("Add folder to database: %s", folder.Title)

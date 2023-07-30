@@ -18,42 +18,6 @@ func TestClients(t *testing.T) {
 	tmpDir := filepath.Join(os.TempDir(), "offlinerss-clients")
 	defer os.RemoveAll(tmpDir)
 
-	stories1 := models.Stories{
-		{
-			Hash:   "123",
-			Unread: true,
-		},
-		{
-			Hash:   "321",
-			Unread: true,
-		},
-	}
-	stories2 := models.Stories{
-		{
-			Hash:    "456",
-			Unread:  true,
-			Starred: true,
-		},
-		{
-			Hash:    "789",
-			Unread:  false,
-			Starred: false,
-		},
-	}
-	feeds := models.Feeds{
-		{
-			Id:      123,
-			Stories: stories1,
-		},
-	}
-	folders := models.Folders{
-		{
-			Id:    123,
-			Title: "Folder",
-			Feeds: feeds,
-		},
-	}
-
 	for _, tt := range []struct {
 		client        models.Client
 		supportsDelta bool // TODO: Remove once all clients support delta updates
@@ -77,6 +41,44 @@ func TestClients(t *testing.T) {
 			supportsDelta: false,
 		},
 	} {
+		stories1 := models.Stories{
+			{
+				Hash:    "123",
+				Unread:  true,
+				Starred: true,
+			},
+			{
+				Hash:    "321",
+				Unread:  true,
+				Starred: false,
+			},
+		}
+		stories2 := models.Stories{
+			{
+				Hash:    "456",
+				Unread:  true,
+				Starred: true,
+			},
+			{
+				Hash:    "789",
+				Unread:  false,
+				Starred: false,
+			},
+		}
+		feeds := models.Feeds{
+			{
+				Id:      123,
+				Stories: stories1,
+			},
+		}
+		folders := models.Folders{
+			{
+				Id:    123,
+				Title: "Folder",
+				Feeds: feeds,
+			},
+		}
+
 		t.Run(tt.client.Name()+" create new cache", func(t *testing.T) {
 			require.NoError(t, tt.client.CreateNewCache())
 		})
@@ -100,7 +102,23 @@ func TestClients(t *testing.T) {
 		t.Run(tt.client.Name()+" add same folders again with different stories to test delta updates", func(t *testing.T) {
 			folders[0].Feeds[0].Stories = stories2
 			require.NoError(t, tt.client.AddToCache(folders))
-			folders[0].Feeds[0].Stories = stories1
+
+			// Delta updates will mark all old stories as read/unstarred
+			markedRead, markedUnstarred := 0, 0
+			for i := range stories1 {
+				if stories1[i].Unread {
+					stories1[i].Unread = false
+					markedRead++
+				}
+				if stories1[i].Starred {
+					stories1[i].Starred = false
+					markedUnstarred++
+				}
+			}
+			// These asserts are to ensure this is being tested
+			// instead of everything being read/unstarred already
+			assert.Equal(t, 2, markedRead)
+			assert.Equal(t, 1, markedUnstarred)
 
 			expectedStories := stories2
 			if tt.supportsDelta {
@@ -227,8 +245,10 @@ func expectDatabaseStories(t *testing.T, client models.Client, expectedStories m
 
 	dbInfo := client.GetDatabaseInfo()
 	rows, err := db.Query(fmt.Sprintf(
-		"SELECT %s FROM %s",
+		"SELECT %s, %s, %s FROM %s",
 		dbInfo.StoriesIdColumn,
+		dbInfo.Unread.Column,
+		dbInfo.Starred.Column,
 		dbInfo.StoriesTable,
 	))
 	require.NoError(t, err)
@@ -236,9 +256,11 @@ func expectDatabaseStories(t *testing.T, client models.Client, expectedStories m
 
 	count := 0
 	for rows.Next() {
-		var dbStory models.Story
-		require.NoError(t, rows.Scan(&dbStory.Hash))
-		assert.Equal(t, expectedStories[count].Hash, dbStory.Hash)
+		var hash, unread, starred string
+		require.NoError(t, rows.Scan(&hash, &unread, &starred))
+		assert.Equal(t, expectedStories[count].Hash, hash)
+		assert.Equal(t, expectedStories[count].Unread, unread == dbInfo.Unread.Positive)
+		assert.Equal(t, expectedStories[count].Starred, starred == dbInfo.Starred.Positive)
 		count++
 	}
 	assert.Len(t, expectedStories, count)

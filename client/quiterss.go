@@ -208,6 +208,10 @@ func (c QuiteRSS) AddToCache(folders models.Folders) error {
 	}
 	defer db.Close()
 
+	if err = helpers.MarkOldStoriesAsReadAndUnstarred(db, c.GetDatabaseInfo()); err != nil {
+		return err
+	}
+
 	latestFeedId := 0 // This is required because folder/feed share same table and use ids
 
 	log.Debug("Iterating over %d folders", len(folders))

@@ -15,6 +15,23 @@ type Row struct {
 	Starred string
 }
 
+func MarkOldStoriesAsReadAndUnstarred(
+	db *sql.DB,
+	dbInfo models.DatabaseInfo,
+) error {
+	// Mark all items as read and unstarred, as we might never mark them otherwise
+	// Everything currently unread and starred should be included in the folders we are adding later
+	_, err := db.Exec(fmt.Sprintf(
+		"UPDATE %s SET %s = '%s', %s = '%s'",
+		dbInfo.StoriesTable,
+		dbInfo.Unread.Column,
+		dbInfo.Unread.Negative,
+		dbInfo.Starred.Column,
+		dbInfo.Starred.Negative,
+	))
+	return err
+}
+
 func GetChangesFromSqlite(
 	referenceDBPath string,
 	userDBPath string,

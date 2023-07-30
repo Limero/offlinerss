@@ -124,9 +124,7 @@ func (c Newsboat) AddToCache(folders models.Folders) error {
 	}
 	defer db.Close()
 
-	// Mark all items as read and unstarred, as we might never mark them otherwise
-	// Everything currently unread and starred should be included in the folders we are adding here
-	if _, err = db.Exec("UPDATE rss_item SET unread = false, flags = ''"); err != nil {
+	if err = helpers.MarkOldStoriesAsReadAndUnstarred(db, c.GetDatabaseInfo()); err != nil {
 		return err
 	}
 
