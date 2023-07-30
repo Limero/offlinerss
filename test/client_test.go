@@ -135,10 +135,33 @@ func TestClients(t *testing.T) {
 
 			dbInfo := tt.client.GetDatabaseInfo()
 			res, err := db.Exec(fmt.Sprintf(
-				"UPDATE %s SET %s = %s WHERE %s = %s",
+				"UPDATE %s SET %s = '%s' WHERE %s = %s",
 				dbInfo.StoriesTable,
 				dbInfo.Unread.Column,
 				dbInfo.Unread.Negative,
+				dbInfo.StoriesIdColumn,
+				stories2[0].Hash,
+			))
+			require.NoError(t, err)
+
+			rowsAffected, err := res.RowsAffected()
+			require.NoError(t, err)
+			assert.Equal(t, int64(1), rowsAffected)
+
+			require.NoError(t, db.Close())
+		})
+
+		t.Run(tt.client.Name()+" perform unstarred change to user database", func(t *testing.T) {
+			db, err := sql.Open("sqlite3", tt.client.UserDB())
+			require.NoError(t, err)
+
+			dbInfo := tt.client.GetDatabaseInfo()
+
+			res, err := db.Exec(fmt.Sprintf(
+				"UPDATE %s SET %s = '%s' WHERE %s = %s",
+				dbInfo.StoriesTable,
+				dbInfo.Starred.Column,
+				dbInfo.Starred.Negative,
 				dbInfo.StoriesIdColumn,
 				stories2[0].Hash,
 			))
@@ -156,7 +179,13 @@ func TestClients(t *testing.T) {
 			// by the delta AddToCache call. So there won't be any changes to those
 			changes, err := tt.client.GetChanges()
 			require.NoError(t, err)
-			assert.Len(t, changes, 1)
+			assert.Len(t, changes, 2)
+
+			assert.Equal(t, stories2[0].Hash, changes[0].Id)
+			assert.Equal(t, models.ActionStoryRead, changes[0].Action)
+
+			assert.Equal(t, stories2[0].Hash, changes[1].Id)
+			assert.Equal(t, models.ActionStoryUnstarred, changes[1].Action)
 		})
 	}
 }
