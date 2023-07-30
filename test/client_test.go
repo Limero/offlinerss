@@ -89,56 +89,12 @@ func TestClients(t *testing.T) {
 
 		t.Run(tt.client.Name()+" add folders to cache", func(t *testing.T) {
 			require.NoError(t, tt.client.AddToCache(folders))
-
-			db, err := sql.Open("sqlite3", tt.client.ReferenceDB())
-			require.NoError(t, err)
-
-			dbInfo := tt.client.GetDatabaseInfo()
-			rows, err := db.Query(fmt.Sprintf(
-				"SELECT %s FROM %s",
-				dbInfo.StoriesIdColumn,
-				dbInfo.StoriesTable,
-			))
-			require.NoError(t, err)
-			defer rows.Close()
-
-			count := 0
-			for rows.Next() {
-				var dbStory models.Story
-				require.NoError(t, rows.Scan(&dbStory.Hash))
-				assert.Equal(t, stories1[count].Hash, dbStory.Hash)
-				count++
-			}
-			assert.Len(t, stories1, count)
-
-			require.NoError(t, db.Close())
+			expectDatabaseStories(t, tt.client, stories1)
 		})
 
 		t.Run(tt.client.Name()+" add same folders again to test idempotency", func(t *testing.T) {
 			require.NoError(t, tt.client.AddToCache(folders))
-
-			db, err := sql.Open("sqlite3", tt.client.ReferenceDB())
-			require.NoError(t, err)
-
-			dbInfo := tt.client.GetDatabaseInfo()
-			rows, err := db.Query(fmt.Sprintf(
-				"SELECT %s FROM %s",
-				dbInfo.StoriesIdColumn,
-				dbInfo.StoriesTable,
-			))
-			require.NoError(t, err)
-			defer rows.Close()
-
-			count := 0
-			for rows.Next() {
-				var dbStory models.Story
-				require.NoError(t, rows.Scan(&dbStory.Hash))
-				assert.Equal(t, stories1[count].Hash, dbStory.Hash)
-				count++
-			}
-			assert.Len(t, stories1, count)
-
-			require.NoError(t, db.Close())
+			expectDatabaseStories(t, tt.client, stories1)
 		})
 
 		t.Run(tt.client.Name()+" add same folders again with different stories to test delta updates", func(t *testing.T) {
@@ -146,33 +102,11 @@ func TestClients(t *testing.T) {
 			require.NoError(t, tt.client.AddToCache(folders))
 			folders[0].Feeds[0].Stories = stories1
 
-			db, err := sql.Open("sqlite3", tt.client.ReferenceDB())
-			require.NoError(t, err)
-
-			dbInfo := tt.client.GetDatabaseInfo()
-			rows, err := db.Query(fmt.Sprintf(
-				"SELECT %s FROM %s",
-				dbInfo.StoriesIdColumn,
-				dbInfo.StoriesTable,
-			))
-			require.NoError(t, err)
-			defer rows.Close()
-
 			expectedStories := stories2
 			if tt.supportsDelta {
 				expectedStories = append(stories1, stories2...)
 			}
-
-			count := 0
-			for rows.Next() {
-				var dbStory models.Story
-				require.NoError(t, rows.Scan(&dbStory.Hash))
-				assert.Equal(t, expectedStories[count].Hash, dbStory.Hash)
-				count++
-			}
-			assert.Len(t, expectedStories, count)
-
-			require.NoError(t, db.Close())
+			expectDatabaseStories(t, tt.client, expectedStories)
 		})
 
 		t.Run(tt.client.Name()+" perform read change to user database", func(t *testing.T) {
@@ -285,4 +219,29 @@ func TestClients(t *testing.T) {
 			assert.Equal(t, models.ActionStoryStarred, changes[3].Action)
 		})
 	}
+}
+
+func expectDatabaseStories(t *testing.T, client models.Client, expectedStories models.Stories) {
+	db, err := sql.Open("sqlite3", client.ReferenceDB())
+	require.NoError(t, err)
+
+	dbInfo := client.GetDatabaseInfo()
+	rows, err := db.Query(fmt.Sprintf(
+		"SELECT %s FROM %s",
+		dbInfo.StoriesIdColumn,
+		dbInfo.StoriesTable,
+	))
+	require.NoError(t, err)
+	defer rows.Close()
+
+	count := 0
+	for rows.Next() {
+		var dbStory models.Story
+		require.NoError(t, rows.Scan(&dbStory.Hash))
+		assert.Equal(t, expectedStories[count].Hash, dbStory.Hash)
+		count++
+	}
+	assert.Len(t, expectedStories, count)
+
+	require.NoError(t, db.Close())
 }
