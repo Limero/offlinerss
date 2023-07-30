@@ -93,10 +93,24 @@ func TestClients(t *testing.T) {
 			db, err := sql.Open("sqlite3", tt.client.ReferenceDB())
 			require.NoError(t, err)
 
-			var count int
-			err = db.QueryRow("SELECT COUNT(*) FROM " + tt.client.GetDatabaseInfo().StoriesTable).Scan(&count)
+			dbInfo := tt.client.GetDatabaseInfo()
+			rows, err := db.Query(fmt.Sprintf(
+				"SELECT %s FROM %s",
+				dbInfo.StoriesIdColumn,
+				dbInfo.StoriesTable,
+			))
 			require.NoError(t, err)
+			defer rows.Close()
+
+			count := 0
+			for rows.Next() {
+				var dbStory models.Story
+				require.NoError(t, rows.Scan(&dbStory.Hash))
+				assert.Equal(t, stories1[count].Hash, dbStory.Hash)
+				count++
+			}
 			assert.Len(t, stories1, count)
+
 			require.NoError(t, db.Close())
 		})
 
@@ -106,10 +120,24 @@ func TestClients(t *testing.T) {
 			db, err := sql.Open("sqlite3", tt.client.ReferenceDB())
 			require.NoError(t, err)
 
-			var count int
-			err = db.QueryRow("SELECT COUNT(*) FROM " + tt.client.GetDatabaseInfo().StoriesTable).Scan(&count)
+			dbInfo := tt.client.GetDatabaseInfo()
+			rows, err := db.Query(fmt.Sprintf(
+				"SELECT %s FROM %s",
+				dbInfo.StoriesIdColumn,
+				dbInfo.StoriesTable,
+			))
 			require.NoError(t, err)
+			defer rows.Close()
+
+			count := 0
+			for rows.Next() {
+				var dbStory models.Story
+				require.NoError(t, rows.Scan(&dbStory.Hash))
+				assert.Equal(t, stories1[count].Hash, dbStory.Hash)
+				count++
+			}
 			assert.Len(t, stories1, count)
+
 			require.NoError(t, db.Close())
 		})
 
@@ -121,15 +149,28 @@ func TestClients(t *testing.T) {
 			db, err := sql.Open("sqlite3", tt.client.ReferenceDB())
 			require.NoError(t, err)
 
-			var count int
-			err = db.QueryRow("SELECT COUNT(*) FROM " + tt.client.GetDatabaseInfo().StoriesTable).Scan(&count)
+			dbInfo := tt.client.GetDatabaseInfo()
+			rows, err := db.Query(fmt.Sprintf(
+				"SELECT %s FROM %s",
+				dbInfo.StoriesIdColumn,
+				dbInfo.StoriesTable,
+			))
 			require.NoError(t, err)
+			defer rows.Close()
 
+			expectedStories := stories2
 			if tt.supportsDelta {
-				assert.Equal(t, len(stories1)+len(stories2), count)
-			} else {
-				assert.Equal(t, len(stories2), count)
+				expectedStories = append(stories1, stories2...)
 			}
+
+			count := 0
+			for rows.Next() {
+				var dbStory models.Story
+				require.NoError(t, rows.Scan(&dbStory.Hash))
+				assert.Equal(t, expectedStories[count].Hash, dbStory.Hash)
+				count++
+			}
+			assert.Len(t, expectedStories, count)
 
 			require.NoError(t, db.Close())
 		})
