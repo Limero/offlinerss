@@ -34,6 +34,11 @@ func TestClients(t *testing.T) {
 			Unread:  true,
 			Starred: true,
 		},
+		{
+			Hash:    "789",
+			Unread:  false,
+			Starred: false,
+		},
 	}
 	feeds := models.Feeds{
 		{
@@ -151,6 +156,28 @@ func TestClients(t *testing.T) {
 			require.NoError(t, db.Close())
 		})
 
+		t.Run(tt.client.Name()+" perform unread change to user database", func(t *testing.T) {
+			db, err := sql.Open("sqlite3", tt.client.UserDB())
+			require.NoError(t, err)
+
+			dbInfo := tt.client.GetDatabaseInfo()
+			res, err := db.Exec(fmt.Sprintf(
+				"UPDATE %s SET %s = '%s' WHERE %s = %s",
+				dbInfo.StoriesTable,
+				dbInfo.Unread.Column,
+				dbInfo.Unread.Positive,
+				dbInfo.StoriesIdColumn,
+				stories2[1].Hash,
+			))
+			require.NoError(t, err)
+
+			rowsAffected, err := res.RowsAffected()
+			require.NoError(t, err)
+			assert.Equal(t, int64(1), rowsAffected)
+
+			require.NoError(t, db.Close())
+		})
+
 		t.Run(tt.client.Name()+" perform unstarred change to user database", func(t *testing.T) {
 			db, err := sql.Open("sqlite3", tt.client.UserDB())
 			require.NoError(t, err)
@@ -174,18 +201,47 @@ func TestClients(t *testing.T) {
 			require.NoError(t, db.Close())
 		})
 
+		t.Run(tt.client.Name()+" perform starred change to user database", func(t *testing.T) {
+			db, err := sql.Open("sqlite3", tt.client.UserDB())
+			require.NoError(t, err)
+
+			dbInfo := tt.client.GetDatabaseInfo()
+
+			res, err := db.Exec(fmt.Sprintf(
+				"UPDATE %s SET %s = '%s' WHERE %s = %s",
+				dbInfo.StoriesTable,
+				dbInfo.Starred.Column,
+				dbInfo.Starred.Positive,
+				dbInfo.StoriesIdColumn,
+				stories2[1].Hash,
+			))
+			require.NoError(t, err)
+
+			rowsAffected, err := res.RowsAffected()
+			require.NoError(t, err)
+			assert.Equal(t, int64(1), rowsAffected)
+
+			require.NoError(t, db.Close())
+		})
+
 		t.Run(tt.client.Name()+" get changes performed", func(t *testing.T) {
 			// Note: everything from stories1 was marked as read and unstarred
 			// by the delta AddToCache call. So there won't be any changes to those
 			changes, err := tt.client.GetChanges()
 			require.NoError(t, err)
-			assert.Len(t, changes, 2)
+			assert.Len(t, changes, 4)
 
 			assert.Equal(t, stories2[0].Hash, changes[0].Id)
 			assert.Equal(t, models.ActionStoryRead, changes[0].Action)
 
 			assert.Equal(t, stories2[0].Hash, changes[1].Id)
 			assert.Equal(t, models.ActionStoryUnstarred, changes[1].Action)
+
+			assert.Equal(t, stories2[1].Hash, changes[2].Id)
+			assert.Equal(t, models.ActionStoryUnread, changes[2].Action)
+
+			assert.Equal(t, stories2[1].Hash, changes[3].Id)
+			assert.Equal(t, models.ActionStoryStarred, changes[3].Action)
 		})
 	}
 }
