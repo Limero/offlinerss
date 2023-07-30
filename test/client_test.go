@@ -30,8 +30,9 @@ func TestClients(t *testing.T) {
 	}
 	stories2 := models.Stories{
 		{
-			Hash:   "456",
-			Unread: true,
+			Hash:    "456",
+			Unread:  true,
+			Starred: true,
 		},
 	}
 	feeds := models.Feeds{
@@ -56,7 +57,7 @@ func TestClients(t *testing.T) {
 			client: client.Feedreader{
 				DataPath: models.DataPath(filepath.Join(tmpDir, "feedreader")),
 			},
-			supportsDelta: false,
+			supportsDelta: true,
 		},
 		{
 			client: client.Newsboat{
@@ -108,9 +109,6 @@ func TestClients(t *testing.T) {
 		})
 
 		t.Run(tt.client.Name()+" add same folders again with different stories to test delta updates", func(t *testing.T) {
-			if !tt.supportsDelta {
-				return
-			}
 			folders[0].Feeds[0].Stories = stories2
 			require.NoError(t, tt.client.AddToCache(folders))
 			folders[0].Feeds[0].Stories = stories1
@@ -121,35 +119,44 @@ func TestClients(t *testing.T) {
 			var count int
 			err = db.QueryRow("SELECT COUNT(*) FROM " + tt.client.GetDatabaseInfo().StoriesTable).Scan(&count)
 			require.NoError(t, err)
-			assert.Equal(t, len(stories1)+len(stories2), count)
+
+			if tt.supportsDelta {
+				assert.Equal(t, len(stories1)+len(stories2), count)
+			} else {
+				assert.Equal(t, len(stories2), count)
+			}
+
 			require.NoError(t, db.Close())
 		})
 
-		t.Run(tt.client.Name()+" perform changes to user database", func(t *testing.T) {
+		t.Run(tt.client.Name()+" perform read change to user database", func(t *testing.T) {
 			db, err := sql.Open("sqlite3", tt.client.UserDB())
 			require.NoError(t, err)
 
 			dbInfo := tt.client.GetDatabaseInfo()
-			_, err = db.Exec(fmt.Sprintf(
-				"UPDATE %s SET %s = %s",
+			res, err := db.Exec(fmt.Sprintf(
+				"UPDATE %s SET %s = %s WHERE %s = %s",
 				dbInfo.StoriesTable,
 				dbInfo.Unread.Column,
 				dbInfo.Unread.Negative,
+				dbInfo.StoriesIdColumn,
+				stories2[0].Hash,
 			))
 			require.NoError(t, err)
+
+			rowsAffected, err := res.RowsAffected()
+			require.NoError(t, err)
+			assert.Equal(t, int64(1), rowsAffected)
+
 			require.NoError(t, db.Close())
 		})
 
 		t.Run(tt.client.Name()+" get changes performed", func(t *testing.T) {
-			actions, err := tt.client.GetChanges()
+			// Note: everything from stories1 was marked as read and unstarred
+			// by the delta AddToCache call. So there won't be any changes to those
+			changes, err := tt.client.GetChanges()
 			require.NoError(t, err)
-			if tt.supportsDelta {
-				// Note: This is only events from stories2, as everything from stories1
-				// was marked as read by the delta AddToCache call
-				assert.Len(t, actions, len(stories2))
-			} else {
-				assert.Len(t, actions, len(stories1))
-			}
+			assert.Len(t, changes, 1)
 		})
 	}
 }
