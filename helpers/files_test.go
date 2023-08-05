@@ -1,7 +1,6 @@
 package helpers
 
 import (
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -10,11 +9,8 @@ import (
 )
 
 func TestFileHelpers(t *testing.T) {
-	tmpDir := filepath.Join(os.TempDir(), "offlinerss-files")
-	defer os.RemoveAll(tmpDir)
-
-	file1 := filepath.Join(tmpDir, "file1.txt")
-	file2 := filepath.Join(tmpDir, "file2.txt")
+	file1 := filepath.Join(t.TempDir(), "file1.txt")
+	file2 := filepath.Join(t.TempDir(), "file2.txt")
 
 	t.Run("write file", func(t *testing.T) {
 		err := WriteFile("test123\ntest321", file1)

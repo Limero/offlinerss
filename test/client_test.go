@@ -3,8 +3,6 @@ package test
 import (
 	"database/sql"
 	"fmt"
-	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/limero/offlinerss/client"
@@ -15,28 +13,25 @@ import (
 )
 
 func TestClients(t *testing.T) {
-	tmpDir := filepath.Join(os.TempDir(), "offlinerss-clients")
-	defer os.RemoveAll(tmpDir)
-
 	for _, tt := range []struct {
 		client        models.Client
 		supportsDelta bool // TODO: Remove once all clients support delta updates
 	}{
 		{
 			client: client.Feedreader{
-				DataPath: models.DataPath(filepath.Join(tmpDir, "feedreader")),
+				DataPath: models.DataPath(t.TempDir()),
 			},
 			supportsDelta: true,
 		},
 		{
 			client: client.Newsboat{
-				DataPath: models.DataPath(filepath.Join(tmpDir, "newsboat")),
+				DataPath: models.DataPath(t.TempDir()),
 			},
 			supportsDelta: true,
 		},
 		{
 			client: client.QuiteRSS{
-				DataPath: models.DataPath(filepath.Join(tmpDir, "quiterss")),
+				DataPath: models.DataPath(t.TempDir()),
 			},
 			supportsDelta: false,
 		},
