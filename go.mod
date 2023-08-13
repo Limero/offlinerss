@@ -1,6 +1,6 @@
 module github.com/limero/offlinerss
 
-go 1.18
+go 1.21
 
 require (
 	github.com/limero/go-newsblur v0.0.0-20230729151935-6011f9ac849b
