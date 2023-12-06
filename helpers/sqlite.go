@@ -9,27 +9,10 @@ import (
 	"github.com/limero/offlinerss/models"
 )
 
-type Row struct {
-	Id      string
+type row struct {
+	ID      string
 	Unread  string
 	Starred string
-}
-
-func MarkOldStoriesAsReadAndUnstarred(
-	db *sql.DB,
-	dbInfo models.DatabaseInfo,
-) error {
-	// Mark all items as read and unstarred, as we might never mark them otherwise
-	// Everything currently unread and starred should be included in the folders we are adding later
-	_, err := db.Exec(fmt.Sprintf(
-		"UPDATE %s SET %s = '%s', %s = '%s'",
-		dbInfo.StoriesTable,
-		dbInfo.Unread.Column,
-		dbInfo.Unread.Negative,
-		dbInfo.Starred.Column,
-		dbInfo.Starred.Negative,
-	))
-	return err
 }
 
 func GetChangesFromSqlite(
@@ -69,7 +52,7 @@ func GetChangesFromSqlite(
 	var syncToActions models.SyncToActions
 	for _, refRow := range refRows {
 		for _, userRow := range userRows {
-			if refRow.Id != userRow.Id {
+			if refRow.ID != userRow.ID {
 				continue
 			}
 
@@ -77,12 +60,12 @@ func GetChangesFromSqlite(
 				switch userRow.Unread {
 				case dbInfo.Unread.Positive:
 					syncToActions = append(syncToActions, models.SyncToAction{
-						Id:     refRow.Id,
+						Id:     refRow.ID,
 						Action: models.ActionStoryUnread,
 					})
 				case dbInfo.Unread.Negative:
 					syncToActions = append(syncToActions, models.SyncToAction{
-						Id:     refRow.Id,
+						Id:     refRow.ID,
 						Action: models.ActionStoryRead,
 					})
 				}
@@ -92,12 +75,12 @@ func GetChangesFromSqlite(
 				switch userRow.Starred {
 				case dbInfo.Starred.Positive:
 					syncToActions = append(syncToActions, models.SyncToAction{
-						Id:     refRow.Id,
+						Id:     refRow.ID,
 						Action: models.ActionStoryStarred,
 					})
 				case dbInfo.Starred.Negative:
 					syncToActions = append(syncToActions, models.SyncToAction{
-						Id:     refRow.Id,
+						Id:     refRow.ID,
 						Action: models.ActionStoryUnstarred,
 					})
 				}
@@ -110,7 +93,7 @@ func GetChangesFromSqlite(
 	return syncToActions, nil
 }
 
-func getRowsFromDB(dbPath, table, idName, unreadName, starredName string) ([]Row, error) {
+func getRowsFromDB(dbPath, table, idName, unreadName, starredName string) ([]row, error) {
 	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
 		return nil, err
@@ -131,10 +114,10 @@ func getRowsFromDB(dbPath, table, idName, unreadName, starredName string) ([]Row
 	}
 	defer dbRows.Close()
 
-	rows := make([]Row, 0)
+	rows := make([]row, 0)
 	for dbRows.Next() {
-		var r Row
-		if err = dbRows.Scan(&r.Id, &r.Unread, &r.Starred); err != nil {
+		var r row
+		if err = dbRows.Scan(&r.ID, &r.Unread, &r.Starred); err != nil {
 			return nil, err
 		}
 		rows = append(rows, r)

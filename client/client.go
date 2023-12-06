@@ -2,6 +2,7 @@ package client
 
 import (
 	"database/sql"
+	"fmt"
 	"os"
 
 	"github.com/limero/offlinerss/helpers"
@@ -89,6 +90,17 @@ func (c Client) CreateNewTmpCache() (string, *sql.DB, func(), error) {
 		os.Remove(tmpCachePath)
 	}
 
-	err = helpers.MarkOldStoriesAsReadAndUnstarred(db, c.GetDatabaseInfo())
+	// Mark all items as read and unstarred, as we might never mark them otherwise
+	// Everything currently unread and starred should be included in the folders we are adding later
+	dbInfo := c.GetDatabaseInfo()
+	_, err = db.Exec(fmt.Sprintf(
+		"UPDATE %s SET %s = '%s', %s = '%s'",
+		dbInfo.StoriesTable,
+		dbInfo.Unread.Column,
+		dbInfo.Unread.Negative,
+		dbInfo.Starred.Column,
+		dbInfo.Starred.Negative,
+	))
+
 	return tmpCachePath, db, closer, err
 }
