@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -24,13 +25,17 @@ func getConfig() (*models.Config, error) {
 	data, err := os.ReadFile(configPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			config = setup()
+			config, err = setup()
+			if err != nil {
+				return nil, err
+			}
 
 			configJson, err := json.MarshalIndent(config, "", "  ")
 			if err != nil {
 				return nil, err
 			}
 			helpers.WriteFile(string(configJson), configPath)
+			fmt.Printf("Successfully written new config to %q\n\n", configPath)
 
 			return &config, nil
 		}

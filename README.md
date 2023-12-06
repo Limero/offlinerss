@@ -29,7 +29,7 @@ Install OfflineRSS (it will install to `~/go/bin/offlinerss` unless changed)
 go install github.com/limero/offlinerss@latest
 ```
 
-Copy the `exampleconfig.json` file in this repository to `~/.config/offlinerss/config.json` and edit it to match your preferences. You can then run OfflineRSS and it will create a local database for your chosen client(s).
+You can now run OfflineRSS and it will prompt you for what server and clients to use and save this information in `~/.config/offlinerss/config.json`. It will then create local databases for your chosen client(s).
 
 By default, the paths for the generated databases will be in `~/.local/share/offlinerss`. You can either change these or symlink them to the correct locations, see instructions below.
 
