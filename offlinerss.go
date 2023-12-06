@@ -3,13 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/limero/offlinerss/client/feedreader"
-	"github.com/limero/offlinerss/client/newsboat"
-	"github.com/limero/offlinerss/client/quiterss"
 	"github.com/limero/offlinerss/log"
-	"github.com/limero/offlinerss/models"
-	"github.com/limero/offlinerss/server/miniflux"
-	"github.com/limero/offlinerss/server/newsblur"
 )
 
 func run() error {
@@ -18,32 +12,16 @@ func run() error {
 		return err
 	}
 
-	var clients models.Clients
-	for _, clientConfig := range config.Clients {
-		switch clientConfig.Name {
-		case models.ClientFeedReader:
-			clients = append(clients, feedreader.New(clientConfig))
-		case models.ClientNewsboat:
-			clients = append(clients, newsboat.New(clientConfig))
-		case models.ClientQuiteRSS:
-			clients = append(clients, quiterss.New(clientConfig))
-		}
-	}
+	clients := getClients(config.Clients)
 
 	syncToActions, err := GetSyncToActions(clients)
 	if err != nil {
 		return err
 	}
 
-	var s models.Server
-	switch config.Server.Name {
-	case models.ServerMiniflux:
-		s = miniflux.New(config.Server)
-	case models.ServerNewsBlur:
-		s = newsblur.New(config.Server)
-	}
+	server := getServer(config.Server)
 
-	folders, err := SyncServer(s, syncToActions)
+	folders, err := SyncServer(server, syncToActions)
 	if err != nil {
 		return err
 	}

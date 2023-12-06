@@ -64,7 +64,18 @@ func setup() (models.Config, error) {
 		return models.Config{}, err
 	}
 
-	// TODO: Validate login
+	serverConfig := models.ServerConfig{
+		Name:     models.ServerName(strings.ToLower(answers.Server)),
+		Username: answers.Username,
+		Password: answers.Password,
+	}
+
+	server := getServer(serverConfig)
+	fmt.Printf("Attempting to login to %s as user %q\n", serverConfig.Name, serverConfig.Username)
+	if err := server.Login(); err != nil {
+		return models.Config{}, err
+	}
+	fmt.Printf("Successfully logged in!\n\n")
 
 	qs3 := []*survey.Question{
 		{
@@ -91,19 +102,15 @@ func setup() (models.Config, error) {
 		return models.Config{}, err
 	}
 
-	clients := make([]models.ClientConfig, len(answers.Clients))
+	clientConfigs := make([]models.ClientConfig, len(answers.Clients))
 	for i, c := range answers.Clients {
-		clients[i] = models.ClientConfig{
+		clientConfigs[i] = models.ClientConfig{
 			Name: models.ClientName(strings.ToLower(c)),
 		}
 	}
 
 	return models.Config{
-		Server: models.ServerConfig{
-			Name:     models.ServerName(strings.ToLower(answers.Server)),
-			Username: answers.Username,
-			Password: answers.Password,
-		},
-		Clients: clients,
+		Server:  serverConfig,
+		Clients: clientConfigs,
 	}, nil
 }

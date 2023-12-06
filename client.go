@@ -4,9 +4,27 @@ import (
 	"errors"
 	"os"
 
+	"github.com/limero/offlinerss/client/feedreader"
+	"github.com/limero/offlinerss/client/newsboat"
+	"github.com/limero/offlinerss/client/quiterss"
 	"github.com/limero/offlinerss/log"
 	"github.com/limero/offlinerss/models"
 )
+
+func getClients(clientConfigs []models.ClientConfig) models.Clients {
+	var clients models.Clients
+	for _, clientConfig := range clientConfigs {
+		switch clientConfig.Name {
+		case models.ClientFeedReader:
+			clients = append(clients, feedreader.New(clientConfig))
+		case models.ClientNewsboat:
+			clients = append(clients, newsboat.New(clientConfig))
+		case models.ClientQuiteRSS:
+			clients = append(clients, quiterss.New(clientConfig))
+		}
+	}
+	return clients
+}
 
 func GetSyncToActions(clients models.Clients) (models.SyncToActions, error) {
 	if len(clients) == 0 {
