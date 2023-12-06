@@ -10,7 +10,6 @@ import (
 	"github.com/limero/offlinerss/client/newsboat"
 	"github.com/limero/offlinerss/client/quiterss"
 	"github.com/limero/offlinerss/models"
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

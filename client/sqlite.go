@@ -7,6 +7,7 @@ import (
 
 	"github.com/limero/offlinerss/log"
 	"github.com/limero/offlinerss/models"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 const (
