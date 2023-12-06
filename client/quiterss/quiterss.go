@@ -1,4 +1,4 @@
-package client
+package quiterss
 
 import (
 	"database/sql"
@@ -14,7 +14,7 @@ type QuiteRSS struct {
 	config   models.ClientConfig
 }
 
-func NewQuiteRSS(config models.ClientConfig) *QuiteRSS {
+func New(config models.ClientConfig) *QuiteRSS {
 	return &QuiteRSS{
 		DataPath: models.GetClientDataPath(config.Type),
 		config:   config,

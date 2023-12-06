@@ -1,4 +1,4 @@
-package client
+package feedreader
 
 import (
 	"database/sql"
@@ -14,7 +14,7 @@ type Feedreader struct {
 	config   models.ClientConfig
 }
 
-func NewFeedreader(config models.ClientConfig) *Feedreader {
+func New(config models.ClientConfig) *Feedreader {
 	return &Feedreader{
 		DataPath: models.GetClientDataPath(config.Type),
 		config:   config,

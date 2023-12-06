@@ -1,4 +1,4 @@
-package client
+package newsboat
 
 import (
 	"database/sql"
@@ -16,7 +16,7 @@ type Newsboat struct {
 	config   models.ClientConfig
 }
 
-func NewNewsboat(config models.ClientConfig) *Newsboat {
+func New(config models.ClientConfig) *Newsboat {
 	return &Newsboat{
 		DataPath: models.GetClientDataPath(config.Type),
 		config:   config,

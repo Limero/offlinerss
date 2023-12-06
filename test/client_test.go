@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/limero/offlinerss/client"
+	"github.com/limero/offlinerss/client/feedreader"
+	"github.com/limero/offlinerss/client/newsboat"
+	"github.com/limero/offlinerss/client/quiterss"
 	"github.com/limero/offlinerss/models"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
@@ -18,19 +20,19 @@ func TestClients(t *testing.T) {
 		supportsDelta bool // TODO: Remove once all clients support delta updates
 	}{
 		{
-			client: client.Feedreader{
+			client: feedreader.Feedreader{
 				DataPath: models.DataPath(t.TempDir()),
 			},
 			supportsDelta: true,
 		},
 		{
-			client: client.Newsboat{
+			client: newsboat.Newsboat{
 				DataPath: models.DataPath(t.TempDir()),
 			},
 			supportsDelta: true,
 		},
 		{
-			client: client.QuiteRSS{
+			client: quiterss.QuiteRSS{
 				DataPath: models.DataPath(t.TempDir()),
 			},
 			supportsDelta: false,

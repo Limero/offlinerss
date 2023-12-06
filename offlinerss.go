@@ -6,7 +6,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/limero/offlinerss/client"
+	"github.com/limero/offlinerss/client/feedreader"
+	"github.com/limero/offlinerss/client/newsboat"
+	"github.com/limero/offlinerss/client/quiterss"
 	"github.com/limero/offlinerss/log"
 	"github.com/limero/offlinerss/models"
 	"github.com/limero/offlinerss/server"
@@ -47,11 +49,11 @@ func run() error {
 	for _, clientConfig := range config.Clients {
 		switch clientConfig.Type {
 		case "feedreader":
-			clients = append(clients, client.NewFeedreader(clientConfig))
+			clients = append(clients, feedreader.New(clientConfig))
 		case "newsboat":
-			clients = append(clients, client.NewNewsboat(clientConfig))
+			clients = append(clients, newsboat.New(clientConfig))
 		case "quiterss":
-			clients = append(clients, client.NewQuiteRSS(clientConfig))
+			clients = append(clients, quiterss.New(clientConfig))
 		}
 	}
 
