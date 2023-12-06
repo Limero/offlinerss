@@ -1,4 +1,4 @@
-package helpers
+package client
 
 import (
 	"database/sql"
@@ -9,13 +9,17 @@ import (
 	"github.com/limero/offlinerss/models"
 )
 
-type row struct {
+const (
+	SQLiteDriver string = "sqlite3"
+)
+
+type dbRow struct {
 	ID      string
 	Unread  string
 	Starred string
 }
 
-func GetChangesFromSqlite(
+func getChangesFromSqlite(
 	referenceDBPath string,
 	userDBPath string,
 	dbInfo models.DatabaseInfo,
@@ -93,8 +97,8 @@ func GetChangesFromSqlite(
 	return syncToActions, nil
 }
 
-func getRowsFromDB(dbPath, table, idName, unreadName, starredName string) ([]row, error) {
-	db, err := sql.Open("sqlite3", dbPath)
+func getRowsFromDB(dbPath, table, idName, unreadName, starredName string) ([]dbRow, error) {
+	db, err := sql.Open(SQLiteDriver, dbPath)
 	if err != nil {
 		return nil, err
 	}
@@ -114,9 +118,9 @@ func getRowsFromDB(dbPath, table, idName, unreadName, starredName string) ([]row
 	}
 	defer dbRows.Close()
 
-	rows := make([]row, 0)
+	rows := make([]dbRow, 0)
 	for dbRows.Next() {
-		var r row
+		var r dbRow
 		if err = dbRows.Scan(&r.ID, &r.Unread, &r.Starred); err != nil {
 			return nil, err
 		}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/limero/offlinerss/client"
 	"github.com/limero/offlinerss/client/feedreader"
 	"github.com/limero/offlinerss/client/newsboat"
 	"github.com/limero/offlinerss/client/quiterss"
@@ -121,7 +122,7 @@ func TestClients(t *testing.T) {
 		})
 
 		t.Run(tt.client.Name()+" perform read change to user database", func(t *testing.T) {
-			db, err := sql.Open("sqlite3", tt.client.UserDB())
+			db, err := sql.Open(client.SQLiteDriver, tt.client.UserDB())
 			require.NoError(t, err)
 
 			dbInfo := tt.client.GetDatabaseInfo()
@@ -143,7 +144,7 @@ func TestClients(t *testing.T) {
 		})
 
 		t.Run(tt.client.Name()+" perform unread change to user database", func(t *testing.T) {
-			db, err := sql.Open("sqlite3", tt.client.UserDB())
+			db, err := sql.Open(client.SQLiteDriver, tt.client.UserDB())
 			require.NoError(t, err)
 
 			dbInfo := tt.client.GetDatabaseInfo()
@@ -165,7 +166,7 @@ func TestClients(t *testing.T) {
 		})
 
 		t.Run(tt.client.Name()+" perform unstarred change to user database", func(t *testing.T) {
-			db, err := sql.Open("sqlite3", tt.client.UserDB())
+			db, err := sql.Open(client.SQLiteDriver, tt.client.UserDB())
 			require.NoError(t, err)
 
 			dbInfo := tt.client.GetDatabaseInfo()
@@ -188,7 +189,7 @@ func TestClients(t *testing.T) {
 		})
 
 		t.Run(tt.client.Name()+" perform starred change to user database", func(t *testing.T) {
-			db, err := sql.Open("sqlite3", tt.client.UserDB())
+			db, err := sql.Open(client.SQLiteDriver, tt.client.UserDB())
 			require.NoError(t, err)
 
 			dbInfo := tt.client.GetDatabaseInfo()
@@ -232,11 +233,11 @@ func TestClients(t *testing.T) {
 	}
 }
 
-func expectDatabaseStories(t *testing.T, client models.Client, expectedStories models.Stories) {
-	db, err := sql.Open("sqlite3", client.ReferenceDB())
+func expectDatabaseStories(t *testing.T, c models.Client, expectedStories models.Stories) {
+	db, err := sql.Open(client.SQLiteDriver, c.ReferenceDB())
 	require.NoError(t, err)
 
-	dbInfo := client.GetDatabaseInfo()
+	dbInfo := c.GetDatabaseInfo()
 	rows, err := db.Query(fmt.Sprintf(
 		"SELECT %s, %s, %s FROM %s",
 		dbInfo.StoriesIDColumn,

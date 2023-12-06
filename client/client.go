@@ -34,7 +34,7 @@ func (c Client) UserDB() string {
 }
 
 func (c Client) GetChanges() (models.SyncToActions, error) {
-	return helpers.GetChangesFromSqlite(
+	return getChangesFromSqlite(
 		c.ReferenceDB(),
 		c.UserDB(),
 		c.GetDatabaseInfo(),
@@ -46,7 +46,7 @@ func (c Client) CreateNewCache() error {
 	defer os.Remove(tmpCachePath)
 
 	log.Debug("Creating %s temporary cache", c.ClientName)
-	db, err := sql.Open("sqlite3", tmpCachePath)
+	db, err := sql.Open(SQLiteDriver, tmpCachePath)
 	if err != nil {
 		return err
 	}
@@ -80,7 +80,7 @@ func (c Client) CreateNewTmpCache() (string, *sql.DB, func(), error) {
 		os.Remove(tmpCachePath)
 	}
 
-	db, err := sql.Open("sqlite3", tmpCachePath)
+	db, err := sql.Open(SQLiteDriver, tmpCachePath)
 	if err != nil {
 		return "", nil, closer, err
 	}
