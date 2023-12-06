@@ -39,7 +39,7 @@ func (s *Miniflux) Login() error {
 	client := miniflux.New(hostname, s.config.Username, s.config.Password)
 
 	if _, err := client.Me(); err != nil {
-		return nil
+		return err
 	}
 
 	s.client = client
