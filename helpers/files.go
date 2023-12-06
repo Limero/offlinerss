@@ -26,7 +26,7 @@ func CopyFile(source string, destinations ...string) error {
 		}
 
 		// Make a copy of the file
-		if err := os.WriteFile(destination, data, 0644); err != nil {
+		if err := os.WriteFile(destination, data, 0o644); err != nil {
 			return err
 		}
 		log.Debug("Copied file %s to %s", source, destination)
