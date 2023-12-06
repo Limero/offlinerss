@@ -2,6 +2,7 @@ package quiterss
 
 import (
 	"database/sql"
+	_ "embed"
 	"os"
 
 	"github.com/limero/offlinerss/helpers"
@@ -58,6 +59,9 @@ func (c QuiteRSS) GetDatabaseInfo() models.DatabaseInfo {
 	}
 }
 
+//go:embed ddl.sql
+var ddl []byte
+
 func (c QuiteRSS) CreateNewCache() error {
 	tmpCachePath := helpers.NewTmpCachePath()
 	defer os.Remove(tmpCachePath)
@@ -71,114 +75,7 @@ func (c QuiteRSS) CreateNewCache() error {
 
 	log.Debug("Creating tables in QuiteRSS new temporary cache")
 
-	if _, err = db.Exec(`
-		CREATE TABLE feeds
-			(
-				id integer primary key,
-				text varchar,
-				title varchar,
-				description varchar,
-				xmlUrl varchar,
-				htmlUrl varchar,
-				language varchar,
-				copyrights varchar,
-				author_name varchar,
-				author_email varchar,
-				author_uri varchar,
-				webMaster varchar,
-				pubdate varchar,
-				lastBuildDate varchar,
-				category varchar,
-				contributor varchar,
-				generator varchar,
-				docs varchar,
-				cloud_domain varchar,
-				cloud_port varchar,
-				cloud_path varchar,
-				cloud_procedure varchar,
-				cloud_protocal varchar,
-				ttl integer,
-				skipHours varchar,
-				skipDays varchar,
-				image blob,
-				unread integer,
-				newCount integer,
-				currentNews integer,
-				label varchar,
-				undeleteCount integer,
-				tags varchar,
-				hasChildren integer default 0,
-				parentId integer default 0,
-				rowToParent integer,
-				updateIntervalEnable int,
-				updateInterval int,
-				updateIntervalType varchar,
-				updateOnStartup int,
-				displayOnStartup int,
-				markReadAfterSecondsEnable int,
-				markReadAfterSeconds int,
-				markReadInNewspaper int,
-				markDisplayedOnSwitchingFeed int,
-				markDisplayedOnClosingTab int,
-				markDisplayedOnMinimize int,
-				layout text,
-				filter text,
-				groupBy int,
-				displayNews int,
-				displayEmbeddedImages integer default 1,
-				loadTypes text,
-				openLinkOnEmptyContent int,
-				columns text,
-				sort text,
-				sortType int,
-				maximumToKeep int,
-				maximumToKeepEnable int,
-				maximumAgeOfNews int,
-				maximumAgoOfNewEnable int,
-				deleteReadNews int,
-				neverDeleteUnreadNews int,
-				neverDeleteStarredNews int,
-				neverDeleteLabeledNews int,
-				status text,
-				created text,
-				updated text,
-				lastDisplayed text,
-				f_Expanded integer default 1,
-				flags text,
-				authentication integer default 0,
-				duplicateNewsMode integer default 0,
-				addSingleNewsAnyDateOn integer default 1,
-				avoidedOldSingleNewsDateOn integer default 0,
-				avoidedOldSingleNewsDate varchar,
-				typeFeed integer default 0,
-				showNotification integer default 0,
-				disableUpdate integer default 0,
-				javaScriptEnable integer default 1,
-				layoutDirection integer default 0,
-				SingleClickAction integer default 0,
-				DoubleClickAction integer default 0,
-				MiddleClickAction integer default 0
-			);
-		CREATE TABLE news
-			(
-				id integer primary key, feedId integer,
-				guid varchar, guidislink varchar default 'true',
-				description varchar, content varchar,
-				title varchar, published varchar,
-				modified varchar, received varchar,
-				author_name varchar, author_uri varchar,
-				author_email varchar, category varchar,
-				label varchar, new integer default 1,
-				read integer default 0, starred integer default 0,
-				deleted integer default 0, attachment varchar,
-				comments varchar, enclosure_length,
-				enclosure_type, enclosure_url, source varchar,
-				link_href varchar, link_enclosure varchar,
-				link_related varchar, link_alternate varchar,
-				contributor varchar, rights varchar,
-				deleteDate varchar, feedParentId integer default 0
-			)
-	`); err != nil {
+	if _, err = db.Exec(string(ddl)); err != nil {
 		return err
 	}
 
