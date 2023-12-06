@@ -26,7 +26,7 @@ func New(config models.ClientConfig) *QuiteRSS {
 				FileName:        "feeds.db",
 				DDL:             ddl,
 				StoriesTable:    "news",
-				StoriesIdColumn: "guid",
+				StoriesIDColumn: "guid",
 				Unread: models.ColumnInfo{
 					Column:   "read",
 					Positive: "0",
@@ -54,18 +54,18 @@ func (c QuiteRSS) AddToCache(folders models.Folders) error {
 		return err
 	}
 
-	latestFeedId := 0 // This is required because folder/feed share same table and use ids
+	latestFeedID := 0 // This is required because folder/feed share same table and use ids
 
 	log.Debug("Iterating over %d folders", len(folders))
 	for _, folder := range folders {
 		log.Debug("Add folder to database: %s", folder.Title)
 		category := 0 // Category variable separate to lastFeedId to support feeds without a folder
 		if folder.Title != "" {
-			latestFeedId++
-			category = latestFeedId
+			latestFeedID++
+			category = latestFeedID
 			if _, err = db.Exec(
 				"INSERT INTO feeds (id, text) VALUES (?, ?)",
-				latestFeedId,
+				latestFeedID,
 				folder.Title,
 			); err != nil {
 				return err
@@ -75,10 +75,10 @@ func (c QuiteRSS) AddToCache(folders models.Folders) error {
 		log.Debug("Iterating over %d feeds in '%s' folder", len(folder.Feeds), folder.Title)
 		for _, feed := range folder.Feeds {
 			log.Debug("Add feed to database: %s", feed.Title)
-			latestFeedId++
+			latestFeedID++
 			if _, err = db.Exec(
 				"INSERT INTO feeds (id, text, title, xmlUrl, htmlUrl, unread, parentId) VALUES (?, ?, ?, ?, ?, ?, ?)",
-				latestFeedId,
+				latestFeedID,
 				feed.Title,
 				feed.Title,
 				feed.Url,
@@ -93,7 +93,7 @@ func (c QuiteRSS) AddToCache(folders models.Folders) error {
 			for _, story := range feed.Stories {
 				if _, err = db.Exec(
 					"INSERT INTO news (feedId, guid, description, title, published, read, starred, link_href) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-					latestFeedId,
+					latestFeedID,
 					story.Hash,
 					story.Content,
 					story.Title,

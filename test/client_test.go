@@ -58,13 +58,13 @@ func TestClients(t *testing.T) {
 		}
 		feeds := models.Feeds{
 			{
-				Id:      123,
+				ID:      123,
 				Stories: stories1,
 			},
 		}
 		folders := models.Folders{
 			{
-				Id:    123,
+				ID:    123,
 				Title: "Folder",
 				Feeds: feeds,
 			},
@@ -130,7 +130,7 @@ func TestClients(t *testing.T) {
 				dbInfo.StoriesTable,
 				dbInfo.Unread.Column,
 				dbInfo.Unread.Negative,
-				dbInfo.StoriesIdColumn,
+				dbInfo.StoriesIDColumn,
 				stories2[0].Hash,
 			))
 			require.NoError(t, err)
@@ -152,7 +152,7 @@ func TestClients(t *testing.T) {
 				dbInfo.StoriesTable,
 				dbInfo.Unread.Column,
 				dbInfo.Unread.Positive,
-				dbInfo.StoriesIdColumn,
+				dbInfo.StoriesIDColumn,
 				stories2[1].Hash,
 			))
 			require.NoError(t, err)
@@ -175,7 +175,7 @@ func TestClients(t *testing.T) {
 				dbInfo.StoriesTable,
 				dbInfo.Starred.Column,
 				dbInfo.Starred.Negative,
-				dbInfo.StoriesIdColumn,
+				dbInfo.StoriesIDColumn,
 				stories2[0].Hash,
 			))
 			require.NoError(t, err)
@@ -198,7 +198,7 @@ func TestClients(t *testing.T) {
 				dbInfo.StoriesTable,
 				dbInfo.Starred.Column,
 				dbInfo.Starred.Positive,
-				dbInfo.StoriesIdColumn,
+				dbInfo.StoriesIDColumn,
 				stories2[1].Hash,
 			))
 			require.NoError(t, err)
@@ -217,16 +217,16 @@ func TestClients(t *testing.T) {
 			require.NoError(t, err)
 			assert.Len(t, changes, 4)
 
-			assert.Equal(t, stories2[0].Hash, changes[0].Id)
+			assert.Equal(t, stories2[0].Hash, changes[0].ID)
 			assert.Equal(t, models.ActionStoryRead, changes[0].Action)
 
-			assert.Equal(t, stories2[0].Hash, changes[1].Id)
+			assert.Equal(t, stories2[0].Hash, changes[1].ID)
 			assert.Equal(t, models.ActionStoryUnstarred, changes[1].Action)
 
-			assert.Equal(t, stories2[1].Hash, changes[2].Id)
+			assert.Equal(t, stories2[1].Hash, changes[2].ID)
 			assert.Equal(t, models.ActionStoryUnread, changes[2].Action)
 
-			assert.Equal(t, stories2[1].Hash, changes[3].Id)
+			assert.Equal(t, stories2[1].Hash, changes[3].ID)
 			assert.Equal(t, models.ActionStoryStarred, changes[3].Action)
 		})
 	}
@@ -239,7 +239,7 @@ func expectDatabaseStories(t *testing.T, client models.Client, expectedStories m
 	dbInfo := client.GetDatabaseInfo()
 	rows, err := db.Query(fmt.Sprintf(
 		"SELECT %s, %s, %s FROM %s",
-		dbInfo.StoriesIdColumn,
+		dbInfo.StoriesIDColumn,
 		dbInfo.Unread.Column,
 		dbInfo.Starred.Column,
 		dbInfo.StoriesTable,

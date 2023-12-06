@@ -31,7 +31,7 @@ func GetChangesFromSqlite(
 	refRows, err := getRowsFromDB(
 		referenceDBPath,
 		dbInfo.StoriesTable,
-		dbInfo.StoriesIdColumn,
+		dbInfo.StoriesIDColumn,
 		dbInfo.Unread.Column,
 		dbInfo.Starred.Column,
 	)
@@ -41,7 +41,7 @@ func GetChangesFromSqlite(
 	userRows, err := getRowsFromDB(
 		userDBPath,
 		dbInfo.StoriesTable,
-		dbInfo.StoriesIdColumn,
+		dbInfo.StoriesIDColumn,
 		dbInfo.Unread.Column,
 		dbInfo.Starred.Column,
 	)
@@ -60,12 +60,12 @@ func GetChangesFromSqlite(
 				switch userRow.Unread {
 				case dbInfo.Unread.Positive:
 					syncToActions = append(syncToActions, models.SyncToAction{
-						Id:     refRow.ID,
+						ID:     refRow.ID,
 						Action: models.ActionStoryUnread,
 					})
 				case dbInfo.Unread.Negative:
 					syncToActions = append(syncToActions, models.SyncToAction{
-						Id:     refRow.ID,
+						ID:     refRow.ID,
 						Action: models.ActionStoryRead,
 					})
 				}
@@ -75,12 +75,12 @@ func GetChangesFromSqlite(
 				switch userRow.Starred {
 				case dbInfo.Starred.Positive:
 					syncToActions = append(syncToActions, models.SyncToAction{
-						Id:     refRow.ID,
+						ID:     refRow.ID,
 						Action: models.ActionStoryStarred,
 					})
 				case dbInfo.Starred.Negative:
 					syncToActions = append(syncToActions, models.SyncToAction{
-						Id:     refRow.ID,
+						ID:     refRow.ID,
 						Action: models.ActionStoryUnstarred,
 					})
 				}

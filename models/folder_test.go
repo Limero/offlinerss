@@ -12,7 +12,7 @@ func TestAddFolder(t *testing.T) {
 
 	feeds := Feeds{
 		{
-			Id: 1,
+			ID: 1,
 		},
 	}
 
@@ -54,21 +54,21 @@ func TestGetOrCreateFolder(t *testing.T) {
 	t.Run("create folder", func(t *testing.T) {
 		folder := folders.GetOrCreateFolder(1, "a")
 		assert.Len(t, folders, 1)
-		assert.Equal(t, int64(1), folder.Id)
+		assert.Equal(t, int64(1), folder.ID)
 		assert.Equal(t, "a", folder.Title)
 	})
 
 	t.Run("get existing folder", func(t *testing.T) {
 		folder := folders.GetOrCreateFolder(1, "b")
 		assert.Len(t, folders, 1)
-		assert.Equal(t, int64(1), folder.Id)
+		assert.Equal(t, int64(1), folder.ID)
 		assert.Equal(t, "a", folder.Title)
 	})
 
 	t.Run("create another folder", func(t *testing.T) {
 		folder := folders.GetOrCreateFolder(2, "c")
 		assert.Len(t, folders, 2)
-		assert.Equal(t, int64(2), folder.Id)
+		assert.Equal(t, int64(2), folder.ID)
 		assert.Equal(t, "c", folder.Title)
 	})
 }
@@ -80,7 +80,7 @@ func TestFindFeed(t *testing.T) {
 			Feeds: Feeds{
 				{},
 				{
-					Id:    1,
+					ID:    1,
 					Title: "a",
 				},
 			},

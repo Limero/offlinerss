@@ -1,7 +1,7 @@
 package models
 
 type Folder struct {
-	Id    int64
+	ID    int64
 	Title string
 	Feeds Feeds
 }
@@ -33,13 +33,13 @@ func (folders Folders) AddFolder(newFolder *Folder) (newFolders Folders) {
 
 func (folders *Folders) GetOrCreateFolder(id int64, title string) *Folder {
 	for _, folder := range *folders {
-		if folder.Id == id {
+		if folder.ID == id {
 			return folder
 		}
 	}
 
 	newFolder := &Folder{
-		Id:    id,
+		ID:    id,
 		Title: title,
 		Feeds: Feeds{},
 	}
@@ -51,7 +51,7 @@ func (folders *Folders) GetOrCreateFolder(id int64, title string) *Folder {
 func (folders Folders) FindFeed(feedID int64) *Feed {
 	for _, folder := range folders {
 		for _, feed := range folder.Feeds {
-			if feed.Id == feedID {
+			if feed.ID == feedID {
 				return feed
 			}
 		}

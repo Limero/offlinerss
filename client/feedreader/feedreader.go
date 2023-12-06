@@ -26,7 +26,7 @@ func New(config models.ClientConfig) *Feedreader {
 				FileName:        "feedreader-7.db",
 				DDL:             ddl,
 				StoriesTable:    "articles",
-				StoriesIdColumn: "guidHash",
+				StoriesIDColumn: "guidHash",
 				Unread: models.ColumnInfo{
 					Column:   "unread",
 					Positive: "9",
@@ -72,7 +72,7 @@ func (c Feedreader) AddToCache(folders models.Folders) error {
 			log.Debug("Add feed to database: %s", feed.Title)
 			if _, err = db.Exec(
 				"INSERT OR REPLACE INTO feeds (feed_id, name, url, category_id, xmlURL) VALUES (?, ?, ?, ?, ?)",
-				feed.Id,
+				feed.ID,
 				feed.Title,
 				feed.Website,
 				category,
@@ -86,7 +86,7 @@ func (c Feedreader) AddToCache(folders models.Folders) error {
 				if _, err = db.Exec(
 					"INSERT OR REPLACE INTO articles (articleID, feedID, title, url, html, preview, unread, marked, date, guidHash, lastModified, contentFetched) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 					story.Hash,
-					feed.Id,
+					feed.ID,
 					story.Title,
 					story.Url,
 					story.Content,

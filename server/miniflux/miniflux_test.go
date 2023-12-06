@@ -85,17 +85,17 @@ func TestMinifluxSyncToServer(t *testing.T) {
 		Return(&miniflux.Entry{Starred: false}, nil)
 
 	syncToActions := models.SyncToActions{
-		{Id: "1", Action: models.ActionStoryRead},
-		{Id: "2", Action: models.ActionStoryRead},
+		{ID: "1", Action: models.ActionStoryRead},
+		{ID: "2", Action: models.ActionStoryRead},
 
-		{Id: "3", Action: models.ActionStoryUnread},
-		{Id: "4", Action: models.ActionStoryUnread},
+		{ID: "3", Action: models.ActionStoryUnread},
+		{ID: "4", Action: models.ActionStoryUnread},
 
-		{Id: "1", Action: models.ActionStoryStarred},
-		{Id: "2", Action: models.ActionStoryStarred}, // already starred, should be skipped
+		{ID: "1", Action: models.ActionStoryStarred},
+		{ID: "2", Action: models.ActionStoryStarred}, // already starred, should be skipped
 
-		{Id: "3", Action: models.ActionStoryUnstarred},
-		{Id: "4", Action: models.ActionStoryUnstarred}, // already unstarred, should be skipped
+		{ID: "3", Action: models.ActionStoryUnstarred},
+		{ID: "4", Action: models.ActionStoryUnstarred}, // already unstarred, should be skipped
 	}
 	err := s.SyncToServer(syncToActions)
 	require.NoError(t, err)

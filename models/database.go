@@ -10,7 +10,7 @@ type DatabaseInfo struct {
 	FileName        string
 	DDL             []byte
 	StoriesTable    string
-	StoriesIdColumn string
+	StoriesIDColumn string
 	Unread          ColumnInfo
 	Starred         ColumnInfo
 }

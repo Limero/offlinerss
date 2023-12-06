@@ -83,11 +83,11 @@ func (s *Miniflux) GetFoldersWithStories() (models.Folders, error) {
 }
 
 func (s *Miniflux) SyncToServer(syncToActions models.SyncToActions) error {
-	var readIds []int64
-	var unreadIds []int64
+	var readIDs []int64
+	var unreadIDs []int64
 
 	for _, syncToAction := range syncToActions {
-		actionId, err := strconv.ParseInt(syncToAction.Id, 10, 64)
+		actionID, err := strconv.ParseInt(syncToAction.ID, 10, 64)
 		if err != nil {
 			return err
 		}
@@ -95,10 +95,10 @@ func (s *Miniflux) SyncToServer(syncToActions models.SyncToActions) error {
 		switch syncToAction.Action {
 		case models.ActionStoryRead:
 			// Batch read events so only one request has to be done
-			readIds = append(readIds, actionId)
+			readIDs = append(readIDs, actionID)
 		case models.ActionStoryUnread:
 			// Batch unread events so only one request has to be done
-			unreadIds = append(unreadIds, actionId)
+			unreadIDs = append(unreadIDs, actionID)
 		case models.ActionStoryStarred, models.ActionStoryUnstarred:
 			if err := s.handleStarred(syncToAction); err != nil {
 				return err
@@ -108,18 +108,18 @@ func (s *Miniflux) SyncToServer(syncToActions models.SyncToActions) error {
 		}
 	}
 
-	if len(readIds) > 0 {
-		if err := s.client.UpdateEntries(readIds, miniflux.EntryStatusRead); err != nil {
+	if len(readIDs) > 0 {
+		if err := s.client.UpdateEntries(readIDs, miniflux.EntryStatusRead); err != nil {
 			return err
 		}
-		log.Debug("%d items has been marked as read", len(readIds))
+		log.Debug("%d items has been marked as read", len(readIDs))
 	}
 
-	if len(unreadIds) > 0 {
-		if err := s.client.UpdateEntries(unreadIds, miniflux.EntryStatusUnread); err != nil {
+	if len(unreadIDs) > 0 {
+		if err := s.client.UpdateEntries(unreadIDs, miniflux.EntryStatusUnread); err != nil {
 			return err
 		}
-		log.Debug("%d items has been marked as unread", len(unreadIds))
+		log.Debug("%d items has been marked as unread", len(unreadIDs))
 	}
 
 	return nil
@@ -129,19 +129,19 @@ func (s *Miniflux) handleStarred(syncToAction models.SyncToAction) error {
 	// Because Miniflux only support toggling starred instead of setting it directly,
 	// we have to check its current status
 
-	actionId, err := strconv.ParseInt(syncToAction.Id, 10, 64)
+	actionID, err := strconv.ParseInt(syncToAction.ID, 10, 64)
 	if err != nil {
 		return err
 	}
 
-	entry, err := s.client.Entry(actionId)
+	entry, err := s.client.Entry(actionID)
 	if err != nil {
 		return err
 	}
 
 	if (entry.Starred && syncToAction.Action == models.ActionStoryUnstarred) ||
 		(!entry.Starred && syncToAction.Action == models.ActionStoryStarred) {
-		return s.client.ToggleBookmark(actionId)
+		return s.client.ToggleBookmark(actionID)
 	}
 
 	return nil

@@ -8,7 +8,7 @@ const (
 )
 
 type SyncToAction struct {
-	Id     string
+	ID     string
 	Action int
 }
 

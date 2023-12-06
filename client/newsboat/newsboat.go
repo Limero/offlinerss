@@ -28,7 +28,7 @@ func New(config models.ClientConfig) *Newsboat {
 				FileName:        "cache.db",
 				DDL:             ddl,
 				StoriesTable:    "rss_item",
-				StoriesIdColumn: "guid",
+				StoriesIDColumn: "guid",
 				Unread: models.ColumnInfo{
 					Column:   "unread",
 					Positive: "1",
@@ -58,7 +58,7 @@ func (c Newsboat) AddToCache(folders models.Folders) error {
 		log.Debug("Iterating over %d feeds in '%s' folder", len(folder.Feeds), folder.Title)
 		for _, feed := range folder.Feeds {
 			// Newsboat stores urls in a separate file
-			u := fmt.Sprintf("%d", feed.Id) // id instead of url to disable manual refresh
+			u := fmt.Sprintf("%d", feed.ID) // id instead of url to disable manual refresh
 			if folder.Title != "" {
 				u += " " + "\"" + folder.Title + "\""
 			}
@@ -67,7 +67,7 @@ func (c Newsboat) AddToCache(folders models.Folders) error {
 			log.Debug("Add feed to database: %s", feed.Title)
 			if _, err = db.Exec(
 				"INSERT OR REPLACE INTO rss_feed (rssurl, url, title) VALUES (?, ?, ?)",
-				feed.Id, // id instead of url to disable manual refresh
+				feed.ID, // id instead of url to disable manual refresh
 				feed.Website,
 				feed.Title,
 			); err != nil {
@@ -82,7 +82,7 @@ func (c Newsboat) AddToCache(folders models.Folders) error {
 					story.Title,
 					story.Authors,
 					story.Url,
-					feed.Id, // id instead of url to disable manual refresh
+					feed.ID, // id instead of url to disable manual refresh
 					story.Timestamp.Unix(),
 					story.Content,
 					story.Unread,

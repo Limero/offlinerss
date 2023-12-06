@@ -163,8 +163,8 @@ func (s *Newsblur) getFolders() (models.Folders, error) {
 			Title: folder.Title,
 			Feeds: models.Feeds{},
 		}
-		for _, feedId := range folder.FeedIDs {
-			s.addFeedToFolder(readerFeedsOutput, feedId, &newFolder)
+		for _, feedID := range folder.FeedIDs {
+			s.addFeedToFolder(readerFeedsOutput, feedID, &newFolder)
 		}
 		newFolders[i] = &newFolder
 	}
@@ -172,13 +172,13 @@ func (s *Newsblur) getFolders() (models.Folders, error) {
 	return newFolders, nil
 }
 
-func (s *Newsblur) addFeedToFolder(readerFeedsOutput *newsblur.ReaderFeedsOutput, feedId int, newFolder *models.Folder) {
+func (s *Newsblur) addFeedToFolder(readerFeedsOutput *newsblur.ReaderFeedsOutput, feedID int, newFolder *models.Folder) {
 	for _, tmpFeed := range readerFeedsOutput.Feeds {
-		if feedId != tmpFeed.ID {
+		if feedID != tmpFeed.ID {
 			continue
 		}
 		newFolder.Feeds = newFolder.Feeds.AddFeed(&models.Feed{
-			Id:      int64(tmpFeed.ID),
+			ID:      int64(tmpFeed.ID),
 			Unread:  tmpFeed.Ps + tmpFeed.Nt,
 			Title:   tmpFeed.FeedTitle,
 			Url:     tmpFeed.FeedAddress,
@@ -194,23 +194,23 @@ func (s *Newsblur) SyncToServer(syncToActions models.SyncToActions) error {
 		switch syncToAction.Action {
 		case models.ActionStoryRead:
 			// Batch read events so only one request has to be done
-			readHashes = append(readHashes, syncToAction.Id)
+			readHashes = append(readHashes, syncToAction.ID)
 		case models.ActionStoryUnread:
 			// Batching of unread events is not supported by NewsBlur, so just handle individually directly
-			log.Debug("Item with hash %s has been marked as unread", syncToAction.Id)
-			if err := s.markStoriesAsUnread(syncToAction.Id); err != nil {
+			log.Debug("Item with hash %s has been marked as unread", syncToAction.ID)
+			if err := s.markStoriesAsUnread(syncToAction.ID); err != nil {
 				return err
 			}
 		case models.ActionStoryStarred:
 			// Batching of starred events is not supported by NewsBlur, so just handle individually directly
-			log.Debug("Item with hash %s has been marked as starred", syncToAction.Id)
-			if err := s.markStoriesAsStarred(syncToAction.Id); err != nil {
+			log.Debug("Item with hash %s has been marked as starred", syncToAction.ID)
+			if err := s.markStoriesAsStarred(syncToAction.ID); err != nil {
 				return err
 			}
 		case models.ActionStoryUnstarred:
 			// Batching of unstarred events is not supported by NewsBlur, so just handle individually directly
-			log.Debug("Item with hash %s has been marked as unstarred", syncToAction.Id)
-			if err := s.markStoriesAsUnstarred(syncToAction.Id); err != nil {
+			log.Debug("Item with hash %s has been marked as unstarred", syncToAction.ID)
+			if err := s.markStoriesAsUnstarred(syncToAction.ID); err != nil {
 				return err
 			}
 		default:
