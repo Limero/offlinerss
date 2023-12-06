@@ -11,7 +11,8 @@ import (
 	"github.com/limero/offlinerss/client/quiterss"
 	"github.com/limero/offlinerss/log"
 	"github.com/limero/offlinerss/models"
-	"github.com/limero/offlinerss/server"
+	"github.com/limero/offlinerss/server/miniflux"
+	"github.com/limero/offlinerss/server/newsblur"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -65,9 +66,9 @@ func run() error {
 	var s models.Server
 	switch config.Server.Type {
 	case "miniflux":
-		s = server.NewMiniflux(config.Server)
+		s = miniflux.New(config.Server)
 	case "newsblur":
-		s = server.NewNewsblur(config.Server)
+		s = newsblur.New(config.Server)
 	}
 
 	folders, err := SyncServer(s, syncToActions)

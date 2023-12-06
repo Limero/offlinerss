@@ -1,4 +1,4 @@
-package server
+package miniflux
 
 import (
 	"fmt"
@@ -21,7 +21,7 @@ type Miniflux struct {
 	client MinifluxClient
 }
 
-func NewMiniflux(config models.ServerConfig) *Miniflux {
+func New(config models.ServerConfig) *Miniflux {
 	return &Miniflux{
 		config: config,
 	}

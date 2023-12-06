@@ -1,4 +1,4 @@
-package server
+package newsblur
 
 import (
 	"fmt"
@@ -30,7 +30,7 @@ type Newsblur struct {
 	client NewsblurClient
 }
 
-func NewNewsblur(config models.ServerConfig) *Newsblur {
+func New(config models.ServerConfig) *Newsblur {
 	cookieJar, err := cookiejar.New(nil)
 	if err != nil {
 		panic(err)

@@ -1,18 +1,18 @@
-package server
+package miniflux
 
 import (
 	"testing"
 	"time"
 
 	"github.com/limero/offlinerss/models"
-	"github.com/limero/offlinerss/server/mock"
+	"github.com/limero/offlinerss/server/miniflux/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	miniflux "miniflux.app/client"
 )
 
 func TestMinifluxGetFoldersWithStories(t *testing.T) {
-	mockClient := new(mock.MockMinifluxClient)
+	mockClient := new(mock.MockClient)
 
 	s := Miniflux{
 		client: mockClient,
@@ -54,7 +54,7 @@ func TestMinifluxGetFoldersWithStories(t *testing.T) {
 }
 
 func TestMinifluxSyncToServer(t *testing.T) {
-	mockClient := new(mock.MockMinifluxClient)
+	mockClient := new(mock.MockClient)
 
 	s := Miniflux{
 		client: mockClient,

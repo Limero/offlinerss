@@ -1,4 +1,4 @@
-package server
+package newsblur
 
 import (
 	"testing"
@@ -6,13 +6,13 @@ import (
 
 	"github.com/limero/go-newsblur"
 	"github.com/limero/offlinerss/models"
-	"github.com/limero/offlinerss/server/mock"
+	"github.com/limero/offlinerss/server/newsblur/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestNewsblurGetFoldersWithStories(t *testing.T) {
-	mockClient := new(mock.MockNewsblurClient)
+	mockClient := new(mock.MockClient)
 
 	s := Newsblur{
 		client: mockClient,
@@ -80,7 +80,7 @@ func TestNewsblurGetFoldersWithStories(t *testing.T) {
 }
 
 func TestNewsblurSyncToServer(t *testing.T) {
-	mockClient := new(mock.MockNewsblurClient)
+	mockClient := new(mock.MockClient)
 
 	s := Newsblur{
 		client: mockClient,
