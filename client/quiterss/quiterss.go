@@ -5,85 +5,43 @@ import (
 	_ "embed"
 	"os"
 
+	"github.com/limero/offlinerss/client"
 	"github.com/limero/offlinerss/helpers"
 	"github.com/limero/offlinerss/log"
 	"github.com/limero/offlinerss/models"
 )
 
 type QuiteRSS struct {
-	DataPath models.DataPath
-	config   models.ClientConfig
-}
-
-func New(config models.ClientConfig) *QuiteRSS {
-	return &QuiteRSS{
-		DataPath: models.GetClientDataPath(config.Type),
-		config:   config,
-	}
-}
-
-func (c QuiteRSS) Name() string {
-	return "quiterss"
-}
-
-func (c QuiteRSS) UserDB() string {
-	return c.DataPath.GetFile("feeds.db")
-}
-
-func (c QuiteRSS) ReferenceDB() string {
-	return c.DataPath.GetReferenceDB()
-}
-
-func (c QuiteRSS) GetChanges() (models.SyncToActions, error) {
-	return helpers.GetChangesFromSqlite(
-		c.ReferenceDB(),
-		c.UserDB(),
-		c.GetDatabaseInfo(),
-	)
-}
-
-func (c QuiteRSS) GetDatabaseInfo() models.DatabaseInfo {
-	return models.DatabaseInfo{
-		StoriesTable:    "news",
-		StoriesIdColumn: "guid",
-		Unread: models.ColumnInfo{
-			Column:   "read",
-			Positive: "0",
-			Negative: "2",
-		},
-		Starred: models.ColumnInfo{
-			Column:   "starred",
-			Positive: "1",
-			Negative: "0",
-		},
-	}
+	client.Client
 }
 
 //go:embed ddl.sql
 var ddl []byte
 
-func (c QuiteRSS) CreateNewCache() error {
-	tmpCachePath := helpers.NewTmpCachePath()
-	defer os.Remove(tmpCachePath)
-
-	log.Debug("Creating QuiteRSS temporary cache")
-	db, err := sql.Open("sqlite3", tmpCachePath)
-	if err != nil {
-		return err
+func New(config models.ClientConfig) *QuiteRSS {
+	return &QuiteRSS{
+		client.Client{
+			ClientName: "quiterss",
+			DataPath:   models.GetClientDataPath(config.Type),
+			Config:     config,
+			DatabaseInfo: models.DatabaseInfo{
+				FileName:        "feeds.db",
+				DDL:             ddl,
+				StoriesTable:    "news",
+				StoriesIdColumn: "guid",
+				Unread: models.ColumnInfo{
+					Column:   "read",
+					Positive: "0",
+					Negative: "2",
+				},
+				Starred: models.ColumnInfo{
+					Column:   "starred",
+					Positive: "1",
+					Negative: "0",
+				},
+			},
+		},
 	}
-	defer db.Close()
-
-	log.Debug("Creating tables in QuiteRSS new temporary cache")
-
-	if _, err = db.Exec(string(ddl)); err != nil {
-		return err
-	}
-
-	if err := helpers.CopyFile(tmpCachePath, c.ReferenceDB(), c.UserDB()); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (c QuiteRSS) AddToCache(folders models.Folders) error {

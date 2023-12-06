@@ -5,85 +5,43 @@ import (
 	_ "embed"
 	"os"
 
+	"github.com/limero/offlinerss/client"
 	"github.com/limero/offlinerss/helpers"
 	"github.com/limero/offlinerss/log"
 	"github.com/limero/offlinerss/models"
 )
 
 type Feedreader struct {
-	DataPath models.DataPath
-	config   models.ClientConfig
-}
-
-func New(config models.ClientConfig) *Feedreader {
-	return &Feedreader{
-		DataPath: models.GetClientDataPath(config.Type),
-		config:   config,
-	}
-}
-
-func (c Feedreader) Name() string {
-	return "feedreader"
-}
-
-func (c Feedreader) UserDB() string {
-	return c.DataPath.GetFile("feedreader-7.db")
-}
-
-func (c Feedreader) ReferenceDB() string {
-	return c.DataPath.GetReferenceDB()
-}
-
-func (c Feedreader) GetChanges() (models.SyncToActions, error) {
-	return helpers.GetChangesFromSqlite(
-		c.ReferenceDB(),
-		c.UserDB(),
-		c.GetDatabaseInfo(),
-	)
-}
-
-func (c Feedreader) GetDatabaseInfo() models.DatabaseInfo {
-	return models.DatabaseInfo{
-		StoriesTable:    "articles",
-		StoriesIdColumn: "guidHash",
-		Unread: models.ColumnInfo{
-			Column:   "unread",
-			Positive: "9",
-			Negative: "8",
-		},
-		Starred: models.ColumnInfo{
-			Column:   "marked",
-			Positive: "11",
-			Negative: "10",
-		},
-	}
+	client.Client
 }
 
 //go:embed ddl.sql
 var ddl []byte
 
-func (c Feedreader) CreateNewCache() error {
-	tmpCachePath := helpers.NewTmpCachePath()
-	defer os.Remove(tmpCachePath)
-
-	log.Debug("Creating feedreader temporary cache")
-	db, err := sql.Open("sqlite3", tmpCachePath)
-	if err != nil {
-		return err
+func New(config models.ClientConfig) *Feedreader {
+	return &Feedreader{
+		client.Client{
+			ClientName: "feedreader",
+			DataPath:   models.GetClientDataPath(config.Type),
+			Config:     config,
+			DatabaseInfo: models.DatabaseInfo{
+				FileName:        "feedreader-7.db",
+				DDL:             ddl,
+				StoriesTable:    "articles",
+				StoriesIdColumn: "guidHash",
+				Unread: models.ColumnInfo{
+					Column:   "unread",
+					Positive: "9",
+					Negative: "8",
+				},
+				Starred: models.ColumnInfo{
+					Column:   "marked",
+					Positive: "11",
+					Negative: "10",
+				},
+			},
+		},
 	}
-	defer db.Close()
-
-	log.Debug("Creating tables in feedreader new temporary cache")
-
-	if _, err = db.Exec(string(ddl)); err != nil {
-		return err
-	}
-
-	if err := helpers.CopyFile(tmpCachePath, c.ReferenceDB(), c.UserDB()); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (c Feedreader) AddToCache(folders models.Folders) error {

@@ -20,21 +20,15 @@ func TestClients(t *testing.T) {
 		supportsDelta bool // TODO: Remove once all clients support delta updates
 	}{
 		{
-			client: feedreader.Feedreader{
-				DataPath: models.DataPath(t.TempDir()),
-			},
+			client:        feedreader.New(models.ClientConfig{}),
 			supportsDelta: true,
 		},
 		{
-			client: newsboat.Newsboat{
-				DataPath: models.DataPath(t.TempDir()),
-			},
+			client:        newsboat.New(models.ClientConfig{}),
 			supportsDelta: true,
 		},
 		{
-			client: quiterss.QuiteRSS{
-				DataPath: models.DataPath(t.TempDir()),
-			},
+			client:        quiterss.New(models.ClientConfig{}),
 			supportsDelta: false,
 		},
 	} {
@@ -75,6 +69,8 @@ func TestClients(t *testing.T) {
 				Feeds: feeds,
 			},
 		}
+
+		tt.client.SetDataPath(models.DataPath(t.TempDir()))
 
 		t.Run(tt.client.Name()+" create new cache", func(t *testing.T) {
 			require.NoError(t, tt.client.CreateNewCache())

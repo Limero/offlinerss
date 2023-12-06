@@ -8,6 +8,7 @@ type Client interface {
 	GetDatabaseInfo() DatabaseInfo
 	CreateNewCache() error
 	AddToCache(folders Folders) error
+	SetDataPath(dataPath DataPath)
 }
 
 type Clients []Client

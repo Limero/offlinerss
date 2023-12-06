@@ -7,84 +7,43 @@ import (
 	"os"
 	"strings"
 
+	"github.com/limero/offlinerss/client"
 	"github.com/limero/offlinerss/helpers"
 	"github.com/limero/offlinerss/log"
 	"github.com/limero/offlinerss/models"
 )
 
 type Newsboat struct {
-	DataPath models.DataPath
-	config   models.ClientConfig
-}
-
-func New(config models.ClientConfig) *Newsboat {
-	return &Newsboat{
-		DataPath: models.GetClientDataPath(config.Type),
-		config:   config,
-	}
-}
-
-func (c Newsboat) Name() string {
-	return "newsboat"
-}
-
-func (c Newsboat) UserDB() string {
-	return c.DataPath.GetFile("cache.db")
-}
-
-func (c Newsboat) ReferenceDB() string {
-	return c.DataPath.GetReferenceDB()
-}
-
-func (c Newsboat) GetChanges() (models.SyncToActions, error) {
-	return helpers.GetChangesFromSqlite(
-		c.ReferenceDB(),
-		c.UserDB(),
-		c.GetDatabaseInfo(),
-	)
-}
-
-func (c Newsboat) GetDatabaseInfo() models.DatabaseInfo {
-	return models.DatabaseInfo{
-		StoriesTable:    "rss_item",
-		StoriesIdColumn: "guid",
-		Unread: models.ColumnInfo{
-			Column:   "unread",
-			Positive: "1",
-			Negative: "0",
-		},
-		Starred: models.ColumnInfo{
-			Column:   "flags",
-			Positive: "s",
-			Negative: "",
-		},
-	}
+	client.Client
 }
 
 //go:embed ddl.sql
 var ddl []byte
 
-func (c Newsboat) CreateNewCache() error {
-	tmpCachePath := helpers.NewTmpCachePath()
-	defer os.Remove(tmpCachePath)
-
-	log.Debug("Creating newsboat temporary cache")
-	db, err := sql.Open("sqlite3", tmpCachePath)
-	if err != nil {
-		return err
+func New(config models.ClientConfig) *Newsboat {
+	return &Newsboat{
+		client.Client{
+			ClientName: "newsboat",
+			DataPath:   models.GetClientDataPath(config.Type),
+			Config:     config,
+			DatabaseInfo: models.DatabaseInfo{
+				FileName:        "cache.db",
+				DDL:             ddl,
+				StoriesTable:    "rss_item",
+				StoriesIdColumn: "guid",
+				Unread: models.ColumnInfo{
+					Column:   "unread",
+					Positive: "1",
+					Negative: "0",
+				},
+				Starred: models.ColumnInfo{
+					Column:   "flags",
+					Positive: "s",
+					Negative: "",
+				},
+			},
+		},
 	}
-	defer db.Close()
-
-	log.Debug("Creating tables in newsboat new temporary cache")
-	if _, err = db.Exec(string(ddl)); err != nil {
-		return err
-	}
-
-	if err := helpers.CopyFile(tmpCachePath, c.ReferenceDB(), c.UserDB()); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (c Newsboat) AddToCache(folders models.Folders) error {
