@@ -32,7 +32,11 @@ func (s *Miniflux) Name() models.ServerName {
 }
 
 func (s *Miniflux) Login() error {
-	client := miniflux.New("http://localhost", s.config.Username, s.config.Password)
+	hostname := s.config.Hostname
+	if hostname == "" {
+		hostname = "https://reader.miniflux.app"
+	}
+	client := miniflux.New(hostname, s.config.Username, s.config.Password)
 
 	if _, err := client.Me(); err != nil {
 		return nil

@@ -14,6 +14,7 @@ func setup() (models.Config, error) {
 		Server   string
 		Username string
 		Password string
+		Hostname string
 		Clients  []string
 	}{}
 
@@ -29,6 +30,7 @@ func setup() (models.Config, error) {
 					"NewsBlur",
 					"Miniflux",
 				},
+				VimMode: true,
 			},
 		},
 	}
@@ -58,6 +60,10 @@ func setup() (models.Config, error) {
 				return nil
 			},
 		},
+		{
+			Name:   "hostname",
+			Prompt: &survey.Input{Message: fmt.Sprintf("(Optional) Enter custom hostname for connecting to %s:", answers.Server)},
+		},
 	}
 
 	if err := survey.Ask(qs2, &answers); err != nil {
@@ -68,6 +74,7 @@ func setup() (models.Config, error) {
 		Name:     models.ServerName(strings.ToLower(answers.Server)),
 		Username: answers.Username,
 		Password: answers.Password,
+		Hostname: answers.Hostname,
 	}
 
 	server := getServer(serverConfig)

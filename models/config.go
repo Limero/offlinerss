@@ -4,6 +4,7 @@ type ServerConfig struct {
 	Name     ServerName `json:"name"`
 	Username string     `json:"username"`
 	Password string     `json:"password"`
+	Hostname string     `json:"hostname"`
 }
 
 type ClientConfig struct {

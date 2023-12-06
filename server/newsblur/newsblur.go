@@ -36,11 +36,15 @@ func New(config models.ServerConfig) *Newsblur {
 		panic(err)
 	}
 
+	client := newsblur.New(&http.Client{
+		Jar: cookieJar,
+	})
+	if config.Hostname != "" {
+		client.Hostname = config.Hostname
+	}
 	return &Newsblur{
 		config: config,
-		client: newsblur.New(&http.Client{
-			Jar: cookieJar,
-		}),
+		client: client,
 	}
 }
 
