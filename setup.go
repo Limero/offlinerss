@@ -94,13 +94,13 @@ func setup() (models.Config, error) {
 	clients := make([]models.ClientConfig, len(answers.Clients))
 	for i, c := range answers.Clients {
 		clients[i] = models.ClientConfig{
-			Type: strings.ToLower(c),
+			Name: models.ClientName(strings.ToLower(c)),
 		}
 	}
 
 	return models.Config{
 		Server: models.ServerConfig{
-			Type:     strings.ToLower(answers.Server),
+			Name:     models.ServerName(strings.ToLower(answers.Server)),
 			Username: answers.Username,
 			Password: answers.Password,
 		},

@@ -27,8 +27,8 @@ func New(config models.ServerConfig) *Miniflux {
 	}
 }
 
-func (s *Miniflux) Name() string {
-	return s.config.Type
+func (s *Miniflux) Name() models.ServerName {
+	return s.config.Name
 }
 
 func (s *Miniflux) Login() error {

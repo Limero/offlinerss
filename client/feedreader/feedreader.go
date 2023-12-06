@@ -19,8 +19,8 @@ var ddl []byte
 func New(config models.ClientConfig) *Feedreader {
 	return &Feedreader{
 		client.Client{
-			ClientName: "feedreader",
-			DataPath:   models.GetClientDataPath(config.Type),
+			ClientName: models.ClientFeedReader,
+			DataPath:   models.GetClientDataPath(config.Name),
 			Config:     config,
 			DatabaseInfo: models.DatabaseInfo{
 				FileName:        "feedreader-7.db",

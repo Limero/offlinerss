@@ -44,8 +44,8 @@ func New(config models.ServerConfig) *Newsblur {
 	}
 }
 
-func (s *Newsblur) Name() string {
-	return s.config.Type
+func (s *Newsblur) Name() models.ServerName {
+	return s.config.Name
 }
 
 func (s *Newsblur) Login() error {

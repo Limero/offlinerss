@@ -11,13 +11,13 @@ import (
 )
 
 type Client struct {
-	ClientName   string
+	ClientName   models.ClientName
 	DataPath     models.DataPath
 	Config       models.ClientConfig
 	DatabaseInfo models.DatabaseInfo
 }
 
-func (c Client) Name() string {
+func (c Client) Name() models.ClientName {
 	return c.ClientName
 }
 

@@ -19,8 +19,8 @@ var ddl []byte
 func New(config models.ClientConfig) *QuiteRSS {
 	return &QuiteRSS{
 		client.Client{
-			ClientName: "quiterss",
-			DataPath:   models.GetClientDataPath(config.Type),
+			ClientName: models.ClientQuiteRSS,
+			DataPath:   models.GetClientDataPath(config.Name),
 			Config:     config,
 			DatabaseInfo: models.DatabaseInfo{
 				FileName:        "feeds.db",

@@ -1,7 +1,14 @@
 package models
 
+type ServerName string
+
+const (
+	ServerMiniflux ServerName = "miniflux"
+	ServerNewsBlur ServerName = "newsblur"
+)
+
 type Server interface {
-	Name() string
+	Name() ServerName
 	Login() error
 	GetFoldersWithStories() (Folders, error)
 	SyncToServer(syncToActions SyncToActions) error

@@ -1,13 +1,13 @@
 package models
 
 type ServerConfig struct {
-	Type     string `json:"type"`
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Name     ServerName `json:"name"`
+	Username string     `json:"username"`
+	Password string     `json:"password"`
 }
 
 type ClientConfig struct {
-	Type string `json:"type"`
+	Name ClientName `json:"name"`
 }
 
 type Config struct {

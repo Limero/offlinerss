@@ -20,12 +20,12 @@ func run() error {
 
 	var clients models.Clients
 	for _, clientConfig := range config.Clients {
-		switch clientConfig.Type {
-		case "feedreader":
+		switch clientConfig.Name {
+		case models.ClientFeedReader:
 			clients = append(clients, feedreader.New(clientConfig))
-		case "newsboat":
+		case models.ClientNewsboat:
 			clients = append(clients, newsboat.New(clientConfig))
-		case "quiterss":
+		case models.ClientQuiteRSS:
 			clients = append(clients, quiterss.New(clientConfig))
 		}
 	}
@@ -36,10 +36,10 @@ func run() error {
 	}
 
 	var s models.Server
-	switch config.Server.Type {
-	case "miniflux":
+	switch config.Server.Name {
+	case models.ServerMiniflux:
 		s = miniflux.New(config.Server)
-	case "newsblur":
+	case models.ServerNewsBlur:
 		s = newsblur.New(config.Server)
 	}
 

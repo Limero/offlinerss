@@ -21,8 +21,8 @@ var ddl []byte
 func New(config models.ClientConfig) *Newsboat {
 	return &Newsboat{
 		client.Client{
-			ClientName: "newsboat",
-			DataPath:   models.GetClientDataPath(config.Type),
+			ClientName: models.ClientNewsboat,
+			DataPath:   models.GetClientDataPath(config.Name),
 			Config:     config,
 			DatabaseInfo: models.DatabaseInfo{
 				FileName:        "cache.db",

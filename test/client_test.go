@@ -70,29 +70,30 @@ func TestClients(t *testing.T) {
 			},
 		}
 
+		name := string(tt.client.Name())
 		tt.client.SetDataPath(models.DataPath(t.TempDir()))
 
-		t.Run(tt.client.Name()+" create new cache", func(t *testing.T) {
+		t.Run(name+" create new cache", func(t *testing.T) {
 			require.NoError(t, tt.client.CreateNewCache())
 		})
 
-		t.Run(tt.client.Name()+" get no changes on new cache", func(t *testing.T) {
+		t.Run(name+" get no changes on new cache", func(t *testing.T) {
 			actions, err := tt.client.GetChanges()
 			require.NoError(t, err)
 			assert.Len(t, actions, 0)
 		})
 
-		t.Run(tt.client.Name()+" add folders to cache", func(t *testing.T) {
+		t.Run(name+" add folders to cache", func(t *testing.T) {
 			require.NoError(t, tt.client.AddToCache(folders))
 			expectDatabaseStories(t, tt.client, stories1)
 		})
 
-		t.Run(tt.client.Name()+" add same folders again to test idempotency", func(t *testing.T) {
+		t.Run(name+" add same folders again to test idempotency", func(t *testing.T) {
 			require.NoError(t, tt.client.AddToCache(folders))
 			expectDatabaseStories(t, tt.client, stories1)
 		})
 
-		t.Run(tt.client.Name()+" add same folders again with different stories to test delta updates", func(t *testing.T) {
+		t.Run(name+" add same folders again with different stories to test delta updates", func(t *testing.T) {
 			folders[0].Feeds[0].Stories = stories2
 			require.NoError(t, tt.client.AddToCache(folders))
 
@@ -120,7 +121,7 @@ func TestClients(t *testing.T) {
 			expectDatabaseStories(t, tt.client, expectedStories)
 		})
 
-		t.Run(tt.client.Name()+" perform read change to user database", func(t *testing.T) {
+		t.Run(name+" perform read change to user database", func(t *testing.T) {
 			db, err := sql.Open(client.SQLiteDriver, tt.client.UserDB())
 			require.NoError(t, err)
 
@@ -142,7 +143,7 @@ func TestClients(t *testing.T) {
 			require.NoError(t, db.Close())
 		})
 
-		t.Run(tt.client.Name()+" perform unread change to user database", func(t *testing.T) {
+		t.Run(name+" perform unread change to user database", func(t *testing.T) {
 			db, err := sql.Open(client.SQLiteDriver, tt.client.UserDB())
 			require.NoError(t, err)
 
@@ -164,7 +165,7 @@ func TestClients(t *testing.T) {
 			require.NoError(t, db.Close())
 		})
 
-		t.Run(tt.client.Name()+" perform unstarred change to user database", func(t *testing.T) {
+		t.Run(name+" perform unstarred change to user database", func(t *testing.T) {
 			db, err := sql.Open(client.SQLiteDriver, tt.client.UserDB())
 			require.NoError(t, err)
 
@@ -187,7 +188,7 @@ func TestClients(t *testing.T) {
 			require.NoError(t, db.Close())
 		})
 
-		t.Run(tt.client.Name()+" perform starred change to user database", func(t *testing.T) {
+		t.Run(name+" perform starred change to user database", func(t *testing.T) {
 			db, err := sql.Open(client.SQLiteDriver, tt.client.UserDB())
 			require.NoError(t, err)
 
@@ -210,7 +211,7 @@ func TestClients(t *testing.T) {
 			require.NoError(t, db.Close())
 		})
 
-		t.Run(tt.client.Name()+" get changes performed", func(t *testing.T) {
+		t.Run(name+" get changes performed", func(t *testing.T) {
 			// Note: everything from stories1 was marked as read and unstarred
 			// by the delta AddToCache call. So there won't be any changes to those
 			changes, err := tt.client.GetChanges()

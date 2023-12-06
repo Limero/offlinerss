@@ -1,7 +1,15 @@
 package models
 
+type ClientName string
+
+const (
+	ClientFeedReader ClientName = "feedreader"
+	ClientNewsboat   ClientName = "newsboat"
+	ClientQuiteRSS   ClientName = "quiterss"
+)
+
 type Client interface {
-	Name() string
+	Name() ClientName
 	UserDB() string
 	ReferenceDB() string
 	GetChanges() (SyncToActions, error)
