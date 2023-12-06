@@ -1,9 +1,7 @@
 package feedreader
 
 import (
-	"database/sql"
 	_ "embed"
-	"os"
 
 	"github.com/limero/offlinerss/client"
 	"github.com/limero/offlinerss/helpers"
@@ -45,20 +43,9 @@ func New(config models.ClientConfig) *Feedreader {
 }
 
 func (c Feedreader) AddToCache(folders models.Folders) error {
-	tmpCachePath := helpers.NewTmpCachePath()
-	defer os.Remove(tmpCachePath)
-
-	if err := helpers.CopyFile(c.ReferenceDB(), tmpCachePath); err != nil {
-		return err
-	}
-
-	db, err := sql.Open("sqlite3", tmpCachePath)
+	tmpCachePath, db, closer, err := c.CreateNewTmpCache()
+	defer closer()
 	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	if err = helpers.MarkOldStoriesAsReadAndUnstarred(db, c.GetDatabaseInfo()); err != nil {
 		return err
 	}
 
@@ -117,9 +104,5 @@ func (c Feedreader) AddToCache(folders models.Folders) error {
 		}
 	}
 
-	if err := helpers.CopyFile(tmpCachePath, c.ReferenceDB(), c.UserDB()); err != nil {
-		return err
-	}
-
-	return nil
+	return helpers.CopyFile(tmpCachePath, c.ReferenceDB(), c.UserDB())
 }

@@ -66,3 +66,29 @@ func (c Client) CreateNewCache() error {
 func (c Client) SetDataPath(dataPath models.DataPath) {
 	c.DataPath = dataPath
 }
+
+// Not exposed in interface
+func (c Client) CreateNewTmpCache() (string, *sql.DB, func(), error) {
+	tmpCachePath := helpers.NewTmpCachePath()
+
+	if err := helpers.CopyFile(c.ReferenceDB(), tmpCachePath); err != nil {
+		return "", nil, func() {}, err
+	}
+
+	closer := func() {
+		os.Remove(tmpCachePath)
+	}
+
+	db, err := sql.Open("sqlite3", tmpCachePath)
+	if err != nil {
+		return "", nil, closer, err
+	}
+
+	closer = func() {
+		db.Close()
+		os.Remove(tmpCachePath)
+	}
+
+	err = helpers.MarkOldStoriesAsReadAndUnstarred(db, c.GetDatabaseInfo())
+	return tmpCachePath, db, closer, err
+}
