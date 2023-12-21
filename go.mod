@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/limero/go-newsblur v0.0.0-20230729151935-6011f9ac849b
-	github.com/mattn/go-sqlite3 v1.14.16
+	github.com/mattn/go-sqlite3 v1.14.19
 	github.com/stretchr/testify v1.8.4
 	miniflux.app v0.0.0-20220724044632-45a9fd5af60e
 )
