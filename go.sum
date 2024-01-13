@@ -13,6 +13,8 @@ github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 h1:Z9n2FFNU
 github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51/go.mod h1:CzGEWj7cYgsdH8dAjBGEr58BoE7ScuLd+fwFZ44+/x8=
 github.com/limero/go-newsblur v0.0.0-20230729151935-6011f9ac849b h1:YAK0TbtpGbmVdXo1XgFwQQypwF2/p8jyUZX+H3E5EO8=
 github.com/limero/go-newsblur v0.0.0-20230729151935-6011f9ac849b/go.mod h1:8rIho5MtcWzF51g+doo9886zjoeQ8RcQEm0lt3Ii+QI=
+github.com/limero/linkcleaner v0.0.0-20240113095007-3db45d92042c h1:1G0yGRgqOPEUn9ohrgYnDRcrwxq01Aw7OQ5bEpEOkSE=
+github.com/limero/linkcleaner v0.0.0-20240113095007-3db45d92042c/go.mod h1:l51zz5FjSaDFqr8cx19yhXgOymuXFC/pm/xgkyPwnDw=
 github.com/mattn/go-colorable v0.1.2/go.mod h1:U0ppj6V5qS13XJ6of8GYAs25YV2eR4EVcfRqFIhoBtE=
 github.com/mattn/go-colorable v0.1.13 h1:fFA4WZxdEF4tXPZVKMLwD8oUnCTTo08duU7wxecdEvA=
 github.com/mattn/go-colorable v0.1.13/go.mod h1:7S9/ev0klgBDR4GtXTXX8a3vIGJpMovkB8vQcUbaXHg=

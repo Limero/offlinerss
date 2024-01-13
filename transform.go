@@ -1,6 +1,10 @@
 package main
 
-import "github.com/limero/offlinerss/models"
+import (
+	"github.com/limero/linkcleaner"
+	"github.com/limero/offlinerss/log"
+	"github.com/limero/offlinerss/models"
+)
 
 func TransformFolders(folders models.Folders) {
 	for _, folder := range folders {
@@ -13,6 +17,10 @@ func TransformFolders(folders models.Folders) {
 }
 
 func transformURL(u string) string {
-	// TODO
-	return u
+	cleanURL, err := linkcleaner.CleanURLString(u)
+	if err != nil {
+		log.Warn("Failed to clean url %q: %v", u, err)
+		return u
+	}
+	return cleanURL.String()
 }

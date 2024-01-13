@@ -24,7 +24,7 @@ func TestTransformFolders(t *testing.T) {
 
 	TransformFolders(folders)
 	assert.Equal(t,
-		"https://example.com/?utm_source=rss",
+		"https://example.com/",
 		folders[0].Feeds[0].Stories[0].Url,
 	)
 }
