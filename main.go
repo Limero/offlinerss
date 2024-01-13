@@ -26,6 +26,8 @@ func run() error {
 		return err
 	}
 
+	TransformFolders(folders)
+
 	if err := SyncClients(clients, folders); err != nil {
 		return err
 	}
