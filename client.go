@@ -2,11 +2,11 @@ package main
 
 import (
 	"errors"
-	"os"
 
 	"github.com/limero/offlinerss/client/feedreader"
 	"github.com/limero/offlinerss/client/newsboat"
 	"github.com/limero/offlinerss/client/quiterss"
+	"github.com/limero/offlinerss/helpers"
 	"github.com/limero/offlinerss/log"
 	"github.com/limero/offlinerss/models"
 )
@@ -71,7 +71,7 @@ func GetSyncToActions(clients models.Clients) (models.SyncToActions, error) {
 
 func SyncClients(clients models.Clients, folders models.Folders) error {
 	for _, client := range clients {
-		if _, err := os.Stat(client.ReferenceDB()); errors.Is(err, os.ErrNotExist) {
+		if !helpers.FileExists(client.ReferenceDB()) {
 			if err := client.CreateNewCache(); err != nil {
 				return err
 			}

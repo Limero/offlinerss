@@ -9,8 +9,8 @@ import (
 )
 
 func TestFileHelpers(t *testing.T) {
-	file1 := filepath.Join(t.TempDir(), "file1.txt")
-	file2 := filepath.Join(t.TempDir(), "file2.txt")
+	file1 := filepath.Join(t.TempDir(), "file.txt")
+	file2 := filepath.Join(t.TempDir(), "file.txt")
 
 	t.Run("write file", func(t *testing.T) {
 		err := WriteFile("test123\ntest321", file1)
@@ -62,5 +62,22 @@ func TestFileHelpers(t *testing.T) {
 		require.NoError(t, err)
 		assert.Len(t, lines, 5)
 		assert.Equal(t, []string{"test123", "test1337", "test321", "test322", "test7331"}, lines)
+	})
+}
+
+func TestFileExists(t *testing.T) {
+	file := filepath.Join(t.TempDir(), "file.txt")
+
+	t.Run("file doesn't exist", func(t *testing.T) {
+		assert.False(t, FileExists(file))
+	})
+
+	t.Run("write file", func(t *testing.T) {
+		err := WriteFile("test", file)
+		require.NoError(t, err)
+	})
+
+	t.Run("file exist", func(t *testing.T) {
+		assert.True(t, FileExists(file))
 	})
 }

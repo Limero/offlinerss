@@ -101,3 +101,8 @@ func MergeToFile(lines []string, file string, sortFunc func(s1, s2 string) bool)
 
 	return WriteFile(c, file)
 }
+
+func FileExists(file string) bool {
+	_, err := os.Stat(file)
+	return !errors.Is(err, os.ErrNotExist)
+}
