@@ -10,10 +10,15 @@ func TransformFolders(folders models.Folders) {
 	for _, folder := range folders {
 		for _, feed := range folder.Feeds {
 			for _, story := range feed.Stories {
+				story.Content = transformContent(story.Content)
 				story.Url = transformURL(story.Url)
 			}
 		}
 	}
+}
+
+func transformContent(c string) string {
+	return linkcleaner.CleanAllURLsInString(c)
 }
 
 func transformURL(u string) string {

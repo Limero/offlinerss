@@ -5,7 +5,7 @@ go 1.21.5
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/limero/go-newsblur v0.0.0-20230729151935-6011f9ac849b
-	github.com/limero/linkcleaner v0.0.0-20240113095007-3db45d92042c
+	github.com/limero/linkcleaner v0.0.0-20240124163348-0e0477db3512
 	github.com/mattn/go-sqlite3 v1.14.19
 	github.com/stretchr/testify v1.8.4
 	miniflux.app v1.0.46
