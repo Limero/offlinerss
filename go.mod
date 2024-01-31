@@ -5,7 +5,7 @@ go 1.21.5
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/limero/go-newsblur v0.0.0-20230729151935-6011f9ac849b
-	github.com/limero/linkcleaner v0.0.0-20240124163348-0e0477db3512
+	github.com/limero/linkcleaner v0.0.0-20240131161408-476a6a565f9c
 	github.com/mattn/go-sqlite3 v1.14.19
 	github.com/stretchr/testify v1.8.4
 	miniflux.app v1.0.46
@@ -23,6 +23,7 @@ require (
 	golang.org/x/term v0.15.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+	mvdan.cc/xurls/v2 v2.5.0 // indirect
 )
 
 //replace github.com/limero/go-newsblur => ../go-newsblur
