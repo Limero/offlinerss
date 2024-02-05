@@ -12,15 +12,17 @@ import (
 )
 
 func getClients(clientConfigs []models.ClientConfig) models.Clients {
-	var clients models.Clients
-	for _, clientConfig := range clientConfigs {
+	clients := make(models.Clients, len(clientConfigs))
+	for i, clientConfig := range clientConfigs {
 		switch clientConfig.Name {
 		case models.ClientFeedReader:
-			clients = append(clients, feedreader.New(clientConfig))
+			clients[i] = feedreader.New(clientConfig)
 		case models.ClientNewsboat:
-			clients = append(clients, newsboat.New(clientConfig))
+			clients[i] = newsboat.New(clientConfig)
 		case models.ClientQuiteRSS:
-			clients = append(clients, quiterss.New(clientConfig))
+			clients[i] = quiterss.New(clientConfig)
+		default:
+			panic("unknown client " + clientConfig.Name)
 		}
 	}
 	return clients
@@ -28,7 +30,7 @@ func getClients(clientConfigs []models.ClientConfig) models.Clients {
 
 func GetSyncToActions(clients models.Clients) (models.SyncToActions, error) {
 	if len(clients) == 0 {
-		return nil, errors.New("You have to enable at least one client in the config file")
+		return nil, errors.New("you have to enable at least one client in the config file")
 	}
 
 	// Grab changes from each client
