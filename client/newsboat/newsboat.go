@@ -53,6 +53,10 @@ func (c Newsboat) AddToCache(folders models.Folders) error {
 
 	var newsboatUrls []string
 
+	// Add query to urls for listing all starred entries
+	// Requires "prepopulate-query-feeds yes" in Newsboat config
+	newsboatUrls = append(newsboatUrls, `"query:Starred:flags # \"s\""`)
+
 	log.Debug("Iterating over %d folders", len(folders))
 	for _, folder := range folders {
 		log.Debug("Iterating over %d feeds in '%s' folder", len(folder.Feeds), folder.Title)
