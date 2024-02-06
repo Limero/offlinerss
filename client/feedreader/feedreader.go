@@ -38,6 +38,14 @@ func New(config models.ClientConfig) *Feedreader {
 					Negative: "10",
 				},
 			},
+			Files: models.ClientFiles{
+				{
+					FileName: "feedreader-7.db",
+					TargetPaths: []string{
+						"~/.local/share/feedreader/data/feedreader-7.db",
+					},
+				},
+			},
 		},
 	}
 }

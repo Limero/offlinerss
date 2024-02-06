@@ -16,7 +16,16 @@ type Client interface {
 	GetDatabaseInfo() DatabaseInfo
 	CreateNewCache() error
 	AddToCache(folders Folders) error
+	GetDataPath() DataPath
 	SetDataPath(dataPath DataPath)
+	GetFiles() ClientFiles
 }
 
 type Clients []Client
+
+type ClientFile struct {
+	FileName    string
+	TargetPaths []string
+}
+
+type ClientFiles []ClientFile

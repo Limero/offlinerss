@@ -40,6 +40,20 @@ func New(config models.ClientConfig) *Newsboat {
 					Negative: "",
 				},
 			},
+			Files: models.ClientFiles{
+				{
+					FileName: "cache.db",
+					TargetPaths: []string{
+						"~/.local/share/newsboat/cache.db",
+					},
+				},
+				{
+					FileName: "urls",
+					TargetPaths: []string{
+						"~/.config/newsboat/urls",
+					},
+				},
+			},
 		},
 	}
 }

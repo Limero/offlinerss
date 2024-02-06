@@ -15,6 +15,7 @@ type Client struct {
 	DataPath     models.DataPath
 	Config       models.ClientConfig
 	DatabaseInfo models.DatabaseInfo
+	Files        models.ClientFiles
 }
 
 func (c Client) Name() models.ClientName {
@@ -64,8 +65,16 @@ func (c Client) CreateNewCache() error {
 	return nil
 }
 
+func (c Client) GetDataPath() models.DataPath {
+	return c.DataPath
+}
+
 func (c Client) SetDataPath(dataPath models.DataPath) {
 	c.DataPath = dataPath
+}
+
+func (c Client) GetFiles() models.ClientFiles {
+	return c.Files
 }
 
 // Not exposed in interface

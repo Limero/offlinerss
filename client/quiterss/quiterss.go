@@ -38,6 +38,14 @@ func New(config models.ClientConfig) *QuiteRSS {
 					Negative: "0",
 				},
 			},
+			Files: models.ClientFiles{
+				{
+					FileName: "feeds.db",
+					TargetPaths: []string{
+						"~/.local/share/QuiteRss/QuiteRss/feeds.db",
+					},
+				},
+			},
 		},
 	}
 }

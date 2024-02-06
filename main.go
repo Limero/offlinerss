@@ -32,6 +32,10 @@ func run() error {
 		return err
 	}
 
+	if err := symlinkClientPaths(clients); err != nil {
+		return err
+	}
+
 	log.Info("Everything synced!")
 
 	return nil
