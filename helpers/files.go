@@ -19,32 +19,34 @@ func CopyFile(source string, destinations ...string) error {
 	if err != nil {
 		return err
 	}
-	for _, destination := range destinations {
-		// Create parent directories
-		if err := os.MkdirAll(filepath.Dir(destination), os.ModePerm); err != nil {
+	for _, dest := range destinations {
+		if err := CreateParentDirs(dest); err != nil {
 			return err
 		}
 
 		// Make a copy of the file
-		if err := os.WriteFile(destination, data, 0o644); err != nil {
+		if err := os.WriteFile(dest, data, 0o644); err != nil {
 			return err
 		}
-		log.Debug("Copied file %s to %s", source, destination)
+		log.Debug("Copied file %s to %s", source, dest)
 	}
 	return nil
+}
+
+func CreateParentDirs(dest string) error {
+	return os.MkdirAll(filepath.Dir(dest), os.ModePerm)
 }
 
 func WriteFile(content string, destinations ...string) error {
 	/*
 		Create file at destinations with content. If file exists, it will be overwritten.
 	*/
-	for _, destination := range destinations {
-		// Create parent directories
-		if err := os.MkdirAll(filepath.Dir(destination), os.ModePerm); err != nil {
+	for _, dest := range destinations {
+		if err := CreateParentDirs(dest); err != nil {
 			return err
 		}
 
-		file, err := os.Create(destination)
+		file, err := os.Create(dest)
 		if err != nil {
 			return err
 		}
@@ -54,7 +56,7 @@ func WriteFile(content string, destinations ...string) error {
 			return err
 		}
 
-		log.Debug("Wrote file: %s", destination)
+		log.Debug("Wrote file: %s", dest)
 	}
 
 	return nil

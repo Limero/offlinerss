@@ -65,6 +65,13 @@ func TestFileHelpers(t *testing.T) {
 	})
 }
 
+func TestCreateParentDirs(t *testing.T) {
+	file := filepath.Join(t.TempDir(), "/dir1/dir2/file.txt")
+	assert.False(t, FileExists(filepath.Dir(file)))
+	require.NoError(t, CreateParentDirs(file))
+	assert.True(t, FileExists(filepath.Dir(file)))
+}
+
 func TestFileExists(t *testing.T) {
 	file := filepath.Join(t.TempDir(), "file.txt")
 
