@@ -28,7 +28,7 @@ func ConfigDir() string {
 }
 
 // Default: ~/.local/share
-func DataHome() string {
+func DataDir() string {
 	configDir := os.Getenv("XDG_DATA_HOME")
 	if configDir != "" {
 		return configDir

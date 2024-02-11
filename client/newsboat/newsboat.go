@@ -44,7 +44,7 @@ func New(config models.ClientConfig) *Newsboat {
 				{
 					FileName: "cache.db",
 					TargetPaths: []string{
-						helpers.DataHome() + "/newsboat/cache.db",
+						helpers.DataDir() + "/newsboat/cache.db",
 					},
 				},
 				{
