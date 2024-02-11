@@ -42,7 +42,7 @@ func New(config models.ClientConfig) *QuiteRSS {
 				{
 					FileName: "feeds.db",
 					TargetPaths: []string{
-						"~/.local/share/QuiteRss/QuiteRss/feeds.db",
+						helpers.DataHome() + "/QuiteRss/QuiteRss/feeds.db",
 					},
 				},
 			},

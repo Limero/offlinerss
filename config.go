@@ -11,17 +11,8 @@ import (
 )
 
 func getConfig() (*models.Config, error) {
-	configDir := os.Getenv("XDG_CONFIG_HOME")
-	if configDir == "" {
-		homeDir, err := os.UserHomeDir()
-		if err != nil {
-			return nil, err
-		}
-		configDir = filepath.Join(homeDir, ".config")
-	}
-
 	var config models.Config
-	configPath := filepath.Join(configDir, "offlinerss/config.json")
+	configPath := filepath.Join(helpers.ConfigDir(), "offlinerss/config.json")
 	data, err := os.ReadFile(configPath)
 	if err != nil {
 		if os.IsNotExist(err) {

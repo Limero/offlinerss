@@ -12,3 +12,31 @@ func NewTmpCachePath() string {
 	tmpFile := fmt.Sprintf("offlinerss-%d.db", time.Now().UnixNano())
 	return filepath.Join(os.TempDir(), tmpFile)
 }
+
+// Default: ~/.config
+func ConfigDir() string {
+	configDir := os.Getenv("XDG_CONFIG_HOME")
+	if configDir != "" {
+		return configDir
+	}
+
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+	return filepath.Join(homeDir, ".config")
+}
+
+// Default: ~/.local/share
+func DataHome() string {
+	configDir := os.Getenv("XDG_DATA_HOME")
+	if configDir != "" {
+		return configDir
+	}
+
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+	return filepath.Join(homeDir, ".local/share")
+}

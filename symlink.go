@@ -1,6 +1,12 @@
 package main
 
-import "github.com/limero/offlinerss/models"
+import (
+	"os"
+
+	"github.com/limero/offlinerss/helpers"
+	"github.com/limero/offlinerss/log"
+	"github.com/limero/offlinerss/models"
+)
 
 func symlinkClientPaths(clients models.Clients) error {
 	for _, client := range clients {
@@ -9,14 +15,32 @@ func symlinkClientPaths(clients models.Clients) error {
 			filePath := dataPath.GetFile(file.FileName)
 
 			for _, targetPath := range file.TargetPaths {
-				_ = filePath
-				_ = targetPath
+				dest, _ := os.Readlink(targetPath)
+				if dest != "" {
+					if dest == filePath {
+						log.Debug("Symlink from %q to %q is already correct", filePath, targetPath)
+						continue
+					}
 
-				// TODO
-				// path exists and is correct symlink, skip
-				// path exists and is incorrect symlink, unlink and relink
-				// path exists and is file, rename and link
-				// path doesn't exist, link
+					log.Warn("Removing incorrect symlink at %q", targetPath)
+					if err := os.Remove(targetPath); err != nil {
+						return err
+					}
+				} else if helpers.FileExists(targetPath) {
+					log.Warn("Non-symlink found at target %q, renaming to .bak", targetPath)
+					if err := os.Rename(targetPath, targetPath+".bak"); err != nil {
+						return err
+					}
+				}
+
+				if err := helpers.CreateParentDirs(targetPath); err != nil {
+					return err
+				}
+
+				log.Info("Symlinking %q to %q", filePath, targetPath)
+				if err := os.Symlink(filePath, targetPath); err != nil {
+					return err
+				}
 			}
 		}
 	}

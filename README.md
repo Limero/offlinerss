@@ -29,30 +29,9 @@ Install OfflineRSS (it will install to `~/go/bin/offlinerss` unless changed)
 go install github.com/limero/offlinerss@latest
 ```
 
-You can now run OfflineRSS and it will prompt you for what server and clients to use and save this information in `~/.config/offlinerss/config.json`. It will then create local databases for your chosen client(s).
+You can now run OfflineRSS and it will prompt you for what server and clients to use and save this information in `~/.config/offlinerss/config.json`. It will then create local databases for your chosen client(s) and symlink these to each client. If you have used any of the selected clients previously, their old databases will be renamed to `.bak` and kept.
 
-By default, the paths for the generated databases will be in `~/.local/share/offlinerss`. You can either change these or symlink them to the correct locations, see instructions below.
-
-**WARNING! This will remove any existing databases at these locations!**
-
-### FeedReader
-
-```
-ln -sf ~/.local/share/offlinerss/feedreader/feedreader-7.db ~/.local/share/feedreader/data/feedreader-7.db
-```
-
-### Newsboat
-
-```
-ln -sf ~/.local/share/offlinerss/newsboat/cache.db ~/.local/share/newsboat/cache.db
-ln -sf ~/.local/share/offlinerss/newsboat/urls ~/.config/newsboat/urls
-```
-
-### QuiteRSS
-
-```
-ln -sf ~/.local/share/offlinerss/quiterss/feeds.db ~/.local/share/QuiteRss/QuiteRss/feeds.db
-```
+By default, the paths for the generated databases will be in `~/.local/share/offlinerss`.
 
 ## Limitations
 
