@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/limero/offlinerss/helpers"
 	"github.com/limero/offlinerss/models"
@@ -12,7 +11,7 @@ import (
 
 func getConfig() (*models.Config, error) {
 	var config models.Config
-	configPath := filepath.Join(helpers.ConfigDir(), "offlinerss/config.json")
+	configPath := helpers.ConfigDir("offlinerss/config.json")
 	data, err := os.ReadFile(configPath)
 	if err != nil {
 		if os.IsNotExist(err) {

@@ -13,30 +13,30 @@ func NewTmpCachePath() string {
 	return filepath.Join(os.TempDir(), tmpFile)
 }
 
-// Default: ~/.config
-func ConfigDir() string {
+// Defaults to ~/.config/file
+func ConfigDir(file string) string {
 	configDir := os.Getenv("XDG_CONFIG_HOME")
 	if configDir != "" {
-		return configDir
+		return filepath.Join(configDir, file)
 	}
 
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		panic(err)
 	}
-	return filepath.Join(homeDir, ".config")
+	return filepath.Join(filepath.Join(homeDir, ".config"), file)
 }
 
-// Default: ~/.local/share
-func DataDir() string {
+// Defaults to ~/.local/share/file
+func DataDir(file string) string {
 	configDir := os.Getenv("XDG_DATA_HOME")
 	if configDir != "" {
-		return configDir
+		return filepath.Join(configDir, file)
 	}
 
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		panic(err)
 	}
-	return filepath.Join(homeDir, ".local/share")
+	return filepath.Join(filepath.Join(homeDir, ".local/share"), file)
 }

@@ -42,7 +42,7 @@ func New(config models.ClientConfig) *Feedreader {
 				{
 					FileName: "feedreader-7.db",
 					TargetPaths: []string{
-						helpers.DataDir() + "/feedreader/data/feedreader-7.db",
+						helpers.DataDir("feedreader/data/feedreader-7.db"),
 					},
 				},
 			},
