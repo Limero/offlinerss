@@ -104,7 +104,7 @@ func (c Newsboat) AddToCache(folders models.Folders) error {
 					story.Timestamp.Unix(),
 					story.Content,
 					story.Unread,
-					helpers.CondString(story.Starred, "s", ""),
+					helpers.Cond(story.Starred, "s", ""),
 				); err != nil {
 					return err
 				}
