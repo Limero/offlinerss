@@ -1,7 +1,5 @@
 package newsblur
 
-type UNIMPLEMENTED struct{}
-
 type ApiFeed struct {
 	ID          int    `json:"id"`
 	Ps          int    `json:"ps"`           // positive/focus count
@@ -95,18 +93,6 @@ type ReaderFeedsOutput struct {
 	Feeds   []ApiFeed `json:"feeds"`
 }
 
-type ReaderFeedOutput struct {
-	Stories []ApiStory `json:"stories"`
-}
-
 type StoriesOutput struct {
 	Stories []ApiStory `json:"stories"`
 }
-
-type MarkStoryHashesAsReadOutput struct{}
-
-type MarkStoryHashAsUnreadOutput struct{}
-
-type MarkStoryHashAsStarredOutput struct{}
-
-type MarkStoryHashAsUnstarredOutput struct{}

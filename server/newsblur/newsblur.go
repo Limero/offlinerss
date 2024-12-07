@@ -19,10 +19,10 @@ type NewsblurClient interface {
 	ReaderStarredStoryHashes() ([]string, error)
 	ReaderRiverStories_StoryHash(storyHash []string) (output *newsblur.StoriesOutput, err error)
 
-	MarkStoryHashesAsRead(storyHash []string) (output *newsblur.MarkStoryHashesAsReadOutput, err error)
-	MarkStoryHashAsUnread(storyHash string) (output *newsblur.MarkStoryHashAsUnreadOutput, err error)
-	MarkStoryHashAsStarred(storyHash string) (output *newsblur.MarkStoryHashAsStarredOutput, err error)
-	MarkStoryHashAsUnstarred(storyHash string) (output *newsblur.MarkStoryHashAsUnstarredOutput, err error)
+	MarkStoryHashesAsRead(storyHash []string) error
+	MarkStoryHashAsUnread(storyHash string) error
+	MarkStoryHashAsStarred(storyHash string) error
+	MarkStoryHashAsUnstarred(storyHash string) error
 }
 
 type Newsblur struct {
@@ -235,16 +235,14 @@ func (s *Newsblur) markStoriesAsRead(hashes ...string) error {
 	}
 
 	log.Debug("Calling external NewsBlur API: MarkStoryHashesAsRead. Hashes: %+v", hashes)
-	_, err := s.client.MarkStoryHashesAsRead(hashes)
-	return err
+	return s.client.MarkStoryHashesAsRead(hashes)
 }
 
 func (s *Newsblur) markStoriesAsUnread(hashes ...string) error {
 	// NewsBlur doesn't support batching unread events. So we have to handle them individually
 	for _, hash := range hashes {
 		log.Debug("Calling external NewsBlur API: MarkStoryHashAsUnread. Hash: %s", hash)
-		_, err := s.client.MarkStoryHashAsUnread(hash)
-		if err != nil {
+		if err := s.client.MarkStoryHashAsUnread(hash); err != nil {
 			return err
 		}
 	}
@@ -255,8 +253,7 @@ func (s *Newsblur) markStoriesAsStarred(hashes ...string) error {
 	// NewsBlur doesn't support batching starred events. So we have to handle them individually
 	for _, hash := range hashes {
 		log.Debug("Calling external NewsBlur API: MarkStoryHashAsStarred. Hash: %s", hash)
-		_, err := s.client.MarkStoryHashAsStarred(hash)
-		if err != nil {
+		if err := s.client.MarkStoryHashAsStarred(hash); err != nil {
 			return err
 		}
 	}
@@ -267,8 +264,7 @@ func (s *Newsblur) markStoriesAsUnstarred(hashes ...string) error {
 	// NewsBlur doesn't support batching unstarred events. So we have to handle them individually
 	for _, hash := range hashes {
 		log.Debug("Calling external NewsBlur API: MarkStoryHashAsUnstarred. Hash: %s", hash)
-		_, err := s.client.MarkStoryHashAsUnstarred(hash)
-		if err != nil {
+		if err := s.client.MarkStoryHashAsUnstarred(hash); err != nil {
 			return err
 		}
 	}

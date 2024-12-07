@@ -9,28 +9,6 @@ import (
 	"github.com/limero/offlinerss/server/newsblur/api/apimodels"
 )
 
-// Retrieve stories from a single feed.
-// GET /reader/feed/:id
-// https://www.newsblur.com/api#/reader/feed/:id
-func (nb *Newsblur) ReaderFeed(feedID string, page int) (output *ReaderFeedOutput, err error) {
-	if page == 0 {
-		page = 1
-	}
-	body, err := GetWithBody(
-		nb.client,
-		fmt.Sprintf("%s/reader/feed/%s?page=%d", nb.Hostname, feedID, page),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := json.Unmarshal(body, &output); err != nil {
-		return nil, err
-	}
-
-	return output, nil
-}
-
 // Retrieve a user's starred stories.
 // GET /reader/starred_stories
 // https://newsblur.com/api#/reader/starred_stories
@@ -142,79 +120,39 @@ func (nb *Newsblur) ReaderUnreadStoryHashes() ([]string, error) {
 // Mark stories as read using their unique story_hash.
 // POST /reader/mark_story_hashes_as_read
 // https://www.newsblur.com/api#/reader/mark_story_hashes_as_read
-func (nb *Newsblur) MarkStoryHashesAsRead(storyHash []string) (output *MarkStoryHashesAsReadOutput, err error) {
-	formData := url.Values{
+func (nb *Newsblur) MarkStoryHashesAsRead(storyHash []string) error {
+	_, err := nb.client.PostForm(nb.Hostname+"/reader/mark_story_hashes_as_read", url.Values{
 		"story_hash": storyHash,
-	}
-
-	body, err := PostWithBody(nb.client, nb.Hostname+"/reader/mark_story_hashes_as_read", formData)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := json.Unmarshal(body, &output); err != nil {
-		return nil, err
-	}
-
-	return output, nil
+	})
+	return err
 }
 
 // Mark a single story as unread using its unique story_hash.
 // POST /reader/mark_story_hash_as_unread
 // https://www.newsblur.com/api#/reader/mark_story_hash_as_unread
-func (nb *Newsblur) MarkStoryHashAsUnread(storyHash string) (output *MarkStoryHashAsUnreadOutput, err error) {
-	formData := url.Values{
+func (nb *Newsblur) MarkStoryHashAsUnread(storyHash string) error {
+	_, err := nb.client.PostForm(nb.Hostname+"/reader/mark_story_hash_as_unread", url.Values{
 		"story_hash": {storyHash},
-	}
-
-	body, err := PostWithBody(nb.client, nb.Hostname+"/reader/mark_story_hash_as_unread", formData)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := json.Unmarshal(body, &output); err != nil {
-		return nil, err
-	}
-
-	return output, nil
+	})
+	return err
 }
 
 // Mark a story as starred (saved).
 // POST /reader/mark_story_hash_as_starred
 // https://www.newsblur.com/api#/reader/mark_story_hash_as_starred
-func (nb *Newsblur) MarkStoryHashAsStarred(storyHash string) (output *MarkStoryHashAsStarredOutput, err error) {
-	formData := url.Values{
+func (nb *Newsblur) MarkStoryHashAsStarred(storyHash string) error {
+	_, err := nb.client.PostForm(nb.Hostname+"/reader/mark_story_hash_as_starred", url.Values{
 		"story_hash": {storyHash},
-	}
-
-	body, err := PostWithBody(nb.client, nb.Hostname+"/reader/mark_story_hash_as_starred", formData)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := json.Unmarshal(body, &output); err != nil {
-		return nil, err
-	}
-
-	return output, nil
+	})
+	return err
 }
 
 // Mark a story as unstarred (unsaved).
 // POST /reader/mark_story_hash_as_unstarred
 // https://www.newsblur.com/api#/reader/mark_story_hash_as_unstarred
-func (nb *Newsblur) MarkStoryHashAsUnstarred(storyHash string) (output *MarkStoryHashAsUnstarredOutput, err error) {
-	formData := url.Values{
+func (nb *Newsblur) MarkStoryHashAsUnstarred(storyHash string) error {
+	_, err := nb.client.PostForm(nb.Hostname+"/reader/mark_story_hash_as_unstarred", url.Values{
 		"story_hash": {storyHash},
-	}
-
-	body, err := PostWithBody(nb.client, nb.Hostname+"/reader/mark_story_hash_as_unstarred", formData)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := json.Unmarshal(body, &output); err != nil {
-		return nil, err
-	}
-
-	return output, nil
+	})
+	return err
 }

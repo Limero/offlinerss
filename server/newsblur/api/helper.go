@@ -1,7 +1,7 @@
 package newsblur
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 )
@@ -12,7 +12,7 @@ func GetWithBody(client *http.Client, url string) ([]byte, error) {
 		return nil, err
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	resp.Body.Close()
 	if err != nil {
 		return nil, err
@@ -27,7 +27,7 @@ func PostWithBody(client *http.Client, url string, data url.Values) ([]byte, err
 		return nil, err
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	resp.Body.Close()
 	if err != nil {
 		return nil, err

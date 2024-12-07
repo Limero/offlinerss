@@ -88,25 +88,25 @@ func TestNewsblurSyncToServer(t *testing.T) {
 
 	// Read
 	mockClient.On("MarkStoryHashesAsRead", []string{"1", "2"}).
-		Return(&newsblur.MarkStoryHashesAsReadOutput{}, nil)
+		Return(nil)
 
 	// Unread
 	mockClient.On("MarkStoryHashAsUnread", "3").
-		Return(&newsblur.MarkStoryHashAsUnreadOutput{}, nil)
+		Return(nil)
 	mockClient.On("MarkStoryHashAsUnread", "4").
-		Return(&newsblur.MarkStoryHashAsUnreadOutput{}, nil)
+		Return(nil)
 
 	// Starred
 	mockClient.On("MarkStoryHashAsStarred", "1").
-		Return(&newsblur.MarkStoryHashAsStarredOutput{}, nil)
+		Return(nil)
 	mockClient.On("MarkStoryHashAsStarred", "2").
-		Return(&newsblur.MarkStoryHashAsStarredOutput{}, nil)
+		Return(nil)
 
 	// Unstarred
 	mockClient.On("MarkStoryHashAsUnstarred", "3").
-		Return(&newsblur.MarkStoryHashAsUnstarredOutput{}, nil)
+		Return(nil)
 	mockClient.On("MarkStoryHashAsUnstarred", "4").
-		Return(&newsblur.MarkStoryHashAsUnstarredOutput{}, nil)
+		Return(nil)
 
 	syncToActions := models.SyncToActions{
 		{ID: "1", Action: models.ActionStoryRead},
