@@ -6,9 +6,9 @@ import (
 	"net/http/cookiejar"
 	"time"
 
-	"github.com/limero/go-newsblur"
 	"github.com/limero/offlinerss/log"
 	"github.com/limero/offlinerss/models"
+	newsblur "github.com/limero/offlinerss/server/newsblur/api"
 )
 
 type NewsblurClient interface {

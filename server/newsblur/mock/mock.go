@@ -1,7 +1,7 @@
 package mock
 
 import (
-	"github.com/limero/go-newsblur"
+	newsblur "github.com/limero/offlinerss/server/newsblur/api"
 	"github.com/stretchr/testify/mock"
 )
 

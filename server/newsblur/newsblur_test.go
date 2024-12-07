@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/limero/go-newsblur"
 	"github.com/limero/offlinerss/models"
+	newsblur "github.com/limero/offlinerss/server/newsblur/api"
 	"github.com/limero/offlinerss/server/newsblur/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
