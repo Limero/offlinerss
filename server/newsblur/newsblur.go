@@ -100,10 +100,7 @@ func (s *Newsblur) fetchStories(folders *models.Folders, storyHashes []string) e
 
 	for page := 1; true; page++ {
 		from := (page - 1) * perPage
-		to := (page) * perPage
-		if to > len(storyHashes) {
-			to = len(storyHashes)
-		}
+		to := min((page)*perPage, len(storyHashes))
 		if from >= to {
 			return nil
 		}

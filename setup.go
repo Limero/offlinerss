@@ -43,7 +43,7 @@ func setup() (models.Config, error) {
 		{
 			Name:   "username",
 			Prompt: &survey.Input{Message: fmt.Sprintf("Enter username for %s:", answers.Server)},
-			Validate: func(val interface{}) error {
+			Validate: func(val any) error {
 				if str, ok := val.(string); !ok || len(str) == 0 {
 					return errors.New("invalid username")
 				}
@@ -53,7 +53,7 @@ func setup() (models.Config, error) {
 		{
 			Name:   "password",
 			Prompt: &survey.Password{Message: fmt.Sprintf("Enter password for %s:", answers.Server)},
-			Validate: func(val interface{}) error {
+			Validate: func(val any) error {
 				if str, ok := val.(string); !ok || len(str) == 0 {
 					return errors.New("invalid password")
 				}
@@ -96,7 +96,7 @@ func setup() (models.Config, error) {
 				},
 				VimMode: true,
 			},
-			Validate: func(val interface{}) error {
+			Validate: func(val any) error {
 				if opts, ok := val.([]survey.OptionAnswer); !ok || len(opts) == 0 {
 					return errors.New("you need to pick at least one client")
 				}

@@ -29,15 +29,15 @@ type ApiStory struct {
 }
 
 type LoginOutput struct {
-	Authenticated bool        `json:"authenticated"`
-	Code          int         `json:"code"`
-	Errors        interface{} `json:"errors"`
-	Result        string      `json:"result"`
+	Authenticated bool   `json:"authenticated"`
+	Code          int    `json:"code"`
+	Errors        any    `json:"errors"`
+	Result        string `json:"result"`
 }
 
 type ReaderFeedsOutputRaw struct {
-	Folders []interface{} `json:"folders"`
-	Feeds   []ApiFeed     `json:"feeds"`
+	Folders []any     `json:"folders"`
+	Feeds   []ApiFeed `json:"feeds"`
 }
 
 func (raw ReaderFeedsOutputRaw) toOutput() (*ReaderFeedsOutput, error) {
@@ -56,12 +56,12 @@ func (raw ReaderFeedsOutputRaw) toOutput() (*ReaderFeedsOutput, error) {
 		case float64, float32:
 			// Feed without folder
 			emptyFolder.FeedIDs = append(emptyFolder.FeedIDs, int(element.(float64)))
-		case map[string]interface{}:
+		case map[string]any:
 			// Feed with folder
-			folders := element.(map[string]interface{})
+			folders := element.(map[string]any)
 			for folder, feeds := range folders {
 				feedIDs := []int{}
-				for _, feedId := range feeds.([]interface{}) {
+				for _, feedId := range feeds.([]any) {
 					feedIDs = append(feedIDs, int(feedId.(float64)))
 				}
 
