@@ -1,6 +1,6 @@
-package newsblur
+package api
 
-type ApiFeed struct {
+type Feed struct {
 	ID          int    `json:"id"`
 	Ps          int    `json:"ps"`           // positive/focus count
 	Nt          int    `json:"nt"`           // neutral/unread count
@@ -10,7 +10,7 @@ type ApiFeed struct {
 	FeedTitle   string `json:"feed_title"`
 }
 
-type ApiStory struct {
+type Story struct {
 	StoryAuthors     string `json:"story_authors"`
 	StoryPermalink   string `json:"story_permalink"`
 	StoryTimestamp   int64  `json:"story_timestamp,string"`
@@ -35,5 +35,5 @@ type Folder struct {
 
 type ReaderFeedsOutput struct {
 	Folders []Folder
-	Feeds   []ApiFeed
+	Feeds   []Feed
 }

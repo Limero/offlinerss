@@ -1,4 +1,4 @@
-package newsblur
+package api
 
 import (
 	_ "embed"
@@ -49,7 +49,7 @@ func TestReaderFeeds(t *testing.T) {
 		},
 	}, output.Folders)
 
-	assert.Equal(t, []ApiFeed{
+	assert.Equal(t, []Feed{
 		{ID: 8312062, Ps: 0, Nt: 0, Ng: 0, FeedAddress: "https://webzine.puffy.cafe/atom.xml", FeedLink: "https://webzine.puffy.cafe/", FeedTitle: "OpenBSD Webzine"},
 		{ID: 7600810, Ps: 0, Nt: 0, Ng: 0, FeedAddress: "https://undeadly.org/cgi?action=rss", FeedLink: "https://undeadly.org/", FeedTitle: "OpenBSD Journal"},
 	}, output.Feeds)

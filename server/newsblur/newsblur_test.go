@@ -12,10 +12,10 @@ import (
 )
 
 func TestNewsblurGetFoldersWithStories(t *testing.T) {
-	mockClient := new(mock.MockClient)
+	mockAPI := new(mock.MockAPI)
 
 	s := Newsblur{
-		client: mockClient,
+		api: mockAPI,
 	}
 	now := time.Now()
 	unreadStory := models.Story{
@@ -29,7 +29,7 @@ func TestNewsblurGetFoldersWithStories(t *testing.T) {
 		Unread:    true,
 	}
 
-	mockClient.On("ReaderFeeds").
+	mockAPI.On("ReaderFeeds").
 		Return(&newsblur.ReaderFeedsOutput{
 			Folders: []newsblur.Folder{
 				{
@@ -37,7 +37,7 @@ func TestNewsblurGetFoldersWithStories(t *testing.T) {
 					FeedIDs: []int{1},
 				},
 			},
-			Feeds: []newsblur.ApiFeed{
+			Feeds: []newsblur.Feed{
 				{
 					ID: 1,
 					Nt: 1,
@@ -45,14 +45,14 @@ func TestNewsblurGetFoldersWithStories(t *testing.T) {
 			},
 		}, nil)
 
-	mockClient.On("ReaderUnreadStoryHashes").
+	mockAPI.On("ReaderUnreadStoryHashes").
 		Return([]string{unreadStory.Hash}, nil)
 
-	mockClient.On("ReaderStarredStoryHashes").
+	mockAPI.On("ReaderStarredStoryHashes").
 		Return([]string{starredStory.Hash}, nil)
 
-	mockClient.On("ReaderRiverStories_StoryHash", []string{unreadStory.Hash, starredStory.Hash}).
-		Return([]newsblur.ApiStory{
+	mockAPI.On("ReaderRiverStories_StoryHash", []string{unreadStory.Hash, starredStory.Hash}).
+		Return([]newsblur.Story{
 			{
 				StoryTimestamp: unreadStory.Timestamp.Unix(),
 				StoryHash:      unreadStory.Hash,
@@ -74,36 +74,36 @@ func TestNewsblurGetFoldersWithStories(t *testing.T) {
 	assert.Equal(t, &unreadStory, folders[0].Feeds[0].Stories[0])
 	assert.Equal(t, &starredStory, folders[0].Feeds[0].Stories[1])
 
-	mockClient.AssertExpectations(t)
+	mockAPI.AssertExpectations(t)
 }
 
 func TestNewsblurSyncToServer(t *testing.T) {
-	mockClient := new(mock.MockClient)
+	mockAPI := new(mock.MockAPI)
 
 	s := Newsblur{
-		client: mockClient,
+		api: mockAPI,
 	}
 
 	// Read
-	mockClient.On("MarkStoryHashesAsRead", []string{"1", "2"}).
+	mockAPI.On("MarkStoryHashesAsRead", []string{"1", "2"}).
 		Return(nil)
 
 	// Unread
-	mockClient.On("MarkStoryHashAsUnread", "3").
+	mockAPI.On("MarkStoryHashAsUnread", "3").
 		Return(nil)
-	mockClient.On("MarkStoryHashAsUnread", "4").
+	mockAPI.On("MarkStoryHashAsUnread", "4").
 		Return(nil)
 
 	// Starred
-	mockClient.On("MarkStoryHashAsStarred", "1").
+	mockAPI.On("MarkStoryHashAsStarred", "1").
 		Return(nil)
-	mockClient.On("MarkStoryHashAsStarred", "2").
+	mockAPI.On("MarkStoryHashAsStarred", "2").
 		Return(nil)
 
 	// Unstarred
-	mockClient.On("MarkStoryHashAsUnstarred", "3").
+	mockAPI.On("MarkStoryHashAsUnstarred", "3").
 		Return(nil)
-	mockClient.On("MarkStoryHashAsUnstarred", "4").
+	mockAPI.On("MarkStoryHashAsUnstarred", "4").
 		Return(nil)
 
 	syncToActions := models.SyncToActions{
@@ -122,5 +122,5 @@ func TestNewsblurSyncToServer(t *testing.T) {
 	err := s.SyncToServer(syncToActions)
 	require.NoError(t, err)
 
-	mockClient.AssertExpectations(t)
+	mockAPI.AssertExpectations(t)
 }

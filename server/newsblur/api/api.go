@@ -1,4 +1,4 @@
-package newsblur
+package api
 
 import (
 	"encoding/json"
@@ -71,15 +71,15 @@ func (nb *Newsblur) ReaderFeeds() (output *ReaderFeedsOutput, err error) {
 	}
 
 	var raw struct {
-		Folders []any     `json:"folders"`
-		Feeds   []ApiFeed `json:"feeds"`
+		Folders []any  `json:"folders"`
+		Feeds   []Feed `json:"feeds"`
 	}
 	if err := json.Unmarshal(body, &raw); err != nil {
 		return nil, err
 	}
 
 	output = &ReaderFeedsOutput{
-		Folders: make([]Folder, 0),
+		Folders: make([]Folder, 0, len(raw.Folders)),
 		Feeds:   raw.Feeds,
 	}
 
@@ -97,7 +97,7 @@ func (nb *Newsblur) ReaderFeeds() (output *ReaderFeedsOutput, err error) {
 			// Feed with folder
 			folders := element.(map[string]any)
 			for folder, feeds := range folders {
-				feedIDs := []int{}
+				feedIDs := make([]int, 0)
 				for _, feedId := range feeds.([]any) {
 					feedIDs = append(feedIDs, int(feedId.(float64)))
 				}
@@ -123,7 +123,7 @@ func (nb *Newsblur) ReaderFeeds() (output *ReaderFeedsOutput, err error) {
 // Retrieve a user's starred stories.
 // GET /reader/starred_stories
 // https://newsblur.com/api#/reader/starred_stories
-func (nb *Newsblur) ReaderStarredStories(page int) ([]ApiStory, error) {
+func (nb *Newsblur) ReaderStarredStories(page int) ([]Story, error) {
 	if page == 0 {
 		page = 1
 	}
@@ -140,7 +140,7 @@ func (nb *Newsblur) ReaderStarredStories(page int) ([]ApiStory, error) {
 	}
 
 	var output struct {
-		Stories []ApiStory `json:"stories"`
+		Stories []Story `json:"stories"`
 	}
 
 	if err := json.Unmarshal(body, &output); err != nil {
@@ -178,7 +178,7 @@ func (nb *Newsblur) ReaderStarredStoryHashes() ([]string, error) {
 // Retrieve stories from a collection of feeds
 // GET /reader/river_stories
 // https://www.newsblur.com/api#/reader/river_stories
-func (nb *Newsblur) ReaderRiverStories(feeds []string, page int) ([]ApiStory, error) {
+func (nb *Newsblur) ReaderRiverStories(feeds []string, page int) ([]Story, error) {
 	if page == 0 {
 		page = 1
 	}
@@ -200,7 +200,7 @@ func (nb *Newsblur) ReaderRiverStories(feeds []string, page int) ([]ApiStory, er
 	}
 
 	var output struct {
-		Stories []ApiStory `json:"stories"`
+		Stories []Story `json:"stories"`
 	}
 
 	if err := json.Unmarshal(body, &output); err != nil {
@@ -213,7 +213,7 @@ func (nb *Newsblur) ReaderRiverStories(feeds []string, page int) ([]ApiStory, er
 // Retrieve up to 100 stories when specifying by story_hash.
 // GET /reader/river_stories
 // https://newsblur.com/api#/reader/river_stories
-func (nb *Newsblur) ReaderRiverStories_StoryHash(storyHash []string) ([]ApiStory, error) {
+func (nb *Newsblur) ReaderRiverStories_StoryHash(storyHash []string) ([]Story, error) {
 	formData := url.Values{
 		"h": storyHash,
 	}
@@ -230,7 +230,7 @@ func (nb *Newsblur) ReaderRiverStories_StoryHash(storyHash []string) ([]ApiStory
 	}
 
 	var output struct {
-		Stories []ApiStory `json:"stories"`
+		Stories []Story `json:"stories"`
 	}
 
 	if err := json.Unmarshal(body, &output); err != nil {

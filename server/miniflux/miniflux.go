@@ -1,7 +1,6 @@
 package miniflux
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/limero/offlinerss/log"
@@ -107,8 +106,6 @@ func (s *Miniflux) SyncToServer(syncToActions models.SyncToActions) error {
 			if err := s.handleStarred(syncToAction); err != nil {
 				return err
 			}
-		default:
-			return fmt.Errorf("Unsupported Miniflux syncToAction: %d", syncToAction.Action)
 		}
 	}
 

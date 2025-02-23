@@ -1,23 +1,22 @@
 package newsblur
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/cookiejar"
 	"time"
 
 	"github.com/limero/offlinerss/log"
 	"github.com/limero/offlinerss/models"
-	newsblur "github.com/limero/offlinerss/server/newsblur/api"
+	"github.com/limero/offlinerss/server/newsblur/api"
 )
 
-type NewsblurClient interface {
+type API interface {
 	Login(username, password string) error
 
-	ReaderFeeds() (output *newsblur.ReaderFeedsOutput, err error)
+	ReaderFeeds() (output *api.ReaderFeedsOutput, err error)
 	ReaderUnreadStoryHashes() ([]string, error)
 	ReaderStarredStoryHashes() ([]string, error)
-	ReaderRiverStories_StoryHash(storyHash []string) ([]newsblur.ApiStory, error)
+	ReaderRiverStories_StoryHash(storyHash []string) ([]api.Story, error)
 
 	MarkStoryHashesAsRead(storyHash []string) error
 	MarkStoryHashAsUnread(storyHash string) error
@@ -27,7 +26,7 @@ type NewsblurClient interface {
 
 type Newsblur struct {
 	config models.ServerConfig
-	client NewsblurClient
+	api    API
 }
 
 func New(config models.ServerConfig) *Newsblur {
@@ -36,7 +35,7 @@ func New(config models.ServerConfig) *Newsblur {
 		panic(err)
 	}
 
-	client := newsblur.New(&http.Client{
+	client := api.New(&http.Client{
 		Jar: cookieJar,
 	})
 	if config.Hostname != "" {
@@ -44,7 +43,7 @@ func New(config models.ServerConfig) *Newsblur {
 	}
 	return &Newsblur{
 		config: config,
-		client: client,
+		api:    client,
 	}
 }
 
@@ -54,7 +53,7 @@ func (s *Newsblur) Name() models.ServerName {
 
 func (s *Newsblur) Login() error {
 	log.Debug("Calling external NewsBlur API: Login")
-	return s.client.Login(s.config.Username, s.config.Password)
+	return s.api.Login(s.config.Username, s.config.Password)
 }
 
 func (s *Newsblur) GetFoldersWithStories() (models.Folders, error) {
@@ -64,13 +63,13 @@ func (s *Newsblur) GetFoldersWithStories() (models.Folders, error) {
 	}
 
 	log.Debug("Calling external NewsBlur API: ReaderUnreadStoryHashes")
-	storyHashes, err := s.client.ReaderUnreadStoryHashes()
+	storyHashes, err := s.api.ReaderUnreadStoryHashes()
 	if err != nil {
 		return nil, err
 	}
 
 	log.Debug("Calling external NewsBlur API: ReaderStarredStoryHashes")
-	starredStoryHashes, err := s.client.ReaderStarredStoryHashes()
+	starredStoryHashes, err := s.api.ReaderStarredStoryHashes()
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +83,7 @@ func (s *Newsblur) GetFoldersWithStories() (models.Folders, error) {
 }
 
 func (s *Newsblur) fetchStories(folders *models.Folders, storyHashes []string) error {
-	var stories []newsblur.ApiStory
+	var stories []api.Story
 	var err error
 
 	perPage := 100
@@ -98,7 +97,7 @@ func (s *Newsblur) fetchStories(folders *models.Folders, storyHashes []string) e
 		currentHashes := storyHashes[from:to]
 
 		log.Debug("Calling external NewsBlur API: ReaderRiverStories. Number of storyHashes: %d. Page: %d", len(currentHashes), page)
-		stories, err = s.client.ReaderRiverStories_StoryHash(currentHashes)
+		stories, err = s.api.ReaderRiverStories_StoryHash(currentHashes)
 		if err != nil {
 			return err
 		}
@@ -112,7 +111,7 @@ func (s *Newsblur) fetchStories(folders *models.Folders, storyHashes []string) e
 	return nil
 }
 
-func (s *Newsblur) mapStoriesToFeeds(folders *models.Folders, stories []newsblur.ApiStory) {
+func (s *Newsblur) mapStoriesToFeeds(folders *models.Folders, stories []api.Story) {
 	for _, story := range stories {
 		storyFeed := folders.FindFeed(int64(story.StoryFeedID))
 		if storyFeed == nil {
@@ -144,7 +143,7 @@ func (s *Newsblur) mapStoriesToFeeds(folders *models.Folders, stories []newsblur
 
 func (s *Newsblur) getFolders() (models.Folders, error) {
 	log.Debug("Calling external NewsBlur API: ReaderFeeds")
-	readerFeedsOutput, err := s.client.ReaderFeeds()
+	readerFeedsOutput, err := s.api.ReaderFeeds()
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +163,7 @@ func (s *Newsblur) getFolders() (models.Folders, error) {
 	return newFolders, nil
 }
 
-func (s *Newsblur) addFeedToFolder(readerFeedsOutput *newsblur.ReaderFeedsOutput, feedID int, newFolder *models.Folder) {
+func (s *Newsblur) addFeedToFolder(readerFeedsOutput *api.ReaderFeedsOutput, feedID int, newFolder *models.Folder) {
 	for _, tmpFeed := range readerFeedsOutput.Feeds {
 		if feedID != tmpFeed.ID {
 			continue
@@ -205,8 +204,6 @@ func (s *Newsblur) SyncToServer(syncToActions models.SyncToActions) error {
 			if err := s.markStoriesAsUnstarred(syncToAction.ID); err != nil {
 				return err
 			}
-		default:
-			return fmt.Errorf("Unsupported Newsblur syncToAction: %d", syncToAction.Action)
 		}
 	}
 
@@ -223,14 +220,14 @@ func (s *Newsblur) markStoriesAsRead(hashes ...string) error {
 	}
 
 	log.Debug("Calling external NewsBlur API: MarkStoryHashesAsRead. Hashes: %+v", hashes)
-	return s.client.MarkStoryHashesAsRead(hashes)
+	return s.api.MarkStoryHashesAsRead(hashes)
 }
 
 func (s *Newsblur) markStoriesAsUnread(hashes ...string) error {
 	// NewsBlur doesn't support batching unread events. So we have to handle them individually
 	for _, hash := range hashes {
 		log.Debug("Calling external NewsBlur API: MarkStoryHashAsUnread. Hash: %s", hash)
-		if err := s.client.MarkStoryHashAsUnread(hash); err != nil {
+		if err := s.api.MarkStoryHashAsUnread(hash); err != nil {
 			return err
 		}
 	}
@@ -241,7 +238,7 @@ func (s *Newsblur) markStoriesAsStarred(hashes ...string) error {
 	// NewsBlur doesn't support batching starred events. So we have to handle them individually
 	for _, hash := range hashes {
 		log.Debug("Calling external NewsBlur API: MarkStoryHashAsStarred. Hash: %s", hash)
-		if err := s.client.MarkStoryHashAsStarred(hash); err != nil {
+		if err := s.api.MarkStoryHashAsStarred(hash); err != nil {
 			return err
 		}
 	}
@@ -252,7 +249,7 @@ func (s *Newsblur) markStoriesAsUnstarred(hashes ...string) error {
 	// NewsBlur doesn't support batching unstarred events. So we have to handle them individually
 	for _, hash := range hashes {
 		log.Debug("Calling external NewsBlur API: MarkStoryHashAsUnstarred. Hash: %s", hash)
-		if err := s.client.MarkStoryHashAsUnstarred(hash); err != nil {
+		if err := s.api.MarkStoryHashAsUnstarred(hash); err != nil {
 			return err
 		}
 	}
