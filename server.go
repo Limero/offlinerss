@@ -35,7 +35,7 @@ func SyncServer(server models.Server, syncToActions models.SyncToActions) (model
 				return nil, err
 			}
 		}
-		if len(syncToActions.Read) > 0 {
+		if len(syncToActions.Unread) > 0 {
 			log.Debug("Syncing unread to " + string(server.Name()))
 			if err := server.MarkStoriesAsUnread(syncToActions.Unread); err != nil {
 				return nil, err
