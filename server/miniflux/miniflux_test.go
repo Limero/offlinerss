@@ -8,14 +8,14 @@ import (
 	"github.com/limero/offlinerss/server/miniflux/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	miniflux "miniflux.app/client"
+	api "miniflux.app/client"
 )
 
 func TestMinifluxGetFoldersWithStories(t *testing.T) {
-	mockClient := new(mock.MockClient)
+	mockAPI := new(mock.MockAPI)
 
 	s := Miniflux{
-		client: mockClient,
+		api: mockAPI,
 	}
 
 	story := models.Story{
@@ -24,20 +24,20 @@ func TestMinifluxGetFoldersWithStories(t *testing.T) {
 		Unread:    true,
 	}
 
-	entries := miniflux.Entries{
+	entries := api.Entries{
 		{
 			ID:     123,
-			Status: miniflux.EntryStatusUnread,
+			Status: api.EntryStatusUnread,
 			Date:   story.Timestamp,
-			Feed: &miniflux.Feed{
-				Category: &miniflux.Category{},
+			Feed: &api.Feed{
+				Category: &api.Category{},
 			},
 		},
 	}
 
-	mockClient.On("Entries", &miniflux.Filter{
-		Status: miniflux.EntryStatusUnread,
-	}).Return(&miniflux.EntryResultSet{
+	mockAPI.On("Entries", &api.Filter{
+		Status: api.EntryStatusUnread,
+	}).Return(&api.EntryResultSet{
 		Total:   len(entries),
 		Entries: entries,
 	}, nil)
@@ -50,39 +50,39 @@ func TestMinifluxGetFoldersWithStories(t *testing.T) {
 	assert.Len(t, folders[0].Feeds[0].Stories, 1)
 	assert.Equal(t, &story, folders[0].Feeds[0].Stories[0])
 
-	mockClient.AssertExpectations(t)
+	mockAPI.AssertExpectations(t)
 }
 
 func TestMinifluxSyncToServer(t *testing.T) {
-	mockClient := new(mock.MockClient)
+	mockAPI := new(mock.MockAPI)
 
 	s := Miniflux{
-		client: mockClient,
+		api: mockAPI,
 	}
 
 	// Read
-	mockClient.On("UpdateEntries", []int64{1, 2}, miniflux.EntryStatusRead).
+	mockAPI.On("UpdateEntries", []int64{1, 2}, api.EntryStatusRead).
 		Return(nil)
 
 	// Unread
-	mockClient.On("UpdateEntries", []int64{3, 4}, miniflux.EntryStatusUnread).
+	mockAPI.On("UpdateEntries", []int64{3, 4}, api.EntryStatusUnread).
 		Return(nil)
 
 	// Starred
-	mockClient.On("Entry", int64(1)).
-		Return(&miniflux.Entry{Starred: false}, nil)
-	mockClient.On("ToggleBookmark", int64(1)).
+	mockAPI.On("Entry", int64(1)).
+		Return(&api.Entry{Starred: false}, nil)
+	mockAPI.On("ToggleBookmark", int64(1)).
 		Return(nil)
-	mockClient.On("Entry", int64(2)).
-		Return(&miniflux.Entry{Starred: true}, nil)
+	mockAPI.On("Entry", int64(2)).
+		Return(&api.Entry{Starred: true}, nil)
 
 	// Unstarred
-	mockClient.On("Entry", int64(3)).
-		Return(&miniflux.Entry{Starred: true}, nil)
-	mockClient.On("ToggleBookmark", int64(3)).
+	mockAPI.On("Entry", int64(3)).
+		Return(&api.Entry{Starred: true}, nil)
+	mockAPI.On("ToggleBookmark", int64(3)).
 		Return(nil)
-	mockClient.On("Entry", int64(4)).
-		Return(&miniflux.Entry{Starred: false}, nil)
+	mockAPI.On("Entry", int64(4)).
+		Return(&api.Entry{Starred: false}, nil)
 
 	syncToActions := models.SyncToActions{
 		{ID: "1", Action: models.ActionStoryRead},
@@ -100,5 +100,5 @@ func TestMinifluxSyncToServer(t *testing.T) {
 	err := s.SyncToServer(syncToActions)
 	require.NoError(t, err)
 
-	mockClient.AssertExpectations(t)
+	mockAPI.AssertExpectations(t)
 }

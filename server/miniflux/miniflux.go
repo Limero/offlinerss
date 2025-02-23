@@ -5,19 +5,19 @@ import (
 
 	"github.com/limero/offlinerss/log"
 	"github.com/limero/offlinerss/models"
-	miniflux "miniflux.app/client"
+	api "miniflux.app/client"
 )
 
-type MinifluxClient interface {
-	Entry(entryID int64) (*miniflux.Entry, error)
-	Entries(filter *miniflux.Filter) (*miniflux.EntryResultSet, error)
+type API interface {
+	Entry(entryID int64) (*api.Entry, error)
+	Entries(filter *api.Filter) (*api.EntryResultSet, error)
 	UpdateEntries(entryIDs []int64, status string) error
 	ToggleBookmark(entryID int64) error
 }
 
 type Miniflux struct {
 	config models.ServerConfig
-	client MinifluxClient
+	api    API
 }
 
 func New(config models.ServerConfig) *Miniflux {
@@ -35,21 +35,21 @@ func (s *Miniflux) Login() error {
 	if hostname == "" {
 		hostname = "https://reader.miniflux.app"
 	}
-	client := miniflux.New(hostname, s.config.Username, s.config.Password)
+	client := api.New(hostname, s.config.Username, s.config.Password)
 
 	if _, err := client.Me(); err != nil {
 		return err
 	}
 
-	s.client = client
+	s.api = client
 	return nil
 }
 
 func (s *Miniflux) GetFoldersWithStories() (models.Folders, error) {
 	var folders models.Folders
 
-	entries, err := s.client.Entries(&miniflux.Filter{
-		Status: miniflux.EntryStatusUnread,
+	entries, err := s.api.Entries(&api.Filter{
+		Status: api.EntryStatusUnread,
 	})
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func (s *Miniflux) GetFoldersWithStories() (models.Folders, error) {
 			Authors:   entry.Author,
 			Content:   entry.Content,
 			Url:       entry.URL,
-			Unread:    entry.Status != miniflux.EntryStatusRead,
+			Unread:    entry.Status != api.EntryStatusRead,
 			Starred:   entry.Starred,
 		}
 
@@ -110,14 +110,14 @@ func (s *Miniflux) SyncToServer(syncToActions models.SyncToActions) error {
 	}
 
 	if len(readIDs) > 0 {
-		if err := s.client.UpdateEntries(readIDs, miniflux.EntryStatusRead); err != nil {
+		if err := s.api.UpdateEntries(readIDs, api.EntryStatusRead); err != nil {
 			return err
 		}
 		log.Debug("%d items has been marked as read", len(readIDs))
 	}
 
 	if len(unreadIDs) > 0 {
-		if err := s.client.UpdateEntries(unreadIDs, miniflux.EntryStatusUnread); err != nil {
+		if err := s.api.UpdateEntries(unreadIDs, api.EntryStatusUnread); err != nil {
 			return err
 		}
 		log.Debug("%d items has been marked as unread", len(unreadIDs))
@@ -135,14 +135,14 @@ func (s *Miniflux) handleStarred(syncToAction models.SyncToAction) error {
 		return err
 	}
 
-	entry, err := s.client.Entry(actionID)
+	entry, err := s.api.Entry(actionID)
 	if err != nil {
 		return err
 	}
 
 	if (entry.Starred && syncToAction.Action == models.ActionStoryUnstarred) ||
 		(!entry.Starred && syncToAction.Action == models.ActionStoryStarred) {
-		return s.client.ToggleBookmark(actionID)
+		return s.api.ToggleBookmark(actionID)
 	}
 
 	return nil
