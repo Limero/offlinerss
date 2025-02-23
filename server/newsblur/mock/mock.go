@@ -9,9 +9,9 @@ type MockClient struct {
 	mock.Mock
 }
 
-func (m *MockClient) Login(username, password string) (*newsblur.LoginOutput, error) {
+func (m *MockClient) Login(username, password string) error {
 	args := m.Called(username, password)
-	return args.Get(0).(*newsblur.LoginOutput), args.Error(1)
+	return args.Error(0)
 }
 
 func (m *MockClient) ReaderFeeds() (*newsblur.ReaderFeedsOutput, error) {
@@ -29,9 +29,9 @@ func (m *MockClient) ReaderStarredStoryHashes() ([]string, error) {
 	return args.Get(0).([]string), args.Error(1)
 }
 
-func (m *MockClient) ReaderRiverStories_StoryHash(storyHash []string) (*newsblur.StoriesOutput, error) {
+func (m *MockClient) ReaderRiverStories_StoryHash(storyHash []string) ([]newsblur.ApiStory, error) {
 	args := m.Called(storyHash)
-	return args.Get(0).(*newsblur.StoriesOutput), args.Error(1)
+	return args.Get(0).([]newsblur.ApiStory), args.Error(1)
 }
 
 func (m *MockClient) MarkStoryHashesAsRead(storyHash []string) error {

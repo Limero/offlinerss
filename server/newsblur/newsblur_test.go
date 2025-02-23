@@ -52,18 +52,16 @@ func TestNewsblurGetFoldersWithStories(t *testing.T) {
 		Return([]string{starredStory.Hash}, nil)
 
 	mockClient.On("ReaderRiverStories_StoryHash", []string{unreadStory.Hash, starredStory.Hash}).
-		Return(&newsblur.StoriesOutput{
-			Stories: []newsblur.ApiStory{
-				{
-					StoryTimestamp: unreadStory.Timestamp.Unix(),
-					StoryHash:      unreadStory.Hash,
-					StoryFeedID:    1,
-				},
-				{
-					StoryTimestamp: starredStory.Timestamp.Unix(),
-					StoryHash:      starredStory.Hash,
-					StoryFeedID:    1,
-				},
+		Return([]newsblur.ApiStory{
+			{
+				StoryTimestamp: unreadStory.Timestamp.Unix(),
+				StoryHash:      unreadStory.Hash,
+				StoryFeedID:    1,
+			},
+			{
+				StoryTimestamp: starredStory.Timestamp.Unix(),
+				StoryHash:      starredStory.Hash,
+				StoryFeedID:    1,
 			},
 		}, nil)
 

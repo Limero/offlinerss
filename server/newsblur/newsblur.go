@@ -12,12 +12,12 @@ import (
 )
 
 type NewsblurClient interface {
-	Login(username, password string) (output *newsblur.LoginOutput, err error)
+	Login(username, password string) error
 
 	ReaderFeeds() (output *newsblur.ReaderFeedsOutput, err error)
 	ReaderUnreadStoryHashes() ([]string, error)
 	ReaderStarredStoryHashes() ([]string, error)
-	ReaderRiverStories_StoryHash(storyHash []string) (output *newsblur.StoriesOutput, err error)
+	ReaderRiverStories_StoryHash(storyHash []string) ([]newsblur.ApiStory, error)
 
 	MarkStoryHashesAsRead(storyHash []string) error
 	MarkStoryHashAsUnread(storyHash string) error
@@ -54,8 +54,7 @@ func (s *Newsblur) Name() models.ServerName {
 
 func (s *Newsblur) Login() error {
 	log.Debug("Calling external NewsBlur API: Login")
-	_, err := s.client.Login(s.config.Username, s.config.Password)
-	return err
+	return s.client.Login(s.config.Username, s.config.Password)
 }
 
 func (s *Newsblur) GetFoldersWithStories() (models.Folders, error) {
@@ -64,12 +63,14 @@ func (s *Newsblur) GetFoldersWithStories() (models.Folders, error) {
 		return nil, err
 	}
 
-	storyHashes, err := s.getUnreadStoryHashes()
+	log.Debug("Calling external NewsBlur API: ReaderUnreadStoryHashes")
+	storyHashes, err := s.client.ReaderUnreadStoryHashes()
 	if err != nil {
 		return nil, err
 	}
 
-	starredStoryHashes, err := s.getStarredStoryHashes()
+	log.Debug("Calling external NewsBlur API: ReaderStarredStoryHashes")
+	starredStoryHashes, err := s.client.ReaderStarredStoryHashes()
 	if err != nil {
 		return nil, err
 	}
@@ -82,18 +83,8 @@ func (s *Newsblur) GetFoldersWithStories() (models.Folders, error) {
 	return folders, nil
 }
 
-func (s *Newsblur) getUnreadStoryHashes() ([]string, error) {
-	log.Debug("Calling external NewsBlur API: ReaderUnreadStoryHashes")
-	return s.client.ReaderUnreadStoryHashes()
-}
-
-func (s *Newsblur) getStarredStoryHashes() ([]string, error) {
-	log.Debug("Calling external NewsBlur API: ReaderStarredStoryHashes")
-	return s.client.ReaderStarredStoryHashes()
-}
-
 func (s *Newsblur) fetchStories(folders *models.Folders, storyHashes []string) error {
-	var storiesOutput *newsblur.StoriesOutput
+	var stories []newsblur.ApiStory
 	var err error
 
 	perPage := 100
@@ -107,16 +98,16 @@ func (s *Newsblur) fetchStories(folders *models.Folders, storyHashes []string) e
 		currentHashes := storyHashes[from:to]
 
 		log.Debug("Calling external NewsBlur API: ReaderRiverStories. Number of storyHashes: %d. Page: %d", len(currentHashes), page)
-		storiesOutput, err = s.client.ReaderRiverStories_StoryHash(currentHashes)
+		stories, err = s.client.ReaderRiverStories_StoryHash(currentHashes)
 		if err != nil {
 			return err
 		}
 
-		s.mapStoriesToFeeds(folders, storiesOutput.Stories)
+		s.mapStoriesToFeeds(folders, stories)
 
 		// Note that this might be fewer than the number of storyHashes
 		// because ReaderRiverStories skips "disliked" intelligence trainer items
-		log.Debug("Stories added: %d", len(storiesOutput.Stories))
+		log.Debug("Stories added: %d", len(stories))
 	}
 	return nil
 }

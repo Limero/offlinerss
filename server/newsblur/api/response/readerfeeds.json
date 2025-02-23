@@ -1,15 +1,3 @@
-package newsblur
-
-import (
-	"encoding/json"
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-)
-
-func TestReaderFeedsOutput(t *testing.T) {
-	in := `
 {
   "feeds": [
     {
@@ -111,33 +99,4 @@ func TestReaderFeedsOutput(t *testing.T) {
   "share_ext_token": "",
   "result": "ok",
   "authenticated": true
-}
-`
-
-	var raw ReaderFeedsOutputRaw
-
-	err := json.Unmarshal([]byte(in), &raw)
-	require.NoError(t, err)
-
-	output, err := raw.toOutput()
-	require.NoError(t, err)
-
-	assert.Len(t, output.Folders, 2)
-	assert.Equal(t, []Folder{
-		{
-			Title: "BSD",
-			FeedIDs: []int{
-				7600810,
-				8312062,
-			},
-		},
-		{
-			Title: "",
-			FeedIDs: []int{
-				1000000,
-				1111111,
-			},
-		},
-	}, output.Folders)
-
 }
