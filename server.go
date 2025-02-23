@@ -25,10 +25,33 @@ func SyncServer(server models.Server, syncToActions models.SyncToActions) (model
 		return nil, err
 	}
 
-	if len(syncToActions) > 0 {
+	if syncToActions.Total() > 0 {
 		log.Info("Syncing changes to " + string(server.Name()))
-		if err := server.SyncToServer(syncToActions); err != nil {
-			return nil, err
+
+		// TODO: Do these in parallel
+		if len(syncToActions.Read) > 0 {
+			log.Debug("Syncing read to " + string(server.Name()))
+			if err := server.MarkStoriesAsRead(syncToActions.Read); err != nil {
+				return nil, err
+			}
+		}
+		if len(syncToActions.Read) > 0 {
+			log.Debug("Syncing unread to " + string(server.Name()))
+			if err := server.MarkStoriesAsUnread(syncToActions.Unread); err != nil {
+				return nil, err
+			}
+		}
+		if len(syncToActions.Starred) > 0 {
+			log.Debug("Syncing starred to " + string(server.Name()))
+			if err := server.MarkStoriesAsStarred(syncToActions.Starred); err != nil {
+				return nil, err
+			}
+		}
+		if len(syncToActions.Unstarred) > 0 {
+			log.Debug("Syncing unstarred to " + string(server.Name()))
+			if err := server.MarkStoriesAsUnstarred(syncToActions.Unstarred); err != nil {
+				return nil, err
+			}
 		}
 	}
 

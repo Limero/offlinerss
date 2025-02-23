@@ -27,11 +27,11 @@ func getChangesFromSqlite(
 ) (models.SyncToActions, error) {
 	if _, err := os.Stat(referenceDBPath); os.IsNotExist(err) {
 		log.Debug("Reference database does not exist at %s, nothing to sync to server", referenceDBPath)
-		return nil, nil
+		return models.SyncToActions{}, nil
 	}
 	if _, err := os.Stat(userDBPath); os.IsNotExist(err) {
 		log.Debug("User database does not exist at %s, nothing to sync to server", userDBPath)
-		return nil, nil
+		return models.SyncToActions{}, nil
 	}
 	refRows, err := getRowsFromDB(
 		referenceDBPath,
@@ -41,7 +41,7 @@ func getChangesFromSqlite(
 		dbInfo.Starred.Column,
 	)
 	if err != nil {
-		return nil, err
+		return models.SyncToActions{}, err
 	}
 	userRows, err := getRowsFromDB(
 		userDBPath,
@@ -51,7 +51,7 @@ func getChangesFromSqlite(
 		dbInfo.Starred.Column,
 	)
 	if err != nil {
-		return nil, err
+		return models.SyncToActions{}, err
 	}
 
 	var syncToActions models.SyncToActions
@@ -64,30 +64,18 @@ func getChangesFromSqlite(
 			if refRow.Unread != userRow.Unread {
 				switch userRow.Unread {
 				case dbInfo.Unread.Positive:
-					syncToActions = append(syncToActions, models.SyncToAction{
-						ID:     refRow.ID,
-						Action: models.ActionStoryUnread,
-					})
+					syncToActions.Unread = append(syncToActions.Unread, refRow.ID)
 				case dbInfo.Unread.Negative:
-					syncToActions = append(syncToActions, models.SyncToAction{
-						ID:     refRow.ID,
-						Action: models.ActionStoryRead,
-					})
+					syncToActions.Read = append(syncToActions.Read, refRow.ID)
 				}
 			}
 
 			if refRow.Starred != userRow.Starred {
 				switch userRow.Starred {
 				case dbInfo.Starred.Positive:
-					syncToActions = append(syncToActions, models.SyncToAction{
-						ID:     refRow.ID,
-						Action: models.ActionStoryStarred,
-					})
+					syncToActions.Starred = append(syncToActions.Starred, refRow.ID)
 				case dbInfo.Starred.Negative:
-					syncToActions = append(syncToActions, models.SyncToAction{
-						ID:     refRow.ID,
-						Action: models.ActionStoryUnstarred,
-					})
+					syncToActions.Unstarred = append(syncToActions.Unstarred, refRow.ID)
 				}
 			}
 

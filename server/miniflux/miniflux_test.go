@@ -11,7 +11,7 @@ import (
 	api "miniflux.app/client"
 )
 
-func TestMinifluxGetFoldersWithStories(t *testing.T) {
+func TestGetFoldersWithStories(t *testing.T) {
 	mockAPI := new(mock.MockAPI)
 
 	s := Miniflux{
@@ -53,22 +53,41 @@ func TestMinifluxGetFoldersWithStories(t *testing.T) {
 	mockAPI.AssertExpectations(t)
 }
 
-func TestMinifluxSyncToServer(t *testing.T) {
+func TestMarkStoriesAsRead(t *testing.T) {
 	mockAPI := new(mock.MockAPI)
 
 	s := Miniflux{
 		api: mockAPI,
 	}
 
-	// Read
 	mockAPI.On("UpdateEntries", []int64{1, 2}, api.EntryStatusRead).
 		Return(nil)
 
-	// Unread
-	mockAPI.On("UpdateEntries", []int64{3, 4}, api.EntryStatusUnread).
+	require.NoError(t, s.MarkStoriesAsRead([]string{"1", "2"}))
+	mockAPI.AssertExpectations(t)
+}
+
+func TestMarkStoriesAsUnread(t *testing.T) {
+	mockAPI := new(mock.MockAPI)
+
+	s := Miniflux{
+		api: mockAPI,
+	}
+
+	mockAPI.On("UpdateEntries", []int64{1, 2}, api.EntryStatusUnread).
 		Return(nil)
 
-	// Starred
+	require.NoError(t, s.MarkStoriesAsUnread([]string{"1", "2"}))
+	mockAPI.AssertExpectations(t)
+}
+
+func TestMarkStoriesAsStarred(t *testing.T) {
+	mockAPI := new(mock.MockAPI)
+
+	s := Miniflux{
+		api: mockAPI,
+	}
+
 	mockAPI.On("Entry", int64(1)).
 		Return(&api.Entry{Starred: false}, nil)
 	mockAPI.On("ToggleBookmark", int64(1)).
@@ -76,29 +95,24 @@ func TestMinifluxSyncToServer(t *testing.T) {
 	mockAPI.On("Entry", int64(2)).
 		Return(&api.Entry{Starred: true}, nil)
 
-	// Unstarred
-	mockAPI.On("Entry", int64(3)).
+	require.NoError(t, s.MarkStoriesAsStarred([]string{"1", "2"}))
+	mockAPI.AssertExpectations(t)
+}
+
+func TestMarkStoriesAsUnstarred(t *testing.T) {
+	mockAPI := new(mock.MockAPI)
+
+	s := Miniflux{
+		api: mockAPI,
+	}
+
+	mockAPI.On("Entry", int64(1)).
 		Return(&api.Entry{Starred: true}, nil)
-	mockAPI.On("ToggleBookmark", int64(3)).
+	mockAPI.On("ToggleBookmark", int64(1)).
 		Return(nil)
-	mockAPI.On("Entry", int64(4)).
+	mockAPI.On("Entry", int64(2)).
 		Return(&api.Entry{Starred: false}, nil)
 
-	syncToActions := models.SyncToActions{
-		{ID: "1", Action: models.ActionStoryRead},
-		{ID: "2", Action: models.ActionStoryRead},
-
-		{ID: "3", Action: models.ActionStoryUnread},
-		{ID: "4", Action: models.ActionStoryUnread},
-
-		{ID: "1", Action: models.ActionStoryStarred},
-		{ID: "2", Action: models.ActionStoryStarred}, // already starred, should be skipped
-
-		{ID: "3", Action: models.ActionStoryUnstarred},
-		{ID: "4", Action: models.ActionStoryUnstarred}, // already unstarred, should be skipped
-	}
-	err := s.SyncToServer(syncToActions)
-	require.NoError(t, err)
-
+	require.NoError(t, s.MarkStoriesAsUnstarred([]string{"1", "2"}))
 	mockAPI.AssertExpectations(t)
 }

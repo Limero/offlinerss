@@ -30,7 +30,7 @@ func getClients(clientConfigs []models.ClientConfig) models.Clients {
 
 func GetSyncToActions(clients models.Clients) (models.SyncToActions, error) {
 	if len(clients) == 0 {
-		return nil, errors.New("you have to enable at least one client in the config file")
+		return models.SyncToActions{}, errors.New("you have to enable at least one client in the config file")
 	}
 
 	// Grab changes from each client
@@ -39,32 +39,33 @@ func GetSyncToActions(clients models.Clients) (models.SyncToActions, error) {
 	for _, client := range clients {
 		actions, err := client.GetChanges()
 		if err != nil {
-			return nil, err
+			return models.SyncToActions{}, err
 		}
 
-		if len(actions) == 0 {
+		if actions.Total() == 0 {
 			continue
 		}
 
-		log.Info("Found %d changes in %s", len(actions), client.Name())
-		read, unread, starred, unstarred := actions.SumActionTypes()
-		if read > 0 {
-			log.Info("  📖 %d read", read)
+		log.Info("Found %d changes in %s", actions.Total(), client.Name())
+		if len(actions.Read) > 0 {
+			log.Info("  📖 %d read", len(actions.Read))
+			syncToActions.Read = append(syncToActions.Read, actions.Read...)
 		}
-		if unread > 0 {
-			log.Info("  📕 %d unread", unread)
+		if len(actions.Unread) > 0 {
+			log.Info("  📕 %d unread", len(actions.Unread))
+			syncToActions.Unread = append(syncToActions.Unread, actions.Unread...)
 		}
-		if starred > 0 {
-			log.Info("  ⭐ %d starred", starred)
+		if len(actions.Starred) > 0 {
+			log.Info("  ⭐ %d starred", len(actions.Starred))
+			syncToActions.Starred = append(syncToActions.Starred, actions.Starred...)
 		}
-		if unstarred > 0 {
-			log.Info("  ☁️ %d unstarred", unstarred)
+		if len(actions.Unstarred) > 0 {
+			log.Info("  ☁️ %d unstarred", len(actions.Unstarred))
+			syncToActions.Unstarred = append(syncToActions.Unstarred, actions.Unstarred...)
 		}
-
-		syncToActions = append(syncToActions, actions...)
 	}
 
-	if len(syncToActions) == 0 {
+	if syncToActions.Total() == 0 {
 		log.Info("No changes found for any local clients")
 	}
 

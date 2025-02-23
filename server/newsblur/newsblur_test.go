@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewsblurGetFoldersWithStories(t *testing.T) {
+func TestGetFoldersWithStories(t *testing.T) {
 	mockAPI := new(mock.MockAPI)
 
 	s := Newsblur{
@@ -77,50 +77,64 @@ func TestNewsblurGetFoldersWithStories(t *testing.T) {
 	mockAPI.AssertExpectations(t)
 }
 
-func TestNewsblurSyncToServer(t *testing.T) {
+func TestMarkStoriesAsRead(t *testing.T) {
 	mockAPI := new(mock.MockAPI)
 
 	s := Newsblur{
 		api: mockAPI,
 	}
 
-	// Read
 	mockAPI.On("MarkStoryHashesAsRead", []string{"1", "2"}).
 		Return(nil)
 
-	// Unread
-	mockAPI.On("MarkStoryHashAsUnread", "3").
+	require.NoError(t, s.MarkStoriesAsRead([]string{"1", "2"}))
+	mockAPI.AssertExpectations(t)
+}
+
+func TestMarkStoriesAsUnread(t *testing.T) {
+	mockAPI := new(mock.MockAPI)
+
+	s := Newsblur{
+		api: mockAPI,
+	}
+
+	mockAPI.On("MarkStoryHashAsUnread", "1").
 		Return(nil)
-	mockAPI.On("MarkStoryHashAsUnread", "4").
+	mockAPI.On("MarkStoryHashAsUnread", "2").
 		Return(nil)
 
-	// Starred
+	require.NoError(t, s.MarkStoriesAsUnread([]string{"1", "2"}))
+	mockAPI.AssertExpectations(t)
+}
+
+func TestMarkStoriesAsStarred(t *testing.T) {
+	mockAPI := new(mock.MockAPI)
+
+	s := Newsblur{
+		api: mockAPI,
+	}
+
 	mockAPI.On("MarkStoryHashAsStarred", "1").
 		Return(nil)
 	mockAPI.On("MarkStoryHashAsStarred", "2").
 		Return(nil)
 
-	// Unstarred
-	mockAPI.On("MarkStoryHashAsUnstarred", "3").
-		Return(nil)
-	mockAPI.On("MarkStoryHashAsUnstarred", "4").
-		Return(nil)
+	require.NoError(t, s.MarkStoriesAsStarred([]string{"1", "2"}))
+	mockAPI.AssertExpectations(t)
+}
 
-	syncToActions := models.SyncToActions{
-		{ID: "1", Action: models.ActionStoryRead},
-		{ID: "2", Action: models.ActionStoryRead},
+func TestMarkStoriesAsUnstarred(t *testing.T) {
+	mockAPI := new(mock.MockAPI)
 
-		{ID: "3", Action: models.ActionStoryUnread},
-		{ID: "4", Action: models.ActionStoryUnread},
-
-		{ID: "1", Action: models.ActionStoryStarred},
-		{ID: "2", Action: models.ActionStoryStarred},
-
-		{ID: "3", Action: models.ActionStoryUnstarred},
-		{ID: "4", Action: models.ActionStoryUnstarred},
+	s := Newsblur{
+		api: mockAPI,
 	}
-	err := s.SyncToServer(syncToActions)
-	require.NoError(t, err)
 
+	mockAPI.On("MarkStoryHashAsUnstarred", "1").
+		Return(nil)
+	mockAPI.On("MarkStoryHashAsUnstarred", "2").
+		Return(nil)
+
+	require.NoError(t, s.MarkStoriesAsUnstarred([]string{"1", "2"}))
 	mockAPI.AssertExpectations(t)
 }

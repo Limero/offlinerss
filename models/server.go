@@ -11,5 +11,9 @@ type Server interface {
 	Name() ServerName
 	Login() error
 	GetFoldersWithStories() (Folders, error)
-	SyncToServer(syncToActions SyncToActions) error
+
+	MarkStoriesAsRead(IDs []string) error
+	MarkStoriesAsUnread(IDs []string) error
+	MarkStoriesAsStarred(IDs []string) error
+	MarkStoriesAsUnstarred(IDs []string) error
 }

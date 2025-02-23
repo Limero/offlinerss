@@ -80,7 +80,7 @@ func TestClients(t *testing.T) {
 		t.Run(name+" get no changes on new cache", func(t *testing.T) {
 			actions, err := tt.client.GetChanges()
 			require.NoError(t, err)
-			assert.Len(t, actions, 0)
+			assert.Empty(t, actions)
 		})
 
 		t.Run(name+" add folders to cache", func(t *testing.T) {
@@ -216,19 +216,12 @@ func TestClients(t *testing.T) {
 			// by the delta AddToCache call. So there won't be any changes to those
 			changes, err := tt.client.GetChanges()
 			require.NoError(t, err)
-			assert.Len(t, changes, 4)
+			assert.Equal(t, 4, changes.Total())
 
-			assert.Equal(t, stories2[0].Hash, changes[0].ID)
-			assert.Equal(t, models.ActionStoryRead, changes[0].Action)
-
-			assert.Equal(t, stories2[0].Hash, changes[1].ID)
-			assert.Equal(t, models.ActionStoryUnstarred, changes[1].Action)
-
-			assert.Equal(t, stories2[1].Hash, changes[2].ID)
-			assert.Equal(t, models.ActionStoryUnread, changes[2].Action)
-
-			assert.Equal(t, stories2[1].Hash, changes[3].ID)
-			assert.Equal(t, models.ActionStoryStarred, changes[3].Action)
+			assert.Equal(t, stories2[0].Hash, changes.Read[0])
+			assert.Equal(t, stories2[0].Hash, changes.Unstarred[0])
+			assert.Equal(t, stories2[1].Hash, changes.Unread[0])
+			assert.Equal(t, stories2[1].Hash, changes.Starred[0])
 		})
 	}
 }

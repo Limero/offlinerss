@@ -85,65 +85,96 @@ func (s *Miniflux) GetFoldersWithStories() (models.Folders, error) {
 	return folders, nil
 }
 
-func (s *Miniflux) SyncToServer(syncToActions models.SyncToActions) error {
-	var readIDs []int64
-	var unreadIDs []int64
+func (s *Miniflux) MarkStoriesAsRead(IDs []string) error {
+	intIDs := make([]int64, 0, len(IDs))
 
-	for _, syncToAction := range syncToActions {
-		actionID, err := strconv.ParseInt(syncToAction.ID, 10, 64)
+	for _, id := range IDs {
+		intID, err := strconv.ParseInt(id, 10, 64)
 		if err != nil {
 			return err
 		}
 
-		switch syncToAction.Action {
-		case models.ActionStoryRead:
-			// Batch read events so only one request has to be done
-			readIDs = append(readIDs, actionID)
-		case models.ActionStoryUnread:
-			// Batch unread events so only one request has to be done
-			unreadIDs = append(unreadIDs, actionID)
-		case models.ActionStoryStarred, models.ActionStoryUnstarred:
-			if err := s.handleStarred(syncToAction); err != nil {
-				return err
-			}
-		}
+		intIDs = append(intIDs, intID)
 	}
 
-	if len(readIDs) > 0 {
-		if err := s.api.UpdateEntries(readIDs, api.EntryStatusRead); err != nil {
-			return err
-		}
-		log.Debug("%d items has been marked as read", len(readIDs))
+	if err := s.api.UpdateEntries(intIDs, api.EntryStatusRead); err != nil {
+		return err
 	}
-
-	if len(unreadIDs) > 0 {
-		if err := s.api.UpdateEntries(unreadIDs, api.EntryStatusUnread); err != nil {
-			return err
-		}
-		log.Debug("%d items has been marked as unread", len(unreadIDs))
-	}
+	log.Debug("%d items has been marked as read", len(intIDs))
 
 	return nil
 }
 
-func (s *Miniflux) handleStarred(syncToAction models.SyncToAction) error {
-	// Because Miniflux only support toggling starred instead of setting it directly,
-	// we have to check its current status
+func (s *Miniflux) MarkStoriesAsUnread(IDs []string) error {
+	intIDs := make([]int64, 0, len(IDs))
 
-	actionID, err := strconv.ParseInt(syncToAction.ID, 10, 64)
-	if err != nil {
+	for _, id := range IDs {
+		intID, err := strconv.ParseInt(id, 10, 64)
+		if err != nil {
+			return err
+		}
+
+		intIDs = append(intIDs, intID)
+	}
+
+	if err := s.api.UpdateEntries(intIDs, api.EntryStatusUnread); err != nil {
 		return err
 	}
+	log.Debug("%d items has been marked as unread", len(intIDs))
 
-	entry, err := s.api.Entry(actionID)
-	if err != nil {
-		return err
+	return nil
+}
+
+func (s *Miniflux) MarkStoriesAsStarred(IDs []string) error {
+	for _, id := range IDs {
+		intID, err := strconv.ParseInt(id, 10, 64)
+		if err != nil {
+			return err
+		}
+
+		// Because Miniflux only support toggling starred instead of setting it directly,
+		// we have to check its current status
+		entry, err := s.api.Entry(intID)
+		if err != nil {
+			return err
+		}
+		if entry.Starred {
+			continue
+		}
+		if err := s.api.ToggleBookmark(intID); err != nil {
+			return err
+		}
+
 	}
 
-	if (entry.Starred && syncToAction.Action == models.ActionStoryUnstarred) ||
-		(!entry.Starred && syncToAction.Action == models.ActionStoryStarred) {
-		return s.api.ToggleBookmark(actionID)
+	log.Debug("%d items has been marked as starred", len(IDs))
+
+	return nil
+}
+
+func (s *Miniflux) MarkStoriesAsUnstarred(IDs []string) error {
+	for _, id := range IDs {
+		intID, err := strconv.ParseInt(id, 10, 64)
+		if err != nil {
+			return err
+		}
+
+		// Because Miniflux only support toggling starred instead of setting it directly,
+		// we have to check its current status
+		entry, err := s.api.Entry(intID)
+		if err != nil {
+			return err
+		}
+		if !entry.Starred {
+			continue
+		}
+		if err := s.api.ToggleBookmark(intID); err != nil {
+			return err
+		}
+
 	}
+
+	log.Debug("%d items has been marked as unstarred", len(IDs))
 
 	return nil
 }
