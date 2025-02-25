@@ -11,6 +11,7 @@ import (
 	"github.com/limero/offlinerss/client"
 	"github.com/limero/offlinerss/client/newsboat"
 	"github.com/limero/offlinerss/helpers"
+	"github.com/limero/offlinerss/log"
 	"github.com/limero/offlinerss/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -36,7 +37,7 @@ func CaptureStdout(f func()) string {
 }
 
 func Test_symlinkClientPaths(t *testing.T) {
-	t.Setenv("DEBUG", "true")
+	log.DebugEnabled = true
 	sourceDir := t.TempDir()
 	dataPath := models.DataPath(sourceDir)
 	sourceFile := "source-file"

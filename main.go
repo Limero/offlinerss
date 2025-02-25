@@ -2,11 +2,24 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/limero/offlinerss/log"
 )
 
-func run() error {
+func run(args []string) error {
+	syncOnlyTo := false
+	for _, arg := range args {
+		switch arg {
+		case "to":
+			syncOnlyTo = true
+		case "-v":
+			log.DebugEnabled = true
+		default:
+			log.Warn("Unknown argument %q", arg)
+		}
+	}
+
 	config, err := getConfig()
 	if err != nil {
 		return err
@@ -21,15 +34,39 @@ func run() error {
 
 	server := getServer(config.Server)
 
-	folders, err := SyncServer(server, syncToActions)
-	if err != nil {
-		return err
+	totalActions := syncToActions.Total()
+	if totalActions > 0 {
+		if err := AuthServer(server); err != nil {
+			return err
+		}
+		if err := SyncToServer(server, syncToActions); err != nil {
+			return err
+		}
 	}
 
-	TransformFolders(folders)
+	if syncOnlyTo {
+		if totalActions > 0 {
+			if err := ReplaceReferenceDBsWithUserDBs(clients); err != nil {
+				return err
+			}
+		}
+	} else {
+		if totalActions == 0 {
+			// No actions were synced to server, so we haven't authenticated yet
+			if err := AuthServer(server); err != nil {
+				return err
+			}
+		}
+		folders, err := GetNewFromServer(server)
+		if err != nil {
+			return err
+		}
 
-	if err := SyncClients(clients, folders); err != nil {
-		return err
+		TransformFolders(folders)
+
+		if err := SyncClients(clients, folders); err != nil {
+			return err
+		}
 	}
 
 	if err := symlinkClientPaths(clients); err != nil {
@@ -42,7 +79,7 @@ func run() error {
 }
 
 func main() {
-	if err := run(); err != nil {
+	if err := run(os.Args[1:]); err != nil {
 		fmt.Println("Error:", err)
 	}
 }

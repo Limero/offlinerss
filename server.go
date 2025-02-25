@@ -17,44 +17,44 @@ func getServer(serverConfig models.ServerConfig) models.Server {
 	return nil
 }
 
-func SyncServer(server models.Server, syncToActions models.SyncToActions) (models.Folders, error) {
-	// Sync changes back to server and get new stories
-
+func AuthServer(server models.Server) error {
 	log.Debug("Logging in to " + string(server.Name()))
-	if err := server.Login(); err != nil {
-		return nil, err
-	}
+	return server.Login()
+}
 
-	if syncToActions.Total() > 0 {
-		log.Info("Syncing changes to " + string(server.Name()))
+func SyncToServer(server models.Server, syncToActions models.SyncToActions) error {
+	log.Info("Syncing changes to " + string(server.Name()))
 
-		// TODO: Do these in parallel
-		if len(syncToActions.Read) > 0 {
-			log.Debug("Syncing read to " + string(server.Name()))
-			if err := server.MarkStoriesAsRead(syncToActions.Read); err != nil {
-				return nil, err
-			}
-		}
-		if len(syncToActions.Unread) > 0 {
-			log.Debug("Syncing unread to " + string(server.Name()))
-			if err := server.MarkStoriesAsUnread(syncToActions.Unread); err != nil {
-				return nil, err
-			}
-		}
-		if len(syncToActions.Starred) > 0 {
-			log.Debug("Syncing starred to " + string(server.Name()))
-			if err := server.MarkStoriesAsStarred(syncToActions.Starred); err != nil {
-				return nil, err
-			}
-		}
-		if len(syncToActions.Unstarred) > 0 {
-			log.Debug("Syncing unstarred to " + string(server.Name()))
-			if err := server.MarkStoriesAsUnstarred(syncToActions.Unstarred); err != nil {
-				return nil, err
-			}
+	// TODO: Do these in parallel
+	if len(syncToActions.Read) > 0 {
+		log.Debug("Syncing read to " + string(server.Name()))
+		if err := server.MarkStoriesAsRead(syncToActions.Read); err != nil {
+			return err
 		}
 	}
+	if len(syncToActions.Unread) > 0 {
+		log.Debug("Syncing unread to " + string(server.Name()))
+		if err := server.MarkStoriesAsUnread(syncToActions.Unread); err != nil {
+			return err
+		}
+	}
+	if len(syncToActions.Starred) > 0 {
+		log.Debug("Syncing starred to " + string(server.Name()))
+		if err := server.MarkStoriesAsStarred(syncToActions.Starred); err != nil {
+			return err
+		}
+	}
+	if len(syncToActions.Unstarred) > 0 {
+		log.Debug("Syncing unstarred to " + string(server.Name()))
+		if err := server.MarkStoriesAsUnstarred(syncToActions.Unstarred); err != nil {
+			return err
+		}
+	}
 
+	return nil
+}
+
+func GetNewFromServer(server models.Server) (models.Folders, error) {
 	log.Info("Retrieving new stories from " + string(server.Name()))
 	return server.GetFoldersWithStories()
 }

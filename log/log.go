@@ -2,11 +2,12 @@ package log
 
 import (
 	"fmt"
-	"os"
 )
 
+var DebugEnabled = false
+
 func Debug(format string, a ...any) {
-	if os.Getenv("DEBUG") == "" {
+	if !DebugEnabled {
 		return
 	}
 	fmt.Printf(format+"\n", a...)

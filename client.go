@@ -88,3 +88,16 @@ func SyncClients(clients models.Clients, folders models.Folders) error {
 
 	return nil
 }
+
+// This will replace all reference dbs with user dbs
+// Needed when only syncing to a server, since otherwise the same
+// changes will be synced again on next run
+func ReplaceReferenceDBsWithUserDBs(clients models.Clients) error {
+	for _, client := range clients {
+		log.Debug("Replacing %s reference db with user db", client.Name())
+		if err := helpers.CopyFile(client.UserDB(), client.ReferenceDB()); err != nil {
+			return err
+		}
+	}
+	return nil
+}
