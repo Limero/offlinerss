@@ -2,7 +2,7 @@ package helpers
 
 func RemoveDuplicates[T comparable](slice []T) []T {
 	/*
-		Remove duplicates in slice
+		Remove duplicates in unsorted slice
 	*/
 	encountered := make(map[T]bool)
 	result := make([]T, 0, len(slice))
