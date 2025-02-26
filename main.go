@@ -16,10 +16,13 @@ func run(args []string) error {
 			syncOnlyTo = true
 		case "rollback":
 			rollback = true
+		case "help", "-h", "--help":
+			help()
+			return nil
 		case "-v":
 			log.DebugEnabled = true
 		default:
-			log.Warn("Unknown argument %q", arg)
+			return fmt.Errorf("unknown argument %q", arg)
 		}
 	}
 
@@ -84,6 +87,26 @@ func run(args []string) error {
 	log.Info("Everything synced!")
 
 	return nil
+}
+
+func help() {
+	lines := []string{
+		"Usage:",
+		"  offlinerss [command] [options]",
+		"",
+		"Running OfflineRSS without a command will perform a 'to' sync and then fetch new items",
+		"",
+		"Commands:",
+		"  to                  Sync only to the server without fetching new items",
+		"  rollback            Discard any changes done to the clients since the last sync",
+		"  help, -h, --help    Print this help message",
+		"Options:",
+		"  -v                  Enable debug logs",
+	}
+
+	for _, line := range lines {
+		fmt.Println(line)
+	}
 }
 
 func main() {
