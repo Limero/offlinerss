@@ -9,10 +9,13 @@ import (
 
 func run(args []string) error {
 	syncOnlyTo := false
+	rollback := false
 	for _, arg := range args {
 		switch arg {
 		case "to":
 			syncOnlyTo = true
+		case "rollback":
+			rollback = true
 		case "-v":
 			log.DebugEnabled = true
 		default:
@@ -31,10 +34,15 @@ func run(args []string) error {
 	if err != nil {
 		return err
 	}
+	totalActions := syncToActions.Total()
+
+	if rollback {
+		log.Info("Rolling back %d changes since last sync", totalActions)
+		return ReplaceUserDBsWithReferenceDBs(clients)
+	}
 
 	server := getServer(config.Server)
 
-	totalActions := syncToActions.Total()
 	if totalActions > 0 {
 		if err := AuthServer(server); err != nil {
 			return err

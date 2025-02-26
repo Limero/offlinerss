@@ -101,3 +101,15 @@ func ReplaceReferenceDBsWithUserDBs(clients models.Clients) error {
 	}
 	return nil
 }
+
+// This will replace all user dbs with reference dbs
+// It's used to rollback any changes done to the clients since the last sync
+func ReplaceUserDBsWithReferenceDBs(clients models.Clients) error {
+	for _, client := range clients {
+		log.Debug("Replacing %s user db with reference db", client.Name())
+		if err := helpers.CopyFile(client.ReferenceDB(), client.UserDB()); err != nil {
+			return err
+		}
+	}
+	return nil
+}
