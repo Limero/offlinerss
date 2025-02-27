@@ -2,7 +2,7 @@ package mock
 
 import (
 	"github.com/stretchr/testify/mock"
-	miniflux "miniflux.app/client"
+	miniflux "miniflux.app/v2/client"
 )
 
 type MockAPI struct {

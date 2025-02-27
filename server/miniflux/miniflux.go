@@ -5,7 +5,7 @@ import (
 
 	"github.com/limero/offlinerss/log"
 	"github.com/limero/offlinerss/models"
-	api "miniflux.app/client"
+	api "miniflux.app/v2/client"
 )
 
 type API interface {
@@ -35,7 +35,7 @@ func (s *Miniflux) Login() error {
 	if hostname == "" {
 		hostname = "https://reader.miniflux.app"
 	}
-	client := api.New(hostname, s.config.Username, s.config.Password)
+	client := api.NewClient(hostname, s.config.Username, s.config.Password)
 
 	if _, err := client.Me(); err != nil {
 		return err

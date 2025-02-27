@@ -8,7 +8,7 @@ import (
 	"github.com/limero/offlinerss/server/miniflux/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	api "miniflux.app/client"
+	api "miniflux.app/v2/client"
 )
 
 func TestGetFoldersWithStories(t *testing.T) {
