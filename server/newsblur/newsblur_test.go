@@ -112,9 +112,7 @@ func TestMarkStoriesAsStarred(t *testing.T) {
 		api: mockAPI,
 	}
 
-	mockAPI.On("MarkStoryHashAsStarred", "1").
-		Return(nil)
-	mockAPI.On("MarkStoryHashAsStarred", "2").
+	mockAPI.On("MarkStoryHashAsStarred", []string{"1", "2"}).
 		Return(nil)
 
 	require.NoError(t, s.MarkStoriesAsStarred([]string{"1", "2"}))
