@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/limero/offlinerss/log"
 )
@@ -107,4 +108,31 @@ func MergeToFile(lines []string, file string, sortFunc func(s1, s2 string) bool)
 func FileExists(file string) bool {
 	_, err := os.Stat(file)
 	return !errors.Is(err, os.ErrNotExist)
+}
+
+func ReadFileIfExists(path string) (string, error) {
+	_, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		return "", nil
+	} else if err != nil {
+		return "", err
+	}
+
+	file, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	var content string
+	for scanner.Scan() {
+		content += scanner.Text() + "\n"
+	}
+
+	if err := scanner.Err(); err != nil {
+		return "", err
+	}
+
+	return strings.TrimSpace(content), nil
 }

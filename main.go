@@ -3,11 +3,21 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
+	"time"
 
 	"github.com/limero/offlinerss/log"
+	"github.com/limero/offlinerss/util"
 )
 
+var lastSyncFile = util.DataDir("offlinerss/lastsync")
+
 func run(args []string) error {
+	lastSync, err := getLastSync()
+	if err != nil {
+		return err
+	}
+
 	syncOnlyTo := false
 	rollback := false
 	for _, arg := range args {
@@ -29,6 +39,10 @@ func run(args []string) error {
 	config, err := getConfig()
 	if err != nil {
 		return err
+	}
+
+	if lastSync != nil {
+		fmt.Println("Last sync was", lastSync.Local().Format(time.DateTime))
 	}
 
 	clients := getClients(config.Clients)
@@ -85,8 +99,28 @@ func run(args []string) error {
 	}
 
 	log.Info("Everything synced!")
+	if err := util.WriteFile(strconv.FormatInt(time.Now().Unix(), 10), lastSyncFile); err != nil {
+		return err
+	}
 
 	return nil
+}
+
+func getLastSync() (*time.Time, error) {
+	lastSyncStr, err := util.ReadFileIfExists(lastSyncFile)
+	if err != nil {
+		return nil, err
+	}
+	if lastSyncStr == "" {
+		return nil, nil
+	}
+	lastSyncInt, err := strconv.ParseInt(lastSyncStr, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	lastSync := time.Unix(lastSyncInt, 0).UTC()
+
+	return &lastSync, nil
 }
 
 func help() {
