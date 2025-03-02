@@ -214,12 +214,12 @@ func (nb *Newsblur) MarkStoryHashesAsRead(storyHash []string) error {
 	return err
 }
 
-// Mark a single story as unread using its unique story_hash.
+// Mark stories as unread using their unique story_hash.
 // POST /reader/mark_story_hash_as_unread
 // https://www.newsblur.com/api#/reader/mark_story_hash_as_unread
-func (nb *Newsblur) MarkStoryHashAsUnread(storyHash string) error {
+func (nb *Newsblur) MarkStoryHashAsUnread(storyHash []string) error {
 	_, err := nb.client.PostForm(nb.Hostname+"/reader/mark_story_hash_as_unread", url.Values{
-		"story_hash": {storyHash},
+		"story_hash": storyHash,
 	})
 	return err
 }

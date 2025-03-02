@@ -98,9 +98,7 @@ func TestMarkStoriesAsUnread(t *testing.T) {
 		api: mockAPI,
 	}
 
-	mockAPI.On("MarkStoryHashAsUnread", "1").
-		Return(nil)
-	mockAPI.On("MarkStoryHashAsUnread", "2").
+	mockAPI.On("MarkStoryHashAsUnread", []string{"1", "2"}).
 		Return(nil)
 
 	require.NoError(t, s.MarkStoriesAsUnread([]string{"1", "2"}))

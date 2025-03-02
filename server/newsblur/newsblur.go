@@ -19,7 +19,7 @@ type API interface {
 	ReaderRiverStories_StoryHash(storyHash []string) ([]api.Story, error)
 
 	MarkStoryHashesAsRead(storyHash []string) error
-	MarkStoryHashAsUnread(storyHash string) error
+	MarkStoryHashAsUnread(storyHash []string) error
 	MarkStoryHashAsStarred(storyHash string) error
 	MarkStoryHashAsUnstarred(storyHash string) error
 }
@@ -185,14 +185,8 @@ func (s *Newsblur) MarkStoriesAsRead(hashes []string) error {
 }
 
 func (s *Newsblur) MarkStoriesAsUnread(hashes []string) error {
-	// NewsBlur doesn't support batching unread events. So we have to handle them individually
-	for _, hash := range hashes {
-		log.Debug("Calling external NewsBlur API: MarkStoryHashAsUnread. Hash: %s", hash)
-		if err := s.api.MarkStoryHashAsUnread(hash); err != nil {
-			return err
-		}
-	}
-	return nil
+	log.Debug("Calling external NewsBlur API: MarkStoryHashAsUnread. Hashes: %+v", hashes)
+	return s.api.MarkStoryHashAsUnread(hashes)
 }
 
 func (s *Newsblur) MarkStoriesAsStarred(hashes []string) error {

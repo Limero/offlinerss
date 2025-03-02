@@ -39,7 +39,7 @@ func (m *MockAPI) MarkStoryHashesAsRead(storyHash []string) error {
 	return args.Error(0)
 }
 
-func (m *MockAPI) MarkStoryHashAsUnread(storyHash string) error {
+func (m *MockAPI) MarkStoryHashAsUnread(storyHash []string) error {
 	args := m.Called(storyHash)
 	return args.Error(0)
 }
