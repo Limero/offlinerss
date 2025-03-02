@@ -234,12 +234,12 @@ func (nb *Newsblur) MarkStoryHashAsStarred(storyHash string) error {
 	return err
 }
 
-// Mark a story as unstarred (unsaved).
+// Mark stories as unstarred (unsaved) using their unique story_hash.
 // POST /reader/mark_story_hash_as_unstarred
 // https://www.newsblur.com/api#/reader/mark_story_hash_as_unstarred
-func (nb *Newsblur) MarkStoryHashAsUnstarred(storyHash string) error {
+func (nb *Newsblur) MarkStoryHashAsUnstarred(storyHash []string) error {
 	_, err := nb.client.PostForm(nb.Hostname+"/reader/mark_story_hash_as_unstarred", url.Values{
-		"story_hash": {storyHash},
+		"story_hash": storyHash,
 	})
 	return err
 }

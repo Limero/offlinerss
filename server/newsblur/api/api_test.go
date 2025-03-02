@@ -141,7 +141,7 @@ func MarkStoryHashAsUnstarred(t *testing.T) {
 		require.Equal(t, "application/x-www-form-urlencoded", r.Header.Get("Content-Type"))
 
 		require.NoError(t, r.ParseForm())
-		require.Equal(t, url.Values{"story_hash": []string{"a"}}, r.Form)
+		require.Equal(t, url.Values{"story_hash": []string{"a", "b"}}, r.Form)
 
 		w.WriteHeader(http.StatusOK)
 		_, err := w.Write([]byte(""))
@@ -153,5 +153,5 @@ func MarkStoryHashAsUnstarred(t *testing.T) {
 		Hostname: ts.URL,
 		client:   &http.Client{},
 	}
-	require.NoError(t, api.MarkStoryHashAsUnstarred("a"))
+	require.NoError(t, api.MarkStoryHashAsUnstarred([]string{"a", "b"}))
 }

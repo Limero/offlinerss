@@ -21,7 +21,7 @@ type API interface {
 	MarkStoryHashesAsRead(storyHash []string) error
 	MarkStoryHashAsUnread(storyHash []string) error
 	MarkStoryHashAsStarred(storyHash string) error
-	MarkStoryHashAsUnstarred(storyHash string) error
+	MarkStoryHashAsUnstarred(storyHash []string) error
 }
 
 type Newsblur struct {
@@ -201,12 +201,6 @@ func (s *Newsblur) MarkStoriesAsStarred(hashes []string) error {
 }
 
 func (s *Newsblur) MarkStoriesAsUnstarred(hashes []string) error {
-	// NewsBlur doesn't support batching unstarred events. So we have to handle them individually
-	for _, hash := range hashes {
-		log.Debug("Calling external NewsBlur API: MarkStoryHashAsUnstarred. Hash: %s", hash)
-		if err := s.api.MarkStoryHashAsUnstarred(hash); err != nil {
-			return err
-		}
-	}
-	return nil
+	log.Debug("Calling external NewsBlur API: MarkStoryHashAsUnstarred. Hashes: %+v", hashes)
+	return s.api.MarkStoryHashAsUnstarred(hashes)
 }
