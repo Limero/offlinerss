@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"strconv"
 )
 
 type Newsblur struct {
@@ -120,15 +119,11 @@ func (nb *Newsblur) ReaderFeeds() (output *ReaderFeedsOutput, err error) {
 	return output, nil
 }
 
-// Retrieve a user's starred stories.
-// GET /reader/starred_stories
-// https://newsblur.com/api#/reader/starred_stories
-func (nb *Newsblur) ReaderStarredStories(page int) ([]Story, error) {
-	if page == 0 {
-		page = 1
-	}
-
-	resp, err := nb.client.Get(fmt.Sprintf("%s/reader/starred_stories?page=%d", nb.Hostname, page))
+// The story_hashes of all unread stories.
+// GET /reader/unread_story_hashes
+// https://newsblur.com/api#/reader/unread_story_hashes
+func (nb *Newsblur) ReaderUnreadStoryHashes() ([]string, error) {
+	resp, err := nb.client.Get(nb.Hostname + "/reader/unread_story_hashes")
 	if err != nil {
 		return nil, err
 	}
@@ -140,14 +135,18 @@ func (nb *Newsblur) ReaderStarredStories(page int) ([]Story, error) {
 	}
 
 	var output struct {
-		Stories []Story `json:"stories"`
+		UnreadFeedStoryHashes map[string][]string `json:"unread_feed_story_hashes"`
 	}
-
 	if err := json.Unmarshal(body, &output); err != nil {
 		return nil, err
 	}
 
-	return output.Stories, nil
+	var storyHashes []string
+	for _, hashes := range output.UnreadFeedStoryHashes {
+		storyHashes = append(storyHashes, hashes...)
+	}
+
+	return storyHashes, nil
 }
 
 // Retrieve the story hashes of a user's starred stories.
@@ -173,41 +172,6 @@ func (nb *Newsblur) ReaderStarredStoryHashes() ([]string, error) {
 	}
 
 	return output.StarredStoryHashes, nil
-}
-
-// Retrieve stories from a collection of feeds
-// GET /reader/river_stories
-// https://www.newsblur.com/api#/reader/river_stories
-func (nb *Newsblur) ReaderRiverStories(feeds []string, page int) ([]Story, error) {
-	if page == 0 {
-		page = 1
-	}
-
-	formData := url.Values{
-		"feeds": feeds,
-		"page":  {strconv.Itoa(page)},
-	}
-
-	resp, err := nb.client.PostForm(nb.Hostname+"/reader/river_stories", formData)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	var output struct {
-		Stories []Story `json:"stories"`
-	}
-
-	if err := json.Unmarshal(body, &output); err != nil {
-		return nil, err
-	}
-
-	return output.Stories, nil
 }
 
 // Retrieve up to 100 stories when specifying by story_hash.
@@ -238,36 +202,6 @@ func (nb *Newsblur) ReaderRiverStories_StoryHash(storyHash []string) ([]Story, e
 	}
 
 	return output.Stories, nil
-}
-
-// The story_hashes of all unread stories.
-// GET /reader/unread_story_hashes
-// https://newsblur.com/api#/reader/unread_story_hashes
-func (nb *Newsblur) ReaderUnreadStoryHashes() ([]string, error) {
-	resp, err := nb.client.Get(nb.Hostname + "/reader/unread_story_hashes")
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	var output struct {
-		UnreadFeedStoryHashes map[string][]string `json:"unread_feed_story_hashes"`
-	}
-	if err := json.Unmarshal(body, &output); err != nil {
-		return nil, err
-	}
-
-	var storyHashes []string
-	for _, hashes := range output.UnreadFeedStoryHashes {
-		storyHashes = append(storyHashes, hashes...)
-	}
-
-	return storyHashes, nil
 }
 
 // Mark stories as read using their unique story_hash.
