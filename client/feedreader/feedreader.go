@@ -13,8 +13,17 @@ type Feedreader struct {
 	client.Client
 }
 
-//go:embed ddl.sql
-var ddl []byte
+//go:embed sql/ddl.sql
+var ddl string
+
+//go:embed sql/insert-folder.sql
+var insertFolder string
+
+//go:embed sql/insert-feed.sql
+var insertFeed string
+
+//go:embed sql/insert-story.sql
+var insertStory string
 
 func New(config models.ClientConfig) *Feedreader {
 	return &Feedreader{
@@ -65,7 +74,7 @@ func (c Feedreader) AddToCache(folders models.Folders) error {
 			category = i + 1
 			if _, err = db.Exec(
 				// TODO: categorieID is unique and if folders are changed between syncs, this might mess up
-				"INSERT OR REPLACE INTO categories (categorieID, title, Parent, Level) VALUES (?, ?, ?, ?)",
+				insertFolder,
 				category,
 				folder.Title,
 				-2, // ???
@@ -79,7 +88,7 @@ func (c Feedreader) AddToCache(folders models.Folders) error {
 		for _, feed := range folder.Feeds {
 			log.Debug("Add feed to database: %s", feed.Title)
 			if _, err = db.Exec(
-				"INSERT OR REPLACE INTO feeds (feed_id, name, url, category_id, xmlURL) VALUES (?, ?, ?, ?, ?)",
+				insertFeed,
 				feed.ID,
 				feed.Title,
 				feed.Website,
@@ -92,7 +101,7 @@ func (c Feedreader) AddToCache(folders models.Folders) error {
 			log.Debug("Adding %d stories in feed %s", len(feed.Stories), feed.Title)
 			for _, story := range feed.Stories {
 				if _, err = db.Exec(
-					"INSERT OR REPLACE INTO articles (articleID, feedID, title, url, html, preview, unread, marked, date, guidHash, lastModified, contentFetched) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+					insertStory,
 					story.Hash,
 					feed.ID,
 					story.Title,

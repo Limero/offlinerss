@@ -54,7 +54,7 @@ func (c Client) CreateNewCache() error {
 	defer db.Close()
 
 	log.Debug("Creating tables in %s new temporary cache", c.ClientName)
-	if _, err = db.Exec(string(c.DatabaseInfo.DDL)); err != nil {
+	if _, err = db.Exec(c.DatabaseInfo.DDL); err != nil {
 		return err
 	}
 

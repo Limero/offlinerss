@@ -13,8 +13,17 @@ type QuiteRSS struct {
 	client.Client
 }
 
-//go:embed ddl.sql
-var ddl []byte
+//go:embed sql/ddl.sql
+var ddl string
+
+//go:embed sql/insert-folder.sql
+var insertFolder string
+
+//go:embed sql/insert-feed.sql
+var insertFeed string
+
+//go:embed sql/insert-story.sql
+var insertStory string
 
 func New(config models.ClientConfig) *QuiteRSS {
 	return &QuiteRSS{
@@ -72,7 +81,7 @@ func (c QuiteRSS) AddToCache(folders models.Folders) error {
 			latestFeedID++
 			category = latestFeedID
 			if _, err = db.Exec(
-				"INSERT INTO feeds (id, text) VALUES (?, ?)",
+				insertFolder,
 				latestFeedID,
 				folder.Title,
 			); err != nil {
@@ -85,7 +94,7 @@ func (c QuiteRSS) AddToCache(folders models.Folders) error {
 			log.Debug("Add feed to database: %s", feed.Title)
 			latestFeedID++
 			if _, err = db.Exec(
-				"INSERT INTO feeds (id, text, title, xmlUrl, htmlUrl, unread, parentId) VALUES (?, ?, ?, ?, ?, ?, ?)",
+				insertFeed,
 				latestFeedID,
 				feed.Title,
 				feed.Title,
@@ -100,7 +109,7 @@ func (c QuiteRSS) AddToCache(folders models.Folders) error {
 			log.Debug("Adding %d stories in feed %s", len(feed.Stories), feed.Title)
 			for _, story := range feed.Stories {
 				if _, err = db.Exec(
-					"INSERT INTO news (feedId, guid, description, title, published, read, starred, link_href) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+					insertStory,
 					latestFeedID,
 					story.Hash,
 					story.Content,

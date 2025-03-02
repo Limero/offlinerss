@@ -15,8 +15,14 @@ type Newsboat struct {
 	client.Client
 }
 
-//go:embed ddl.sql
-var ddl []byte
+//go:embed sql/ddl.sql
+var ddl string
+
+//go:embed sql/insert-feed.sql
+var insertFeed string
+
+//go:embed sql/insert-story.sql
+var insertStory string
 
 func New(config models.ClientConfig) *Newsboat {
 	return &Newsboat{
@@ -84,7 +90,7 @@ func (c Newsboat) AddToCache(folders models.Folders) error {
 
 			log.Debug("Add feed to database: %s", feed.Title)
 			if _, err = db.Exec(
-				"INSERT OR REPLACE INTO rss_feed (rssurl, url, title) VALUES (?, ?, ?)",
+				insertFeed,
 				feed.ID, // id instead of url to disable manual refresh
 				feed.Website,
 				feed.Title,
@@ -95,7 +101,7 @@ func (c Newsboat) AddToCache(folders models.Folders) error {
 			log.Debug("Adding %d stories in feed %s", len(feed.Stories), feed.Title)
 			for _, story := range feed.Stories {
 				if _, err = db.Exec(
-					"INSERT OR REPLACE INTO rss_item (guid, title, author, url, feedurl, pubDate, content, unread, flags) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+					insertStory,
 					story.Hash, // our format is different, newsboat takes the <id> in <entry> if exists
 					story.Title,
 					story.Authors,

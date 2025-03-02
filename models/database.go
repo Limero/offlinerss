@@ -8,7 +8,7 @@ type ColumnInfo struct {
 
 type DatabaseInfo struct {
 	FileName        string
-	DDL             []byte
+	DDL             string
 	StoriesTable    string
 	StoriesIDColumn string
 	Unread          ColumnInfo
