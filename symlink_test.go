@@ -11,8 +11,8 @@ import (
 	"github.com/limero/offlinerss/client"
 	"github.com/limero/offlinerss/client/newsboat"
 	"github.com/limero/offlinerss/domain"
-	"github.com/limero/offlinerss/helpers"
 	"github.com/limero/offlinerss/log"
+	"github.com/limero/offlinerss/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -42,7 +42,7 @@ func Test_symlinkClientPaths(t *testing.T) {
 	dataPath := domain.DataPath(sourceDir)
 	sourceFile := "source-file"
 	sourcePath := dataPath.GetFile(sourceFile)
-	helpers.WriteFile("hello", sourcePath)
+	util.WriteFile("hello", sourcePath)
 
 	setupClients := func(targetPaths ...string) []domain.Client {
 		client := client.Client{
@@ -119,7 +119,7 @@ func Test_symlinkClientPaths(t *testing.T) {
 
 	t.Run("should unlink and link if link exists but is incorrect", func(t *testing.T) {
 		incorrectSourcePath := dataPath.GetFile("incorrect")
-		helpers.WriteFile("incorrect", incorrectSourcePath)
+		util.WriteFile("incorrect", incorrectSourcePath)
 
 		targetPath := filepath.Join(t.TempDir(), "existing-incorrect-link")
 		require.NoError(t, os.Symlink(incorrectSourcePath, targetPath))
@@ -137,7 +137,7 @@ func Test_symlinkClientPaths(t *testing.T) {
 
 	t.Run("should rename and link if path exists and is file", func(t *testing.T) {
 		targetPath := filepath.Join(t.TempDir(), "existing-file")
-		helpers.WriteFile("different", targetPath)
+		util.WriteFile("different", targetPath)
 		clients := setupClients(targetPath)
 
 		output := CaptureStdout(func() {
@@ -145,7 +145,7 @@ func Test_symlinkClientPaths(t *testing.T) {
 		})
 		assert.Contains(t, output, "Non-symlink found at target")
 		assert.Contains(t, output, "Symlinking")
-		assert.True(t, helpers.FileExists(targetPath+".bak"))
+		assert.True(t, util.FileExists(targetPath+".bak"))
 		dest, err := os.Readlink(targetPath)
 		require.NoError(t, err)
 		assert.Equal(t, sourcePath, dest)

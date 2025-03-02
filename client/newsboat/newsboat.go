@@ -7,8 +7,8 @@ import (
 
 	"github.com/limero/offlinerss/client"
 	"github.com/limero/offlinerss/domain"
-	"github.com/limero/offlinerss/helpers"
 	"github.com/limero/offlinerss/log"
+	"github.com/limero/offlinerss/util"
 )
 
 type Newsboat struct {
@@ -50,13 +50,13 @@ func New(config domain.ClientConfig) *Newsboat {
 				{
 					FileName: "cache.db",
 					TargetPaths: []string{
-						helpers.DataDir("newsboat/cache.db"),
+						util.DataDir("newsboat/cache.db"),
 					},
 				},
 				{
 					FileName: "urls",
 					TargetPaths: []string{
-						helpers.ConfigDir("newsboat/urls"),
+						util.ConfigDir("newsboat/urls"),
 					},
 				},
 			},
@@ -110,7 +110,7 @@ func (c Newsboat) AddToCache(folders domain.Folders) error {
 					story.Timestamp.Unix(),
 					story.Content,
 					story.Unread,
-					helpers.Cond(story.Starred, "s", ""),
+					util.Cond(story.Starred, "s", ""),
 				); err != nil {
 					return err
 				}
@@ -118,7 +118,7 @@ func (c Newsboat) AddToCache(folders domain.Folders) error {
 		}
 	}
 
-	if err := helpers.MergeToFile(
+	if err := util.MergeToFile(
 		newsboatUrls,
 		c.DataPath.GetFile("urls"),
 		urlsSortFunc(),
@@ -126,7 +126,7 @@ func (c Newsboat) AddToCache(folders domain.Folders) error {
 		return err
 	}
 
-	return helpers.CopyFile(tmpCachePath, c.ReferenceDB(), c.UserDB())
+	return util.CopyFile(tmpCachePath, c.ReferenceDB(), c.UserDB())
 }
 
 func urlsSortFunc() func(s1, s2 string) bool {

@@ -5,8 +5,8 @@ import (
 
 	"github.com/limero/offlinerss/client"
 	"github.com/limero/offlinerss/domain"
-	"github.com/limero/offlinerss/helpers"
 	"github.com/limero/offlinerss/log"
+	"github.com/limero/offlinerss/util"
 )
 
 type Feedreader struct {
@@ -51,7 +51,7 @@ func New(config domain.ClientConfig) *Feedreader {
 				{
 					FileName: "feedreader-7.db",
 					TargetPaths: []string{
-						helpers.DataDir("feedreader/data/feedreader-7.db"),
+						util.DataDir("feedreader/data/feedreader-7.db"),
 					},
 				},
 			},
@@ -108,8 +108,8 @@ func (c Feedreader) AddToCache(folders domain.Folders) error {
 					story.Url,
 					story.Content,
 					story.Content,
-					helpers.Cond(story.Unread, "9", "8"),
-					helpers.Cond(story.Starred, "11", "10"),
+					util.Cond(story.Unread, "9", "8"),
+					util.Cond(story.Starred, "11", "10"),
 					story.Timestamp.Unix(),
 					story.Hash,
 					0,
@@ -121,5 +121,5 @@ func (c Feedreader) AddToCache(folders domain.Folders) error {
 		}
 	}
 
-	return helpers.CopyFile(tmpCachePath, c.ReferenceDB(), c.UserDB())
+	return util.CopyFile(tmpCachePath, c.ReferenceDB(), c.UserDB())
 }

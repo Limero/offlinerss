@@ -1,4 +1,4 @@
-package helpers
+package util
 
 func Cond[T any](condition bool, primary, fallback T) T {
 	/*

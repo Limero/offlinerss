@@ -1,4 +1,4 @@
-package helpers
+package util
 
 func RemoveDuplicates[T comparable](slice []T) []T {
 	/*

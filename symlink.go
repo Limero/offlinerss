@@ -4,8 +4,8 @@ import (
 	"os"
 
 	"github.com/limero/offlinerss/domain"
-	"github.com/limero/offlinerss/helpers"
 	"github.com/limero/offlinerss/log"
+	"github.com/limero/offlinerss/util"
 )
 
 func symlinkClientPaths(clients domain.Clients) error {
@@ -26,14 +26,14 @@ func symlinkClientPaths(clients domain.Clients) error {
 					if err := os.Remove(targetPath); err != nil {
 						return err
 					}
-				} else if helpers.FileExists(targetPath) {
+				} else if util.FileExists(targetPath) {
 					log.Warn("Non-symlink found at target %q, renaming to .bak", targetPath)
 					if err := os.Rename(targetPath, targetPath+".bak"); err != nil {
 						return err
 					}
 				}
 
-				if err := helpers.CreateParentDirs(targetPath); err != nil {
+				if err := util.CreateParentDirs(targetPath); err != nil {
 					return err
 				}
 

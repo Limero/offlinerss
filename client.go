@@ -7,8 +7,8 @@ import (
 	"github.com/limero/offlinerss/client/newsboat"
 	"github.com/limero/offlinerss/client/quiterss"
 	"github.com/limero/offlinerss/domain"
-	"github.com/limero/offlinerss/helpers"
 	"github.com/limero/offlinerss/log"
+	"github.com/limero/offlinerss/util"
 )
 
 func getClients(clientConfigs []domain.ClientConfig) domain.Clients {
@@ -74,7 +74,7 @@ func GetSyncToActions(clients domain.Clients) (domain.SyncToActions, error) {
 
 func SyncClients(clients domain.Clients, folders domain.Folders) error {
 	for _, client := range clients {
-		if !helpers.FileExists(client.ReferenceDB()) {
+		if !util.FileExists(client.ReferenceDB()) {
 			if err := client.CreateNewCache(); err != nil {
 				return err
 			}
@@ -95,7 +95,7 @@ func SyncClients(clients domain.Clients, folders domain.Folders) error {
 func ReplaceReferenceDBsWithUserDBs(clients domain.Clients) error {
 	for _, client := range clients {
 		log.Debug("Replacing %s reference db with user db", client.Name())
-		if err := helpers.CopyFile(client.UserDB(), client.ReferenceDB()); err != nil {
+		if err := util.CopyFile(client.UserDB(), client.ReferenceDB()); err != nil {
 			return err
 		}
 	}
@@ -107,7 +107,7 @@ func ReplaceReferenceDBsWithUserDBs(clients domain.Clients) error {
 func ReplaceUserDBsWithReferenceDBs(clients domain.Clients) error {
 	for _, client := range clients {
 		log.Debug("Replacing %s user db with reference db", client.Name())
-		if err := helpers.CopyFile(client.ReferenceDB(), client.UserDB()); err != nil {
+		if err := util.CopyFile(client.ReferenceDB(), client.UserDB()); err != nil {
 			return err
 		}
 	}

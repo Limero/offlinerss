@@ -6,12 +6,12 @@ import (
 	"os"
 
 	"github.com/limero/offlinerss/domain"
-	"github.com/limero/offlinerss/helpers"
+	"github.com/limero/offlinerss/util"
 )
 
 func getConfig() (*domain.Config, error) {
 	var config domain.Config
-	configPath := helpers.ConfigDir("offlinerss/config.json")
+	configPath := util.ConfigDir("offlinerss/config.json")
 	data, err := os.ReadFile(configPath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -24,7 +24,7 @@ func getConfig() (*domain.Config, error) {
 			if err != nil {
 				return nil, err
 			}
-			helpers.WriteFile(string(configJson), configPath)
+			util.WriteFile(string(configJson), configPath)
 			fmt.Printf("Successfully written new config to %q\n\n", configPath)
 
 			return &config, nil

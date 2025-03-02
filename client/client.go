@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/limero/offlinerss/domain"
-	"github.com/limero/offlinerss/helpers"
 	"github.com/limero/offlinerss/log"
+	"github.com/limero/offlinerss/util"
 )
 
 type Client struct {
@@ -43,7 +43,7 @@ func (c Client) GetChanges() (domain.SyncToActions, error) {
 }
 
 func (c Client) CreateNewCache() error {
-	tmpCachePath := helpers.NewTmpCachePath()
+	tmpCachePath := util.NewTmpCachePath()
 	defer os.Remove(tmpCachePath)
 
 	log.Debug("Creating %s temporary cache", c.ClientName)
@@ -58,7 +58,7 @@ func (c Client) CreateNewCache() error {
 		return err
 	}
 
-	if err := helpers.CopyFile(tmpCachePath, c.ReferenceDB(), c.UserDB()); err != nil {
+	if err := util.CopyFile(tmpCachePath, c.ReferenceDB(), c.UserDB()); err != nil {
 		return err
 	}
 
@@ -79,9 +79,9 @@ func (c Client) GetFiles() domain.ClientFiles {
 
 // Not exposed in interface
 func (c Client) CreateNewTmpCache() (string, *sql.DB, func(), error) {
-	tmpCachePath := helpers.NewTmpCachePath()
+	tmpCachePath := util.NewTmpCachePath()
 
-	if err := helpers.CopyFile(c.ReferenceDB(), tmpCachePath); err != nil {
+	if err := util.CopyFile(c.ReferenceDB(), tmpCachePath); err != nil {
 		return "", nil, func() {}, err
 	}
 

@@ -5,8 +5,8 @@ import (
 
 	"github.com/limero/offlinerss/client"
 	"github.com/limero/offlinerss/domain"
-	"github.com/limero/offlinerss/helpers"
 	"github.com/limero/offlinerss/log"
+	"github.com/limero/offlinerss/util"
 )
 
 type QuiteRSS struct {
@@ -51,7 +51,7 @@ func New(config domain.ClientConfig) *QuiteRSS {
 				{
 					FileName: "feeds.db",
 					TargetPaths: []string{
-						helpers.DataDir("QuiteRss/QuiteRss/feeds.db"),
+						util.DataDir("QuiteRss/QuiteRss/feeds.db"),
 					},
 				},
 			},
@@ -115,7 +115,7 @@ func (c QuiteRSS) AddToCache(folders domain.Folders) error {
 					story.Content,
 					story.Title,
 					story.Timestamp.Unix(),
-					helpers.Cond(story.Unread, "0", "2"),
+					util.Cond(story.Unread, "0", "2"),
 					story.Starred,
 					story.Url,
 				); err != nil {
@@ -125,5 +125,5 @@ func (c QuiteRSS) AddToCache(folders domain.Folders) error {
 		}
 	}
 
-	return helpers.CopyFile(tmpCachePath, c.ReferenceDB(), c.UserDB())
+	return util.CopyFile(tmpCachePath, c.ReferenceDB(), c.UserDB())
 }
