@@ -15,7 +15,7 @@ type API interface {
 
 	ReaderFeeds() (output *api.ReaderFeedsOutput, err error)
 	ReaderUnreadStoryHashes() ([]string, error)
-	ReaderStarredStoryHashes() ([]string, error)
+	ReaderStarredStoryHashes() ([]api.HashWithTimestamp, error)
 	ReaderRiverStories_StoryHash(storyHash []string) ([]api.Story, error)
 
 	MarkStoryHashesAsRead(storyHash []string) error
@@ -56,7 +56,7 @@ func (s *Newsblur) Login() error {
 	return s.api.Login(s.config.Username, s.config.Password)
 }
 
-func (s *Newsblur) GetFoldersWithStories() (domain.Folders, error) {
+func (s *Newsblur) GetFoldersWithStories(from *time.Time) (domain.Folders, error) {
 	folders, err := s.getFolders()
 	if err != nil {
 		return nil, err
@@ -73,7 +73,13 @@ func (s *Newsblur) GetFoldersWithStories() (domain.Folders, error) {
 	if err != nil {
 		return nil, err
 	}
-	storyHashes = append(storyHashes, starredStoryHashes...)
+	for _, hash := range starredStoryHashes {
+		if from != nil && from.After(time.Unix(hash.Timestamp, 0).UTC()) {
+			// The newest hashes are in the beginning, so we can stop once we find one older
+			break
+		}
+		storyHashes = append(storyHashes, hash.Hash)
+	}
 
 	if err = s.fetchStories(&folders, storyHashes); err != nil {
 		return nil, err

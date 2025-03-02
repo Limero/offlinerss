@@ -42,7 +42,7 @@ func TestGetFoldersWithStories(t *testing.T) {
 		Entries: entries,
 	}, nil)
 
-	folders, err := s.GetFoldersWithStories()
+	folders, err := s.GetFoldersWithStories(nil)
 	require.NoError(t, err)
 
 	assert.Len(t, folders, 1)

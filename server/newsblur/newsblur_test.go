@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/limero/offlinerss/domain"
+	"github.com/limero/offlinerss/server/newsblur/api"
 	newsblur "github.com/limero/offlinerss/server/newsblur/api"
 	"github.com/limero/offlinerss/server/newsblur/mock"
 	"github.com/stretchr/testify/assert"
@@ -49,7 +50,7 @@ func TestGetFoldersWithStories(t *testing.T) {
 		Return([]string{unreadStory.Hash}, nil)
 
 	mockAPI.On("ReaderStarredStoryHashes").
-		Return([]string{starredStory.Hash}, nil)
+		Return([]api.HashWithTimestamp{{Hash: starredStory.Hash}}, nil)
 
 	mockAPI.On("ReaderRiverStories_StoryHash", []string{unreadStory.Hash, starredStory.Hash}).
 		Return([]newsblur.Story{
@@ -65,7 +66,7 @@ func TestGetFoldersWithStories(t *testing.T) {
 			},
 		}, nil)
 
-	folders, err := s.GetFoldersWithStories()
+	folders, err := s.GetFoldersWithStories(nil)
 	require.NoError(t, err)
 
 	assert.Len(t, folders, 1)

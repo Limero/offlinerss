@@ -1,5 +1,7 @@
 package domain
 
+import "time"
+
 type ServerName string
 
 const (
@@ -10,7 +12,7 @@ const (
 type Server interface {
 	Name() ServerName
 	Login() error
-	GetFoldersWithStories() (Folders, error)
+	GetFoldersWithStories(from *time.Time) (Folders, error)
 
 	MarkStoriesAsRead(IDs []string) error
 	MarkStoriesAsUnread(IDs []string) error

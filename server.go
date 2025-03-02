@@ -53,8 +53,3 @@ func SyncToServer(server domain.Server, syncToActions domain.SyncToActions) erro
 
 	return nil
 }
-
-func GetNewFromServer(server domain.Server) (domain.Folders, error) {
-	log.Info("Retrieving new stories from " + string(server.Name()))
-	return server.GetFoldersWithStories()
-}

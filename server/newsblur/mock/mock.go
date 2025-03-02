@@ -1,6 +1,7 @@
 package mock
 
 import (
+	"github.com/limero/offlinerss/server/newsblur/api"
 	newsblur "github.com/limero/offlinerss/server/newsblur/api"
 	"github.com/stretchr/testify/mock"
 )
@@ -24,9 +25,9 @@ func (m *MockAPI) ReaderUnreadStoryHashes() ([]string, error) {
 	return args.Get(0).([]string), args.Error(1)
 }
 
-func (m *MockAPI) ReaderStarredStoryHashes() ([]string, error) {
+func (m *MockAPI) ReaderStarredStoryHashes() ([]api.HashWithTimestamp, error) {
 	args := m.Called()
-	return args.Get(0).([]string), args.Error(1)
+	return args.Get(0).([]api.HashWithTimestamp), args.Error(1)
 }
 
 func (m *MockAPI) ReaderRiverStories_StoryHash(storyHash []string) ([]newsblur.Story, error) {

@@ -2,6 +2,7 @@ package miniflux
 
 import (
 	"strconv"
+	"time"
 
 	"github.com/limero/offlinerss/domain"
 	"github.com/limero/offlinerss/log"
@@ -45,7 +46,7 @@ func (s *Miniflux) Login() error {
 	return nil
 }
 
-func (s *Miniflux) GetFoldersWithStories() (domain.Folders, error) {
+func (s *Miniflux) GetFoldersWithStories(from *time.Time) (domain.Folders, error) {
 	var folders domain.Folders
 
 	entries, err := s.api.Entries(&api.Filter{

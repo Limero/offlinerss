@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 )
 
 type Newsblur struct {
@@ -152,8 +153,8 @@ func (nb *Newsblur) ReaderUnreadStoryHashes() ([]string, error) {
 // Retrieve the story hashes of a user's starred stories.
 // GET /reader/starred_story_hashes
 // https://newsblur.com/api#/reader/starred_story_hashes
-func (nb *Newsblur) ReaderStarredStoryHashes() ([]string, error) {
-	resp, err := nb.client.Get(nb.Hostname + "/reader/starred_story_hashes")
+func (nb *Newsblur) ReaderStarredStoryHashes() ([]HashWithTimestamp, error) {
+	resp, err := nb.client.Get(nb.Hostname + "/reader/starred_story_hashes?include_timestamps=true")
 	if err != nil {
 		return nil, err
 	}
@@ -165,13 +166,29 @@ func (nb *Newsblur) ReaderStarredStoryHashes() ([]string, error) {
 	}
 
 	var output struct {
-		StarredStoryHashes []string `json:"starred_story_hashes"`
+		StarredStoryHashes [][]string `json:"starred_story_hashes"`
 	}
 	if err := json.Unmarshal(body, &output); err != nil {
 		return nil, err
 	}
 
-	return output.StarredStoryHashes, nil
+	hashes := make([]HashWithTimestamp, len(output.StarredStoryHashes))
+	for i, v := range output.StarredStoryHashes {
+		if len(v) != 2 {
+			return nil, fmt.Errorf("expected number of values to be 2 in %+v", v)
+		}
+
+		timestamp, err := strconv.ParseInt(v[1], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		hashes[i] = HashWithTimestamp{
+			Hash:      v[0],
+			Timestamp: timestamp,
+		}
+	}
+
+	return hashes, nil
 }
 
 // Retrieve up to 100 stories when specifying by story_hash.

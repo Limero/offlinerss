@@ -37,3 +37,8 @@ type ReaderFeedsOutput struct {
 	Folders []Folder
 	Feeds   []Feed
 }
+
+type HashWithTimestamp struct {
+	Hash      string
+	Timestamp int64
+}

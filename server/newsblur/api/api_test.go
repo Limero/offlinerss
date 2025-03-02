@@ -11,11 +11,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-//go:embed response/readerfeeds.json
-var respReaderFeeds []byte
-
 func TestLogin(t *testing.T) {
 }
+
+//go:embed response/readerfeeds.json
+var respReaderFeeds []byte
 
 func TestReaderFeeds(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -23,7 +23,7 @@ func TestReaderFeeds(t *testing.T) {
 		require.Equal(t, "/reader/feeds?v=2", r.RequestURI)
 
 		w.WriteHeader(http.StatusOK)
-		_, err := w.Write([]byte(respReaderFeeds))
+		_, err := w.Write(respReaderFeeds)
 		require.NoError(t, err)
 	}))
 	defer ts.Close()
@@ -62,7 +62,42 @@ func TestReaderFeeds(t *testing.T) {
 func TestReaderUnreadStoryHashes(t *testing.T) {
 }
 
+//go:embed response/starredstoryhashes.json
+var respStarredStoryHashes []byte
+
 func TestReaderStarredStoryHashes(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		require.Equal(t, http.MethodGet, r.Method)
+		require.Equal(t, "/reader/starred_story_hashes?include_timestamps=true", r.RequestURI)
+
+		w.WriteHeader(http.StatusOK)
+		_, err := w.Write(respStarredStoryHashes)
+		require.NoError(t, err)
+	}))
+	defer ts.Close()
+
+	api := &Newsblur{
+		Hostname: ts.URL,
+		client:   &http.Client{},
+	}
+	output, err := api.ReaderStarredStoryHashes()
+	require.NoError(t, err)
+
+	expected := []HashWithTimestamp{
+		{
+			Hash:      "aaaaaaa:aaaaaa",
+			Timestamp: 1740905667,
+		},
+		{
+			Hash:      "bbbbbbb:bbbbbb",
+			Timestamp: 1740573349,
+		},
+		{
+			Hash:      "ccccccc:cccccc",
+			Timestamp: 1740573349,
+		},
+	}
+	assert.Equal(t, expected, output)
 }
 
 func TestReaderRiverStories_StoryHash(t *testing.T) {

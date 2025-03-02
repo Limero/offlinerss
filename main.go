@@ -82,7 +82,9 @@ func run(args []string) error {
 				return err
 			}
 		}
-		folders, err := GetNewFromServer(server)
+
+		log.Info("Retrieving new stories from " + string(server.Name()))
+		folders, err := server.GetFoldersWithStories(lastSync)
 		if err != nil {
 			return err
 		}

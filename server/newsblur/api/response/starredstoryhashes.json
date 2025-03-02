@@ -1,0 +1,19 @@
+{
+  "starred_story_hashes": [
+    [
+      "aaaaaaa:aaaaaa",
+      "1740905667"
+    ],
+    [
+      "bbbbbbb:bbbbbb",
+      "1740573349"
+    ],
+    [
+      "ccccccc:cccccc",
+      "1740573349"
+    ]
+  ],
+  "result": "ok",
+  "authenticated": true,
+  "user_id": 1
+}
