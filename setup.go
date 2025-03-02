@@ -6,10 +6,10 @@ import (
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/limero/offlinerss/models"
+	"github.com/limero/offlinerss/domain"
 )
 
-func setup() (models.Config, error) {
+func setup() (domain.Config, error) {
 	answers := struct {
 		Server   string
 		Username string
@@ -36,7 +36,7 @@ func setup() (models.Config, error) {
 	}
 
 	if err := survey.Ask(qs1, &answers); err != nil {
-		return models.Config{}, err
+		return domain.Config{}, err
 	}
 
 	qs2 := []*survey.Question{
@@ -67,11 +67,11 @@ func setup() (models.Config, error) {
 	}
 
 	if err := survey.Ask(qs2, &answers); err != nil {
-		return models.Config{}, err
+		return domain.Config{}, err
 	}
 
-	serverConfig := models.ServerConfig{
-		Name:     models.ServerName(strings.ToLower(answers.Server)),
+	serverConfig := domain.ServerConfig{
+		Name:     domain.ServerName(strings.ToLower(answers.Server)),
 		Username: answers.Username,
 		Password: answers.Password,
 		Hostname: answers.Hostname,
@@ -80,7 +80,7 @@ func setup() (models.Config, error) {
 	server := getServer(serverConfig)
 	fmt.Printf("Attempting to login to %s as user %q\n", serverConfig.Name, serverConfig.Username)
 	if err := server.Login(); err != nil {
-		return models.Config{}, err
+		return domain.Config{}, err
 	}
 	fmt.Printf("Successfully logged in!\n\n")
 
@@ -106,17 +106,17 @@ func setup() (models.Config, error) {
 	}
 
 	if err := survey.Ask(qs3, &answers); err != nil {
-		return models.Config{}, err
+		return domain.Config{}, err
 	}
 
-	clientConfigs := make([]models.ClientConfig, len(answers.Clients))
+	clientConfigs := make([]domain.ClientConfig, len(answers.Clients))
 	for i, c := range answers.Clients {
-		clientConfigs[i] = models.ClientConfig{
-			Name: models.ClientName(strings.ToLower(c)),
+		clientConfigs[i] = domain.ClientConfig{
+			Name: domain.ClientName(strings.ToLower(c)),
 		}
 	}
 
-	return models.Config{
+	return domain.Config{
 		Server:  serverConfig,
 		Clients: clientConfigs,
 	}, nil

@@ -4,9 +4,9 @@ import (
 	_ "embed"
 
 	"github.com/limero/offlinerss/client"
+	"github.com/limero/offlinerss/domain"
 	"github.com/limero/offlinerss/helpers"
 	"github.com/limero/offlinerss/log"
-	"github.com/limero/offlinerss/models"
 )
 
 type Feedreader struct {
@@ -25,29 +25,29 @@ var insertFeed string
 //go:embed sql/insert-story.sql
 var insertStory string
 
-func New(config models.ClientConfig) *Feedreader {
+func New(config domain.ClientConfig) *Feedreader {
 	return &Feedreader{
 		client.Client{
-			ClientName: models.ClientFeedReader,
-			DataPath:   models.GetClientDataPath(config.Name),
+			ClientName: domain.ClientFeedReader,
+			DataPath:   domain.GetClientDataPath(config.Name),
 			Config:     config,
-			DatabaseInfo: models.DatabaseInfo{
+			DatabaseInfo: domain.DatabaseInfo{
 				FileName:        "feedreader-7.db",
 				DDL:             ddl,
 				StoriesTable:    "articles",
 				StoriesIDColumn: "guidHash",
-				Unread: models.ColumnInfo{
+				Unread: domain.ColumnInfo{
 					Column:   "unread",
 					Positive: "9",
 					Negative: "8",
 				},
-				Starred: models.ColumnInfo{
+				Starred: domain.ColumnInfo{
 					Column:   "marked",
 					Positive: "11",
 					Negative: "10",
 				},
 			},
-			Files: models.ClientFiles{
+			Files: domain.ClientFiles{
 				{
 					FileName: "feedreader-7.db",
 					TargetPaths: []string{
@@ -59,7 +59,7 @@ func New(config models.ClientConfig) *Feedreader {
 	}
 }
 
-func (c Feedreader) AddToCache(folders models.Folders) error {
+func (c Feedreader) AddToCache(folders domain.Folders) error {
 	tmpCachePath, db, closer, err := c.CreateNewTmpCache()
 	defer closer()
 	if err != nil {

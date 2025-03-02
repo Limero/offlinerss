@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/limero/offlinerss/models"
+	"github.com/limero/offlinerss/domain"
 	newsblur "github.com/limero/offlinerss/server/newsblur/api"
 	"github.com/limero/offlinerss/server/newsblur/mock"
 	"github.com/stretchr/testify/assert"
@@ -18,12 +18,12 @@ func TestGetFoldersWithStories(t *testing.T) {
 		api: mockAPI,
 	}
 	now := time.Now()
-	unreadStory := models.Story{
+	unreadStory := domain.Story{
 		Timestamp: time.Unix(now.Unix(), 0),
 		Hash:      "123",
 		Unread:    true,
 	}
-	starredStory := models.Story{
+	starredStory := domain.Story{
 		Timestamp: time.Unix(now.Unix(), 0),
 		Hash:      "321",
 		Unread:    true,

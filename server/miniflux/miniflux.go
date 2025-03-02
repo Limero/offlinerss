@@ -3,8 +3,8 @@ package miniflux
 import (
 	"strconv"
 
+	"github.com/limero/offlinerss/domain"
 	"github.com/limero/offlinerss/log"
-	"github.com/limero/offlinerss/models"
 	api "miniflux.app/v2/client"
 )
 
@@ -16,17 +16,17 @@ type API interface {
 }
 
 type Miniflux struct {
-	config models.ServerConfig
+	config domain.ServerConfig
 	api    API
 }
 
-func New(config models.ServerConfig) *Miniflux {
+func New(config domain.ServerConfig) *Miniflux {
 	return &Miniflux{
 		config: config,
 	}
 }
 
-func (s *Miniflux) Name() models.ServerName {
+func (s *Miniflux) Name() domain.ServerName {
 	return s.config.Name
 }
 
@@ -45,8 +45,8 @@ func (s *Miniflux) Login() error {
 	return nil
 }
 
-func (s *Miniflux) GetFoldersWithStories() (models.Folders, error) {
-	var folders models.Folders
+func (s *Miniflux) GetFoldersWithStories() (domain.Folders, error) {
+	var folders domain.Folders
 
 	entries, err := s.api.Entries(&api.Filter{
 		Status: api.EntryStatusUnread,
@@ -56,7 +56,7 @@ func (s *Miniflux) GetFoldersWithStories() (models.Folders, error) {
 	}
 
 	for _, entry := range entries.Entries {
-		story := &models.Story{
+		story := &domain.Story{
 			Timestamp: entry.Date,
 			Hash:      strconv.FormatInt(entry.ID, 10), // Miniflux has "hash" but IDs are used for marking entries
 			Title:     entry.Title,

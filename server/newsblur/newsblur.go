@@ -5,8 +5,8 @@ import (
 	"net/http/cookiejar"
 	"time"
 
+	"github.com/limero/offlinerss/domain"
 	"github.com/limero/offlinerss/log"
-	"github.com/limero/offlinerss/models"
 	"github.com/limero/offlinerss/server/newsblur/api"
 )
 
@@ -25,11 +25,11 @@ type API interface {
 }
 
 type Newsblur struct {
-	config models.ServerConfig
+	config domain.ServerConfig
 	api    API
 }
 
-func New(config models.ServerConfig) *Newsblur {
+func New(config domain.ServerConfig) *Newsblur {
 	cookieJar, err := cookiejar.New(nil)
 	if err != nil {
 		panic(err)
@@ -47,7 +47,7 @@ func New(config models.ServerConfig) *Newsblur {
 	}
 }
 
-func (s *Newsblur) Name() models.ServerName {
+func (s *Newsblur) Name() domain.ServerName {
 	return s.config.Name
 }
 
@@ -56,7 +56,7 @@ func (s *Newsblur) Login() error {
 	return s.api.Login(s.config.Username, s.config.Password)
 }
 
-func (s *Newsblur) GetFoldersWithStories() (models.Folders, error) {
+func (s *Newsblur) GetFoldersWithStories() (domain.Folders, error) {
 	folders, err := s.getFolders()
 	if err != nil {
 		return nil, err
@@ -82,7 +82,7 @@ func (s *Newsblur) GetFoldersWithStories() (models.Folders, error) {
 	return folders, nil
 }
 
-func (s *Newsblur) fetchStories(folders *models.Folders, storyHashes []string) error {
+func (s *Newsblur) fetchStories(folders *domain.Folders, storyHashes []string) error {
 	var stories []api.Story
 	var err error
 
@@ -111,7 +111,7 @@ func (s *Newsblur) fetchStories(folders *models.Folders, storyHashes []string) e
 	return nil
 }
 
-func (s *Newsblur) mapStoriesToFeeds(folders *models.Folders, stories []api.Story) {
+func (s *Newsblur) mapStoriesToFeeds(folders *domain.Folders, stories []api.Story) {
 	for _, story := range stories {
 		storyFeed := folders.FindFeed(int64(story.StoryFeedID))
 		if storyFeed == nil {
@@ -127,7 +127,7 @@ func (s *Newsblur) mapStoriesToFeeds(folders *models.Folders, stories []api.Stor
 				unread = false
 			}
 
-			storyFeed.Stories = append(storyFeed.Stories, &models.Story{
+			storyFeed.Stories = append(storyFeed.Stories, &domain.Story{
 				Timestamp: time.Unix(story.StoryTimestamp, 0),
 				Hash:      story.StoryHash,
 				Title:     story.StoryTitle,
@@ -141,18 +141,18 @@ func (s *Newsblur) mapStoriesToFeeds(folders *models.Folders, stories []api.Stor
 	}
 }
 
-func (s *Newsblur) getFolders() (models.Folders, error) {
+func (s *Newsblur) getFolders() (domain.Folders, error) {
 	log.Debug("Calling external NewsBlur API: ReaderFeeds")
 	readerFeedsOutput, err := s.api.ReaderFeeds()
 	if err != nil {
 		return nil, err
 	}
 
-	newFolders := make(models.Folders, len(readerFeedsOutput.Folders))
+	newFolders := make(domain.Folders, len(readerFeedsOutput.Folders))
 	for i, folder := range readerFeedsOutput.Folders {
-		newFolder := models.Folder{
+		newFolder := domain.Folder{
 			Title: folder.Title,
-			Feeds: models.Feeds{},
+			Feeds: domain.Feeds{},
 		}
 		for _, feedID := range folder.FeedIDs {
 			s.addFeedToFolder(readerFeedsOutput, feedID, &newFolder)
@@ -163,12 +163,12 @@ func (s *Newsblur) getFolders() (models.Folders, error) {
 	return newFolders, nil
 }
 
-func (s *Newsblur) addFeedToFolder(readerFeedsOutput *api.ReaderFeedsOutput, feedID int, newFolder *models.Folder) {
+func (s *Newsblur) addFeedToFolder(readerFeedsOutput *api.ReaderFeedsOutput, feedID int, newFolder *domain.Folder) {
 	for _, tmpFeed := range readerFeedsOutput.Feeds {
 		if feedID != tmpFeed.ID {
 			continue
 		}
-		newFolder.Feeds = newFolder.Feeds.AddFeed(&models.Feed{
+		newFolder.Feeds = newFolder.Feeds.AddFeed(&domain.Feed{
 			ID:      int64(tmpFeed.ID),
 			Unread:  tmpFeed.Ps + tmpFeed.Nt,
 			Title:   tmpFeed.FeedTitle,

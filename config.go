@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/limero/offlinerss/domain"
 	"github.com/limero/offlinerss/helpers"
-	"github.com/limero/offlinerss/models"
 )
 
-func getConfig() (*models.Config, error) {
-	var config models.Config
+func getConfig() (*domain.Config, error) {
+	var config domain.Config
 	configPath := helpers.ConfigDir("offlinerss/config.json")
 	data, err := os.ReadFile(configPath)
 	if err != nil {

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/limero/offlinerss/domain"
 	"github.com/limero/offlinerss/log"
-	"github.com/limero/offlinerss/models"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -23,15 +23,15 @@ type dbRow struct {
 func getChangesFromSqlite(
 	referenceDBPath string,
 	userDBPath string,
-	dbInfo models.DatabaseInfo,
-) (models.SyncToActions, error) {
+	dbInfo domain.DatabaseInfo,
+) (domain.SyncToActions, error) {
 	if _, err := os.Stat(referenceDBPath); os.IsNotExist(err) {
 		log.Debug("Reference database does not exist at %s, nothing to sync to server", referenceDBPath)
-		return models.SyncToActions{}, nil
+		return domain.SyncToActions{}, nil
 	}
 	if _, err := os.Stat(userDBPath); os.IsNotExist(err) {
 		log.Debug("User database does not exist at %s, nothing to sync to server", userDBPath)
-		return models.SyncToActions{}, nil
+		return domain.SyncToActions{}, nil
 	}
 	refRows, err := getRowsFromDB(
 		referenceDBPath,
@@ -41,7 +41,7 @@ func getChangesFromSqlite(
 		dbInfo.Starred.Column,
 	)
 	if err != nil {
-		return models.SyncToActions{}, err
+		return domain.SyncToActions{}, err
 	}
 	userRows, err := getRowsFromDB(
 		userDBPath,
@@ -51,10 +51,10 @@ func getChangesFromSqlite(
 		dbInfo.Starred.Column,
 	)
 	if err != nil {
-		return models.SyncToActions{}, err
+		return domain.SyncToActions{}, err
 	}
 
-	var syncToActions models.SyncToActions
+	var syncToActions domain.SyncToActions
 	for _, refRow := range refRows {
 		for _, userRow := range userRows {
 			if refRow.ID != userRow.ID {

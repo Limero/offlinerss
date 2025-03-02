@@ -9,30 +9,30 @@ import (
 	"github.com/limero/offlinerss/client/feedreader"
 	"github.com/limero/offlinerss/client/newsboat"
 	"github.com/limero/offlinerss/client/quiterss"
-	"github.com/limero/offlinerss/models"
+	"github.com/limero/offlinerss/domain"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestClients(t *testing.T) {
 	for _, tt := range []struct {
-		client        models.Client
+		client        domain.Client
 		supportsDelta bool // TODO: Remove once all clients support delta updates
 	}{
 		{
-			client:        feedreader.New(models.ClientConfig{}),
+			client:        feedreader.New(domain.ClientConfig{}),
 			supportsDelta: true,
 		},
 		{
-			client:        newsboat.New(models.ClientConfig{}),
+			client:        newsboat.New(domain.ClientConfig{}),
 			supportsDelta: true,
 		},
 		{
-			client:        quiterss.New(models.ClientConfig{}),
+			client:        quiterss.New(domain.ClientConfig{}),
 			supportsDelta: false,
 		},
 	} {
-		stories1 := models.Stories{
+		stories1 := domain.Stories{
 			{
 				Hash:    "123",
 				Unread:  true,
@@ -44,7 +44,7 @@ func TestClients(t *testing.T) {
 				Starred: false,
 			},
 		}
-		stories2 := models.Stories{
+		stories2 := domain.Stories{
 			{
 				Hash:    "456",
 				Unread:  true,
@@ -56,13 +56,13 @@ func TestClients(t *testing.T) {
 				Starred: false,
 			},
 		}
-		feeds := models.Feeds{
+		feeds := domain.Feeds{
 			{
 				ID:      123,
 				Stories: stories1,
 			},
 		}
-		folders := models.Folders{
+		folders := domain.Folders{
 			{
 				ID:    123,
 				Title: "Folder",
@@ -71,7 +71,7 @@ func TestClients(t *testing.T) {
 		}
 
 		name := string(tt.client.Name())
-		tt.client.SetDataPath(models.DataPath(t.TempDir()))
+		tt.client.SetDataPath(domain.DataPath(t.TempDir()))
 
 		t.Run(name+" create new cache", func(t *testing.T) {
 			require.NoError(t, tt.client.CreateNewCache())
@@ -226,7 +226,7 @@ func TestClients(t *testing.T) {
 	}
 }
 
-func expectDatabaseStories(t *testing.T, c models.Client, expectedStories models.Stories) {
+func expectDatabaseStories(t *testing.T, c domain.Client, expectedStories domain.Stories) {
 	db, err := sql.Open(client.SQLiteDriver, c.ReferenceDB())
 	require.NoError(t, err)
 

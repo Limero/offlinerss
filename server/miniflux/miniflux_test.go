@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/limero/offlinerss/models"
+	"github.com/limero/offlinerss/domain"
 	"github.com/limero/offlinerss/server/miniflux/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -18,7 +18,7 @@ func TestGetFoldersWithStories(t *testing.T) {
 		api: mockAPI,
 	}
 
-	story := models.Story{
+	story := domain.Story{
 		Timestamp: time.Now(),
 		Hash:      "123",
 		Unread:    true,

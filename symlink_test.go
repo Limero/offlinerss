@@ -10,9 +10,9 @@ import (
 
 	"github.com/limero/offlinerss/client"
 	"github.com/limero/offlinerss/client/newsboat"
+	"github.com/limero/offlinerss/domain"
 	"github.com/limero/offlinerss/helpers"
 	"github.com/limero/offlinerss/log"
-	"github.com/limero/offlinerss/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -39,22 +39,22 @@ func CaptureStdout(f func()) string {
 func Test_symlinkClientPaths(t *testing.T) {
 	log.DebugEnabled = true
 	sourceDir := t.TempDir()
-	dataPath := models.DataPath(sourceDir)
+	dataPath := domain.DataPath(sourceDir)
 	sourceFile := "source-file"
 	sourcePath := dataPath.GetFile(sourceFile)
 	helpers.WriteFile("hello", sourcePath)
 
-	setupClients := func(targetPaths ...string) []models.Client {
+	setupClients := func(targetPaths ...string) []domain.Client {
 		client := client.Client{
 			DataPath: dataPath,
-			Files: models.ClientFiles{
+			Files: domain.ClientFiles{
 				{
 					FileName:    sourceFile,
 					TargetPaths: targetPaths,
 				},
 			},
 		}
-		return []models.Client{
+		return []domain.Client{
 			newsboat.Newsboat{client},
 		}
 	}

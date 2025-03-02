@@ -2,11 +2,11 @@ package main
 
 import (
 	"github.com/limero/linkcleaner"
+	"github.com/limero/offlinerss/domain"
 	"github.com/limero/offlinerss/log"
-	"github.com/limero/offlinerss/models"
 )
 
-func TransformFolders(folders models.Folders) {
+func TransformFolders(folders domain.Folders) {
 	for _, folder := range folders {
 		for _, feed := range folder.Feeds {
 			for _, story := range feed.Stories {

@@ -3,16 +3,16 @@ package main
 import (
 	"testing"
 
-	"github.com/limero/offlinerss/models"
+	"github.com/limero/offlinerss/domain"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestTransformFolders(t *testing.T) {
-	folders := models.Folders{
+	folders := domain.Folders{
 		{
-			Feeds: models.Feeds{
+			Feeds: domain.Feeds{
 				{
-					Stories: models.Stories{
+					Stories: domain.Stories{
 						{
 							Content: "a https://example.com/?utm_source=rss b",
 							Url:     "https://example.com/?utm_source=rss",

@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"github.com/limero/offlinerss/client"
+	"github.com/limero/offlinerss/domain"
 	"github.com/limero/offlinerss/helpers"
 	"github.com/limero/offlinerss/log"
-	"github.com/limero/offlinerss/models"
 )
 
 type Newsboat struct {
@@ -24,29 +24,29 @@ var insertFeed string
 //go:embed sql/insert-story.sql
 var insertStory string
 
-func New(config models.ClientConfig) *Newsboat {
+func New(config domain.ClientConfig) *Newsboat {
 	return &Newsboat{
 		client.Client{
-			ClientName: models.ClientNewsboat,
-			DataPath:   models.GetClientDataPath(config.Name),
+			ClientName: domain.ClientNewsboat,
+			DataPath:   domain.GetClientDataPath(config.Name),
 			Config:     config,
-			DatabaseInfo: models.DatabaseInfo{
+			DatabaseInfo: domain.DatabaseInfo{
 				FileName:        "cache.db",
 				DDL:             ddl,
 				StoriesTable:    "rss_item",
 				StoriesIDColumn: "guid",
-				Unread: models.ColumnInfo{
+				Unread: domain.ColumnInfo{
 					Column:   "unread",
 					Positive: "1",
 					Negative: "0",
 				},
-				Starred: models.ColumnInfo{
+				Starred: domain.ColumnInfo{
 					Column:   "flags",
 					Positive: "s",
 					Negative: "",
 				},
 			},
-			Files: models.ClientFiles{
+			Files: domain.ClientFiles{
 				{
 					FileName: "cache.db",
 					TargetPaths: []string{
@@ -64,7 +64,7 @@ func New(config models.ClientConfig) *Newsboat {
 	}
 }
 
-func (c Newsboat) AddToCache(folders models.Folders) error {
+func (c Newsboat) AddToCache(folders domain.Folders) error {
 	tmpCachePath, db, closer, err := c.CreateNewTmpCache()
 	defer closer()
 	if err != nil {

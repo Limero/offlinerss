@@ -6,20 +6,20 @@ import (
 	"github.com/limero/offlinerss/client/feedreader"
 	"github.com/limero/offlinerss/client/newsboat"
 	"github.com/limero/offlinerss/client/quiterss"
+	"github.com/limero/offlinerss/domain"
 	"github.com/limero/offlinerss/helpers"
 	"github.com/limero/offlinerss/log"
-	"github.com/limero/offlinerss/models"
 )
 
-func getClients(clientConfigs []models.ClientConfig) models.Clients {
-	clients := make(models.Clients, len(clientConfigs))
+func getClients(clientConfigs []domain.ClientConfig) domain.Clients {
+	clients := make(domain.Clients, len(clientConfigs))
 	for i, clientConfig := range clientConfigs {
 		switch clientConfig.Name {
-		case models.ClientFeedReader:
+		case domain.ClientFeedReader:
 			clients[i] = feedreader.New(clientConfig)
-		case models.ClientNewsboat:
+		case domain.ClientNewsboat:
 			clients[i] = newsboat.New(clientConfig)
-		case models.ClientQuiteRSS:
+		case domain.ClientQuiteRSS:
 			clients[i] = quiterss.New(clientConfig)
 		default:
 			panic("unknown client " + clientConfig.Name)
@@ -28,18 +28,18 @@ func getClients(clientConfigs []models.ClientConfig) models.Clients {
 	return clients
 }
 
-func GetSyncToActions(clients models.Clients) (models.SyncToActions, error) {
+func GetSyncToActions(clients domain.Clients) (domain.SyncToActions, error) {
 	if len(clients) == 0 {
-		return models.SyncToActions{}, errors.New("you have to enable at least one client in the config file")
+		return domain.SyncToActions{}, errors.New("you have to enable at least one client in the config file")
 	}
 
 	// Grab changes from each client
-	var syncToActions models.SyncToActions
+	var syncToActions domain.SyncToActions
 
 	for _, client := range clients {
 		actions, err := client.GetChanges()
 		if err != nil {
-			return models.SyncToActions{}, err
+			return domain.SyncToActions{}, err
 		}
 
 		if actions.Total() == 0 {
@@ -72,7 +72,7 @@ func GetSyncToActions(clients models.Clients) (models.SyncToActions, error) {
 	return syncToActions, nil
 }
 
-func SyncClients(clients models.Clients, folders models.Folders) error {
+func SyncClients(clients domain.Clients, folders domain.Folders) error {
 	for _, client := range clients {
 		if !helpers.FileExists(client.ReferenceDB()) {
 			if err := client.CreateNewCache(); err != nil {
@@ -92,7 +92,7 @@ func SyncClients(clients models.Clients, folders models.Folders) error {
 // This will replace all reference dbs with user dbs
 // Needed when only syncing to a server, since otherwise the same
 // changes will be synced again on next run
-func ReplaceReferenceDBsWithUserDBs(clients models.Clients) error {
+func ReplaceReferenceDBsWithUserDBs(clients domain.Clients) error {
 	for _, client := range clients {
 		log.Debug("Replacing %s reference db with user db", client.Name())
 		if err := helpers.CopyFile(client.UserDB(), client.ReferenceDB()); err != nil {
@@ -104,7 +104,7 @@ func ReplaceReferenceDBsWithUserDBs(clients models.Clients) error {
 
 // This will replace all user dbs with reference dbs
 // It's used to rollback any changes done to the clients since the last sync
-func ReplaceUserDBsWithReferenceDBs(clients models.Clients) error {
+func ReplaceUserDBsWithReferenceDBs(clients domain.Clients) error {
 	for _, client := range clients {
 		log.Debug("Replacing %s user db with reference db", client.Name())
 		if err := helpers.CopyFile(client.ReferenceDB(), client.UserDB()); err != nil {

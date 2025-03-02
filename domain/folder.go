@@ -1,4 +1,4 @@
-package models
+package domain
 
 type Folder struct {
 	ID    int64

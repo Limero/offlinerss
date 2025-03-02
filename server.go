@@ -1,28 +1,28 @@
 package main
 
 import (
+	"github.com/limero/offlinerss/domain"
 	"github.com/limero/offlinerss/log"
-	"github.com/limero/offlinerss/models"
 	"github.com/limero/offlinerss/server/miniflux"
 	"github.com/limero/offlinerss/server/newsblur"
 )
 
-func getServer(serverConfig models.ServerConfig) models.Server {
+func getServer(serverConfig domain.ServerConfig) domain.Server {
 	switch serverConfig.Name {
-	case models.ServerMiniflux:
+	case domain.ServerMiniflux:
 		return miniflux.New(serverConfig)
-	case models.ServerNewsBlur:
+	case domain.ServerNewsBlur:
 		return newsblur.New(serverConfig)
 	}
 	return nil
 }
 
-func AuthServer(server models.Server) error {
+func AuthServer(server domain.Server) error {
 	log.Debug("Logging in to " + string(server.Name()))
 	return server.Login()
 }
 
-func SyncToServer(server models.Server, syncToActions models.SyncToActions) error {
+func SyncToServer(server domain.Server, syncToActions domain.SyncToActions) error {
 	log.Info("Syncing changes to " + string(server.Name()))
 
 	// TODO: Do these in parallel
@@ -54,7 +54,7 @@ func SyncToServer(server models.Server, syncToActions models.SyncToActions) erro
 	return nil
 }
 
-func GetNewFromServer(server models.Server) (models.Folders, error) {
+func GetNewFromServer(server domain.Server) (domain.Folders, error) {
 	log.Info("Retrieving new stories from " + string(server.Name()))
 	return server.GetFoldersWithStories()
 }

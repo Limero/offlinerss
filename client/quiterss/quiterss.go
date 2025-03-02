@@ -4,9 +4,9 @@ import (
 	_ "embed"
 
 	"github.com/limero/offlinerss/client"
+	"github.com/limero/offlinerss/domain"
 	"github.com/limero/offlinerss/helpers"
 	"github.com/limero/offlinerss/log"
-	"github.com/limero/offlinerss/models"
 )
 
 type QuiteRSS struct {
@@ -25,29 +25,29 @@ var insertFeed string
 //go:embed sql/insert-story.sql
 var insertStory string
 
-func New(config models.ClientConfig) *QuiteRSS {
+func New(config domain.ClientConfig) *QuiteRSS {
 	return &QuiteRSS{
 		client.Client{
-			ClientName: models.ClientQuiteRSS,
-			DataPath:   models.GetClientDataPath(config.Name),
+			ClientName: domain.ClientQuiteRSS,
+			DataPath:   domain.GetClientDataPath(config.Name),
 			Config:     config,
-			DatabaseInfo: models.DatabaseInfo{
+			DatabaseInfo: domain.DatabaseInfo{
 				FileName:        "feeds.db",
 				DDL:             ddl,
 				StoriesTable:    "news",
 				StoriesIDColumn: "guid",
-				Unread: models.ColumnInfo{
+				Unread: domain.ColumnInfo{
 					Column:   "read",
 					Positive: "0",
 					Negative: "2",
 				},
-				Starred: models.ColumnInfo{
+				Starred: domain.ColumnInfo{
 					Column:   "starred",
 					Positive: "1",
 					Negative: "0",
 				},
 			},
-			Files: models.ClientFiles{
+			Files: domain.ClientFiles{
 				{
 					FileName: "feeds.db",
 					TargetPaths: []string{
@@ -59,7 +59,7 @@ func New(config models.ClientConfig) *QuiteRSS {
 	}
 }
 
-func (c QuiteRSS) AddToCache(folders models.Folders) error {
+func (c QuiteRSS) AddToCache(folders domain.Folders) error {
 	// TODO: Remove this once db has been confirmed idempotent, like the Newsboat client
 	if err := c.CreateNewCache(); err != nil {
 		return err

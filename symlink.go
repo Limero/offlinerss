@@ -3,12 +3,12 @@ package main
 import (
 	"os"
 
+	"github.com/limero/offlinerss/domain"
 	"github.com/limero/offlinerss/helpers"
 	"github.com/limero/offlinerss/log"
-	"github.com/limero/offlinerss/models"
 )
 
-func symlinkClientPaths(clients models.Clients) error {
+func symlinkClientPaths(clients domain.Clients) error {
 	for _, client := range clients {
 		for _, file := range client.GetFiles() {
 			dataPath := client.GetDataPath()

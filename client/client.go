@@ -5,20 +5,20 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/limero/offlinerss/domain"
 	"github.com/limero/offlinerss/helpers"
 	"github.com/limero/offlinerss/log"
-	"github.com/limero/offlinerss/models"
 )
 
 type Client struct {
-	ClientName   models.ClientName
-	DataPath     models.DataPath
-	Config       models.ClientConfig
-	DatabaseInfo models.DatabaseInfo
-	Files        models.ClientFiles
+	ClientName   domain.ClientName
+	DataPath     domain.DataPath
+	Config       domain.ClientConfig
+	DatabaseInfo domain.DatabaseInfo
+	Files        domain.ClientFiles
 }
 
-func (c Client) Name() models.ClientName {
+func (c Client) Name() domain.ClientName {
 	return c.ClientName
 }
 
@@ -26,7 +26,7 @@ func (c Client) ReferenceDB() string {
 	return c.DataPath.GetReferenceDB()
 }
 
-func (c Client) GetDatabaseInfo() models.DatabaseInfo {
+func (c Client) GetDatabaseInfo() domain.DatabaseInfo {
 	return c.DatabaseInfo
 }
 
@@ -34,7 +34,7 @@ func (c Client) UserDB() string {
 	return c.DataPath.GetFile(c.DatabaseInfo.FileName)
 }
 
-func (c Client) GetChanges() (models.SyncToActions, error) {
+func (c Client) GetChanges() (domain.SyncToActions, error) {
 	return getChangesFromSqlite(
 		c.ReferenceDB(),
 		c.UserDB(),
@@ -65,15 +65,15 @@ func (c Client) CreateNewCache() error {
 	return nil
 }
 
-func (c Client) GetDataPath() models.DataPath {
+func (c Client) GetDataPath() domain.DataPath {
 	return c.DataPath
 }
 
-func (c Client) SetDataPath(dataPath models.DataPath) {
+func (c Client) SetDataPath(dataPath domain.DataPath) {
 	c.DataPath = dataPath
 }
 
-func (c Client) GetFiles() models.ClientFiles {
+func (c Client) GetFiles() domain.ClientFiles {
 	return c.Files
 }
 

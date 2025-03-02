@@ -1,4 +1,4 @@
-package models
+package domain
 
 type ServerConfig struct {
 	Name     ServerName `json:"name"`
