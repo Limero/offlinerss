@@ -54,32 +54,34 @@ func getChangesFromSqlite(
 		return domain.SyncToActions{}, err
 	}
 
+	userRowsMap := make(map[string]dbRow, len(userRows))
+	for _, row := range userRows {
+		userRowsMap[row.ID] = row
+	}
+
 	var syncToActions domain.SyncToActions
 	for _, refRow := range refRows {
-		for _, userRow := range userRows {
-			if refRow.ID != userRow.ID {
-				continue
-			}
+		userRow, ok := userRowsMap[refRow.ID]
+		if !ok {
+			continue
+		}
 
-			if refRow.Unread != userRow.Unread {
-				switch userRow.Unread {
-				case dbInfo.Unread.Positive:
-					syncToActions.Unread = append(syncToActions.Unread, refRow.ID)
-				case dbInfo.Unread.Negative:
-					syncToActions.Read = append(syncToActions.Read, refRow.ID)
-				}
+		if refRow.Unread != userRow.Unread {
+			switch userRow.Unread {
+			case dbInfo.Unread.Positive:
+				syncToActions.Unread = append(syncToActions.Unread, refRow.ID)
+			case dbInfo.Unread.Negative:
+				syncToActions.Read = append(syncToActions.Read, refRow.ID)
 			}
+		}
 
-			if refRow.Starred != userRow.Starred {
-				switch userRow.Starred {
-				case dbInfo.Starred.Positive:
-					syncToActions.Starred = append(syncToActions.Starred, refRow.ID)
-				case dbInfo.Starred.Negative:
-					syncToActions.Unstarred = append(syncToActions.Unstarred, refRow.ID)
-				}
+		if refRow.Starred != userRow.Starred {
+			switch userRow.Starred {
+			case dbInfo.Starred.Positive:
+				syncToActions.Starred = append(syncToActions.Starred, refRow.ID)
+			case dbInfo.Starred.Negative:
+				syncToActions.Unstarred = append(syncToActions.Unstarred, refRow.ID)
 			}
-
-			break
 		}
 	}
 
