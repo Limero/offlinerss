@@ -5,6 +5,7 @@ import (
 
 	"github.com/limero/offlinerss/client/feedreader"
 	"github.com/limero/offlinerss/client/newsboat"
+	"github.com/limero/offlinerss/client/newsraft"
 	"github.com/limero/offlinerss/client/quiterss"
 	"github.com/limero/offlinerss/domain"
 	"github.com/limero/offlinerss/log"
@@ -19,6 +20,8 @@ func getClients(clientConfigs []domain.ClientConfig) domain.Clients {
 			clients[i] = feedreader.New(clientConfig)
 		case domain.ClientNewsboat:
 			clients[i] = newsboat.New(clientConfig)
+		case domain.ClientNewsraft:
+			clients[i] = newsraft.New(clientConfig)
 		case domain.ClientQuiteRSS:
 			clients[i] = quiterss.New(clientConfig)
 		default:

@@ -5,6 +5,7 @@ type ClientName string
 const (
 	ClientFeedReader ClientName = "feedreader"
 	ClientNewsboat   ClientName = "newsboat"
+	ClientNewsraft   ClientName = "newsraft"
 	ClientQuiteRSS   ClientName = "quiterss"
 )
 

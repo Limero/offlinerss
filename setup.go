@@ -92,6 +92,7 @@ func setup() (domain.Config, error) {
 				Options: []string{
 					"FeedReader",
 					"Newsboat",
+					"Newsraft",
 					"QuiteRSS",
 				},
 				VimMode: true,

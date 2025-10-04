@@ -8,6 +8,7 @@ import (
 	"github.com/limero/offlinerss/client"
 	"github.com/limero/offlinerss/client/feedreader"
 	"github.com/limero/offlinerss/client/newsboat"
+	"github.com/limero/offlinerss/client/newsraft"
 	"github.com/limero/offlinerss/client/quiterss"
 	"github.com/limero/offlinerss/domain"
 	"github.com/stretchr/testify/assert"
@@ -25,6 +26,10 @@ func TestClients(t *testing.T) {
 		},
 		{
 			client:        newsboat.New(domain.ClientConfig{}),
+			supportsDelta: true,
+		},
+		{
+			client:        newsraft.New(domain.ClientConfig{}),
 			supportsDelta: true,
 		},
 		{
@@ -60,6 +65,7 @@ func TestClients(t *testing.T) {
 			{
 				ID:      123,
 				Stories: stories1,
+				Url:     "https://example.com",
 			},
 		}
 		folders := domain.Folders{

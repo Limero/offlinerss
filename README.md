@@ -19,6 +19,7 @@ It generates databases for supported RSS readers that can be used offline. Any c
 
 * [FeedReader](https://jangernert.github.io/FeedReader) GPL-3.0
 * [Newsboat](https://newsboat.org) MIT
+* [Newsraft](https://codeberg.org/newsraft/newsraft) ISC
 * [QuiteRSS](https://quiterss.org) GPL-3.0
 
 ## Get started
