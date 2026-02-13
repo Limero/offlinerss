@@ -90,7 +90,7 @@ func TestMarkStoriesAsStarred(t *testing.T) {
 
 	mockAPI.On("Entry", int64(1)).
 		Return(&api.Entry{Starred: false}, nil)
-	mockAPI.On("ToggleBookmark", int64(1)).
+	mockAPI.On("ToggleStarred", int64(1)).
 		Return(nil)
 	mockAPI.On("Entry", int64(2)).
 		Return(&api.Entry{Starred: true}, nil)
@@ -108,7 +108,7 @@ func TestMarkStoriesAsUnstarred(t *testing.T) {
 
 	mockAPI.On("Entry", int64(1)).
 		Return(&api.Entry{Starred: true}, nil)
-	mockAPI.On("ToggleBookmark", int64(1)).
+	mockAPI.On("ToggleStarred", int64(1)).
 		Return(nil)
 	mockAPI.On("Entry", int64(2)).
 		Return(&api.Entry{Starred: false}, nil)

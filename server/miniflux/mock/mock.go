@@ -24,7 +24,7 @@ func (m *MockAPI) UpdateEntries(entryIDs []int64, status string) error {
 	return args.Error(0)
 }
 
-func (m *MockAPI) ToggleBookmark(entryID int64) error {
+func (m *MockAPI) ToggleStarred(entryID int64) error {
 	args := m.Called(entryID)
 	return args.Error(0)
 }

@@ -12,7 +12,7 @@ type API interface {
 	Entry(entryID int64) (*api.Entry, error)
 	Entries(filter *api.Filter) (*api.EntryResultSet, error)
 	UpdateEntries(entryIDs []int64, status string) error
-	ToggleBookmark(entryID int64) error
+	ToggleStarred(entryID int64) error
 }
 
 type Miniflux struct {
@@ -141,7 +141,7 @@ func (s *Miniflux) MarkStoriesAsStarred(IDs []string) error {
 		if entry.Starred {
 			continue
 		}
-		if err := s.api.ToggleBookmark(intID); err != nil {
+		if err := s.api.ToggleStarred(intID); err != nil {
 			return err
 		}
 
@@ -168,7 +168,7 @@ func (s *Miniflux) MarkStoriesAsUnstarred(IDs []string) error {
 		if !entry.Starred {
 			continue
 		}
-		if err := s.api.ToggleBookmark(intID); err != nil {
+		if err := s.api.ToggleStarred(intID); err != nil {
 			return err
 		}
 
