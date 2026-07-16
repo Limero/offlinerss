@@ -78,13 +78,17 @@ func (c Newsraft) AddToCache(folders domain.Folders) error {
 	for _, folder := range folders {
 		log.Debug("Iterating over %d feeds in '%s' folder", len(folder.Feeds), folder.Title)
 		for _, feed := range folder.Feeds {
-			if !strings.HasPrefix(feed.Url, "http") {
-				log.Debug("Skip url %s because it doesn't start with http", feed.Url)
-				continue
+			feedURL := feed.Url
+			if !strings.HasPrefix(feedURL, "http") {
+				// Newsraft fails to open with any invalid URLs in the feeds list
+				// Prefixing makes things such as newsletters in Newsblur that uses urls like
+				// "newsletter:123456:noreply@example.com" work
+				log.Debug("Prefixing url with localhost because it doesn't start with http: %s", feedURL)
+				feedURL = "http://localhost/" + feedURL
 			}
 
 			// Newsraft stores urls in a separate file
-			u := feed.Url + " \""
+			u := feedURL + " \""
 			if folder.Title != "" {
 				u += "[" + folder.Title + "] "
 			}
@@ -94,7 +98,7 @@ func (c Newsraft) AddToCache(folders domain.Folders) error {
 			log.Debug("Add feed to database: %s", feed.Title)
 			if _, err = db.Exec(
 				insertFeed,
-				feed.Url,
+				feedURL,
 				feed.Title,
 				feed.Website,
 			); err != nil {
@@ -105,7 +109,7 @@ func (c Newsraft) AddToCache(folders domain.Folders) error {
 			for _, story := range feed.Stories {
 				if _, err = db.Exec(
 					insertStory,
-					feed.Url,
+					feedURL,
 					story.Hash,
 					story.Title,
 					story.Url,
